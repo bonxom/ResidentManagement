@@ -1,188 +1,174 @@
+// =====================
+//  HỆ THỐNG VAI TRÒ
+// =====================
+
 export const ROLES = {
-  TDANPHO: 'tdanpho',           // Tổ Dân Phố - Full quyền
-  KIEMTOAN: 'kiemtoan',         // Kiểm Toán - Quản lý tài chính
-  CHUHO: 'chuho',               // Chủ Hộ - Quản lý hộ gia đình
-  CUDAN: 'cudan',               // Cư Dân - Quyền cơ bản
+  TO_DAN_PHO: 'toDanPho',       // Tổ Dân Phố - Full quyền
+  KIEM_TOAN: 'kiemToan',        // Kiểm Toán - Quản lý tài chính
+  CHU_HO: 'chuHo',              // Chủ Hộ - Quản lý hộ gia đình
+  CU_DAN: 'cuDan',              // Cư Dân - Quyền cơ bản
 }
 
-// Mô tả vai trò
+// =====================
+//  MÔ TẢ VAI TRÒ
+// =====================
+
 export const ROLE_DESCRIPTIONS = {
-  [ROLES.TDANPHO]: 'Tổ Dân Phố',
-  [ROLES.KIEMTOAN]: 'Kiểm Toán',
-  [ROLES.CHUHO]: 'Chủ Hộ',
-  [ROLES.CUDAN]: 'Cư Dân',
+  [ROLES.TO_DAN_PHO]: 'Tổ Dân Phố',
+  [ROLES.KIEM_TOAN]: 'Kiểm Toán',
+  [ROLES.CHU_HO]: 'Chủ Hộ',
+  [ROLES.CU_DAN]: 'Cư Dân',
 }
 
-// Quyền hạn của từng vai trò
+// =====================
+//  DANH SÁCH QUYỀN HẠN
+// =====================
+
 export const PERMISSIONS = {
   // Quản lý nhân khẩu
-  VIEW_ALL_CITIZENS: 'view_all_citizens',           // Xem tất cả cư dân
-  VIEW_OWN_INFO: 'view_own_info',                   // Xem thông tin bản thân
-  VIEW_HOUSEHOLD_INFO: 'view_household_info',       // Xem thông tin hộ gia đình
-  CREATE_CITIZEN: 'create_citizen',                 // Thêm cư dân mới
-  UPDATE_CITIZEN: 'update_citizen',                 // Cập nhật thông tin cư dân
-  DELETE_CITIZEN: 'delete_citizen',                 // Xóa cư dân
-  
+  VIEW_ALL_CITIZENS: 'view_all_citizens',
+  VIEW_OWN_INFO: 'view_own_info',
+  VIEW_HOUSEHOLD_INFO: 'view_household_info',
+  CREATE_CITIZEN: 'create_citizen',
+  UPDATE_CITIZEN: 'update_citizen',
+  DELETE_CITIZEN: 'delete_citizen',
+
   // Quản lý hộ khẩu
-  VIEW_ALL_HOUSEHOLDS: 'view_all_households',       // Xem tất cả hộ gia đình
-  CREATE_HOUSEHOLD: 'create_household',             // Tạo hộ gia đình
-  UPDATE_HOUSEHOLD: 'update_household',             // Cập nhật hộ gia đình
-  DELETE_HOUSEHOLD: 'delete_household',             // Xóa hộ gia đình
-  MANAGE_HOUSEHOLD_MEMBERS: 'manage_household_members', // Quản lý thành viên hộ
-  
+  VIEW_ALL_HOUSEHOLDS: 'view_all_households',
+  CREATE_HOUSEHOLD: 'create_household',
+  UPDATE_HOUSEHOLD: 'update_household',
+  DELETE_HOUSEHOLD: 'delete_household',
+  MANAGE_HOUSEHOLD_MEMBERS: 'manage_household_members',
+
   // Quản lý tài chính
-  VIEW_ALL_FINANCES: 'view_all_finances',           // Xem tất cả tài chính
-  VIEW_HOUSEHOLD_FINANCES: 'view_household_finances', // Xem tài chính hộ
-  CREATE_FINANCE: 'create_finance',                 // Tạo khoản thu/chi
-  UPDATE_FINANCE: 'update_finance',                 // Cập nhật tài chính
-  DELETE_FINANCE: 'delete_finance',                 // Xóa khoản thu/chi
-  APPROVE_FINANCE: 'approve_finance',               // Duyệt khoản chi
-  AUDIT_FINANCE: 'audit_finance',                   // Kiểm toán tài chính
-  
+  VIEW_ALL_FINANCES: 'view_all_finances',
+  VIEW_HOUSEHOLD_FINANCES: 'view_household_finances',
+  CREATE_FINANCE: 'create_finance',
+  UPDATE_FINANCE: 'update_finance',
+  DELETE_FINANCE: 'delete_finance',
+  APPROVE_FINANCE: 'approve_finance',
+  AUDIT_FINANCE: 'audit_finance',
+
   // Quản lý đóng góp
-  VIEW_CONTRIBUTIONS: 'view_contributions',         // Xem các khoản đóng góp
-  CREATE_CONTRIBUTION: 'create_contribution',       // Tạo khoản đóng góp
-  PAY_CONTRIBUTION: 'pay_contribution',             // Đóng góp
-  MANAGE_CONTRIBUTIONS: 'manage_contributions',     // Quản lý đóng góp
-  
+  VIEW_CONTRIBUTIONS: 'view_contributions',
+  CREATE_CONTRIBUTION: 'create_contribution',
+  PAY_CONTRIBUTION: 'pay_contribution',
+  MANAGE_CONTRIBUTIONS: 'manage_contributions',
+
   // Thông báo và sự kiện
-  VIEW_ANNOUNCEMENTS: 'view_announcements',         // Xem thông báo
-  CREATE_ANNOUNCEMENT: 'create_announcement',       // Tạo thông báo
-  DELETE_ANNOUNCEMENT: 'delete_announcement',       // Xóa thông báo
-  
+  VIEW_ANNOUNCEMENTS: 'view_announcements',
+  CREATE_ANNOUNCEMENT: 'create_announcement',
+  DELETE_ANNOUNCEMENT: 'delete_announcement',
+
   // Báo cáo thống kê
-  VIEW_STATISTICS: 'view_statistics',               // Xem thống kê
-  VIEW_FINANCE_REPORTS: 'view_finance_reports',     // Xem báo cáo tài chính
-  EXPORT_DATA: 'export_data',                       // Xuất dữ liệu
-  
+  VIEW_STATISTICS: 'view_statistics',
+  VIEW_FINANCE_REPORTS: 'view_finance_reports',
+  EXPORT_DATA: 'export_data',
+
   // Quản lý hệ thống
-  MANAGE_USERS: 'manage_users',                     // Quản lý người dùng
-  MANAGE_ROLES: 'manage_roles',                     // Phân quyền
-  SYSTEM_SETTINGS: 'system_settings',               // Cài đặt hệ thống
+  MANAGE_USERS: 'manage_users',
+  MANAGE_ROLES: 'manage_roles',
+  SYSTEM_SETTINGS: 'system_settings',
 }
 
-// Map quyền hạn theo vai trò
+// =====================
+//  PHÂN QUYỀN THEO VAI TRÒ
+// =====================
+
 export const ROLE_PERMISSIONS = {
-  // TỔ DÂN PHỐ - Full quyền
-  [ROLES.TDANPHO]: [
+  // === TỔ DÂN PHỐ ===
+  [ROLES.TO_DAN_PHO]: [
     // Nhân khẩu
     PERMISSIONS.VIEW_ALL_CITIZENS,
     PERMISSIONS.CREATE_CITIZEN,
     PERMISSIONS.UPDATE_CITIZEN,
     PERMISSIONS.DELETE_CITIZEN,
-    
+
     // Hộ khẩu
     PERMISSIONS.VIEW_ALL_HOUSEHOLDS,
     PERMISSIONS.CREATE_HOUSEHOLD,
     PERMISSIONS.UPDATE_HOUSEHOLD,
     PERMISSIONS.DELETE_HOUSEHOLD,
     PERMISSIONS.MANAGE_HOUSEHOLD_MEMBERS,
-    
+
     // Tài chính
     PERMISSIONS.VIEW_ALL_FINANCES,
     PERMISSIONS.CREATE_FINANCE,
     PERMISSIONS.UPDATE_FINANCE,
     PERMISSIONS.DELETE_FINANCE,
     PERMISSIONS.APPROVE_FINANCE,
-    
+
     // Đóng góp
     PERMISSIONS.VIEW_CONTRIBUTIONS,
     PERMISSIONS.CREATE_CONTRIBUTION,
     PERMISSIONS.MANAGE_CONTRIBUTIONS,
-    
+
     // Thông báo
     PERMISSIONS.VIEW_ANNOUNCEMENTS,
     PERMISSIONS.CREATE_ANNOUNCEMENT,
     PERMISSIONS.DELETE_ANNOUNCEMENT,
-    
+
     // Thống kê
     PERMISSIONS.VIEW_STATISTICS,
     PERMISSIONS.VIEW_FINANCE_REPORTS,
     PERMISSIONS.EXPORT_DATA,
-    
+
     // Hệ thống
     PERMISSIONS.MANAGE_USERS,
     PERMISSIONS.MANAGE_ROLES,
     PERMISSIONS.SYSTEM_SETTINGS,
   ],
-  
-  // KIỂM TOÁN - Quản lý tài chính
-  [ROLES.KIEMTOAN]: [
-    // Xem thông tin cơ bản
+
+  // === KIỂM TOÁN ===
+  [ROLES.KIEM_TOAN]: [
     PERMISSIONS.VIEW_ALL_CITIZENS,
     PERMISSIONS.VIEW_ALL_HOUSEHOLDS,
-    
-    // Tài chính - Full quyền
     PERMISSIONS.VIEW_ALL_FINANCES,
     PERMISSIONS.CREATE_FINANCE,
     PERMISSIONS.UPDATE_FINANCE,
     PERMISSIONS.DELETE_FINANCE,
     PERMISSIONS.AUDIT_FINANCE,
-    
-    // Đóng góp
     PERMISSIONS.VIEW_CONTRIBUTIONS,
     PERMISSIONS.MANAGE_CONTRIBUTIONS,
-    
-    // Thông báo
     PERMISSIONS.VIEW_ANNOUNCEMENTS,
-    
-    // Thống kê
     PERMISSIONS.VIEW_STATISTICS,
     PERMISSIONS.VIEW_FINANCE_REPORTS,
     PERMISSIONS.EXPORT_DATA,
   ],
-  
-  // CHỦ HỘ - Quản lý hộ gia đình
-  [ROLES.CHUHO]: [
-    // Xem thông tin
+
+  // === CHỦ HỘ ===
+  [ROLES.CHU_HO]: [
     PERMISSIONS.VIEW_OWN_INFO,
     PERMISSIONS.VIEW_HOUSEHOLD_INFO,
-    
-    // Quản lý hộ gia đình
     PERMISSIONS.UPDATE_HOUSEHOLD,
     PERMISSIONS.MANAGE_HOUSEHOLD_MEMBERS,
-    
-    // Tài chính hộ
     PERMISSIONS.VIEW_HOUSEHOLD_FINANCES,
-    PERMISSIONS.PAY_CONTRIBUTION,
-    
-    // Đóng góp
     PERMISSIONS.VIEW_CONTRIBUTIONS,
     PERMISSIONS.PAY_CONTRIBUTION,
-    
-    // Thông báo
     PERMISSIONS.VIEW_ANNOUNCEMENTS,
   ],
-  
-  // CƯ DÂN - Quyền cơ bản
-  [ROLES.CUDAN]: [
-    // Chỉ xem thông tin cá nhân
+
+  // === CƯ DÂN ===
+  [ROLES.CU_DAN]: [
     PERMISSIONS.VIEW_OWN_INFO,
-    
-    // Xem thông báo
-    PERMISSIONS.VIEW_ANNOUNCEMENTS,
-    
-    // Xem thông tin hộ (nếu thuộc hộ)
     PERMISSIONS.VIEW_HOUSEHOLD_INFO,
-    
-    // Xem đóng góp
     PERMISSIONS.VIEW_CONTRIBUTIONS,
+    PERMISSIONS.VIEW_ANNOUNCEMENTS,
   ],
 }
 
-// Hàm kiểm tra quyền
+// =====================
+//  HÀM KIỂM TRA QUYỀN
+// =====================
+
 export const hasPermission = (userRole, permission) => {
   if (!userRole) return false
-  const rolePermissions = ROLE_PERMISSIONS[userRole] || []
-  return rolePermissions.includes(permission)
+  const allowed = ROLE_PERMISSIONS[userRole] || []
+  return allowed.includes(permission)
 }
 
-// Hàm kiểm tra có ít nhất một trong các quyền
-export const hasAnyPermission = (userRole, permissions) => {
-  return permissions.some(permission => hasPermission(userRole, permission))
-}
+export const hasAnyPermission = (userRole, permissions) =>
+  permissions.some((p) => hasPermission(userRole, p))
 
-// Hàm kiểm tra có tất cả các quyền
-export const hasAllPermissions = (userRole, permissions) => {
-  return permissions.every(permission => hasPermission(userRole, permission))
-}
+export const hasAllPermissions = (userRole, permissions) =>
+  permissions.every((p) => hasPermission(userRole, p))

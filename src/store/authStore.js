@@ -1,113 +1,139 @@
 import { create } from 'zustand'
-// import api from '../config/axios' // Tạm thời comment để dùng mock
-import { mockApi } from '../services/mockApi' // Sử dụng mock API
-import { hasPermission, hasAnyPermission, hasAllPermissions } from '../constants/roles'
+import * as jose from 'jose'
+import { authAPI, userAPI } from '../services/apiService'
 
 const useAuthStore = create((set, get) => ({
-  user: null,
   token: localStorage.getItem('token') || null,
-  loading: false,
+  user: null,
+  isLoading: false,
   error: null,
 
-  // SignUp
-  signUp: async (userData) => {
-    set({ loading: true, error: null })
-    try {
-      // const response = await api.post('/auth/signup', userData)
-      const response = await mockApi.signUp(userData) // Dùng mock
-      const { user, token } = response.data
-      
-      set({ 
-        user, 
-        token,
-        loading: false 
-      })
-      localStorage.setItem('token', token)
-      return { success: true }
-    } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Đăng ký thất bại'
-      set({ 
-        error: errorMessage, 
-        loading: false 
-      })
-      return { success: false, error: errorMessage }
-    }
-  },
-
-  // SignIn
+  // Đăng nhập
   signIn: async (credentials) => {
-    set({ loading: true, error: null })
+    set({ isLoading: true, error: null })
     try {
-      // const response = await api.post('/auth/signin', credentials)
-      const response = await mockApi.signIn(credentials) // Dùng mock
-      const { user, token } = response.data
+      const data = await authAPI.signIn(credentials)
       
-      set({ 
-        user, 
-        token,
-        loading: false 
-      })
-      localStorage.setItem('token', token)
+      // Lưu token
+      localStorage.setItem('token', data.token)
+      
+      // Decode token để lấy thông tin user
+      const decoded = jose.decodeJwt(data.token)
+      const user = {
+        id: decoded.userId,
+        fullName: decoded.fullName,
+        role: decoded.role,
+        permissions: decoded.permissions || [],
+        citizenId: decoded.citizenId,
+        phoneNumber: decoded.phoneNumber,
+        address: decoded.address,
+        householdBookId: decoded.householdBookId,
+      }
+      
+      localStorage.setItem('user', JSON.stringify(user))
+      
+      set({ token: data.token, user, isLoading: false })
       return { success: true }
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Đăng nhập thất bại'
-      set({ 
-        error: errorMessage, 
-        loading: false 
-      })
-      return { success: false, error: errorMessage }
+      set({ isLoading: false, error: error.customMessage || 'Đăng nhập thất bại' })
+      return { success: false, error: error.customMessage }
     }
   },
 
-  // SignOut
-  signOut: () => {
-    set({ user: null, token: null })
-    localStorage.removeItem('token')
-  },
-
-  // Clear Error
-  clearError: () => set({ error: null }),
-  
-  // Check Auth - Kiểm tra token còn hợp lệ không
-  checkAuth: async () => {
-    const token = localStorage.getItem('token')
-    if (!token) {
-      set({ user: null, token: null })
-      return false
-    }
-    
+  // Đăng ký
+  signUp: async (userData) => {
+    set({ isLoading: true, error: null })
     try {
-      // const response = await api.get('/auth/me')
-      const response = await mockApi.checkAuth() // Dùng mock
-      set({ user: response.data.user, token })
+      const data = await authAPI.signUp(userData)
+      set({ isLoading: false })
+      return { success: true, data }
+    } catch (error) {
+      set({ isLoading: false, error: error.customMessage || 'Đăng ký thất bại' })
+      return { success: false, error: error.customMessage }
+    }
+  },
+
+  // Kiểm tra auth
+  checkAuth: async () => {
+    const token = get().token
+    if (!token) return false
+
+    try {
+      // Kiểm tra token có expired không
+      const decoded = jose.decodeJwt(token)
+      const now = Math.floor(Date.now() / 1000)
+      
+      if (decoded.exp < now) {
+        get().signOut()
+        return false
+      }
+
+      // Optional: Verify với backend
+      await authAPI.verifyToken()
       return true
     } catch (error) {
-      set({ user: null, token: null })
-      localStorage.removeItem('token')
+      console.error('Auth check failed:', error)
+      get().signOut()
       return false
     }
   },
 
-  // Kiểm tra quyền
+  // Đăng xuất
+  signOut: () => {
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+    set({ token: null, user: null })
+  },
+
+  // Load user từ localStorage
+  loadUserFromStorage: () => {
+    const userData = localStorage.getItem('user')
+    if (userData) {
+      try {
+        const user = JSON.parse(userData)
+        set({ user })
+      } catch (error) {
+        console.error('Failed to parse user data:', error)
+        get().signOut()
+      }
+    }
+  },
+
+  // Kiểm tra permission
   hasPermission: (permission) => {
-    const { user } = get()
-    return hasPermission(user?.role, permission)
+    const user = get().user
+    if (!user || !user.permissions) return false
+    return user.permissions.includes(permission)
   },
 
   hasAnyPermission: (permissions) => {
-    const { user } = get()
-    return hasAnyPermission(user?.role, permissions)
+    const user = get().user
+    if (!user || !user.permissions) return false
+    return permissions.some(p => user.permissions.includes(p))
   },
 
   hasAllPermissions: (permissions) => {
-    const { user } = get()
-    return hasAllPermissions(user?.role, permissions)
+    const user = get().user
+    if (!user || !user.permissions) return false
+    return permissions.every(p => user.permissions.includes(p))
   },
 
-  // Lấy role của user hiện tại
-  getUserRole: () => {
-    const { user } = get()
-    return user?.role
+  // Cập nhật profile
+  updateProfile: async (userData) => {
+    set({ isLoading: true, error: null })
+    try {
+      const data = await userAPI.updateProfile(userData)
+      
+      // Cập nhật user trong store
+      const updatedUser = { ...get().user, ...data.user }
+      localStorage.setItem('user', JSON.stringify(updatedUser))
+      set({ user: updatedUser, isLoading: false })
+      
+      return { success: true, data }
+    } catch (error) {
+      set({ isLoading: false, error: error.customMessage })
+      return { success: false, error: error.customMessage }
+    }
   },
 }))
 

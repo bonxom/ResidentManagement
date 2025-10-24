@@ -1,143 +1,120 @@
-// Mock API - Giả lập backend để test frontend
-// Xóa file này khi đã có backend thật
 
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms))
+//MOCK API - GIẢ LẬP DỮ LIỆU NGƯỜI DÙNG
 
-// Fake database
-let users = [
+import { ROLES } from '../constants/roles'
+
+const mockUsers = [
   {
-    id: '1',
-    fullName: 'Nguyễn Văn A',
     citizenId: '001234567890',
+    fullName: 'Nguyễn Văn A',
+    password: '123456',
+    role: ROLES.TO_DAN_PHO,
+    phoneNumber: '0909123456',
+    address: '123 Đường Hoa Sữa',
+    householdBookId: 'HGD001',
+  },
+  {
+    citizenId: '001234567891',
+    fullName: 'Trần Thị B',
+    password: '123456',
+    role: ROLES.KIEM_TOAN,
     phoneNumber: '0912345678',
-  }
+    address: '456 Đường Lê Lợi',
+    householdBookId: 'HGD002',
+  },
+  {
+    citizenId: '001234567892',
+    fullName: 'Lê Văn C',
+    password: '123456',
+    role: ROLES.CHU_HO,
+    phoneNumber: '0923456789',
+    address: '789 Đường Trần Phú',
+    householdBookId: 'HGD003',
+  },
+  {
+    citizenId: '001234567893',
+    fullName: 'Phạm Thị D',
+    password: '123456',
+    role: ROLES.CU_DAN,
+    phoneNumber: '0934567890',
+    address: '12 Đường Nguyễn Huệ',
+    householdBookId: 'HGD004',
+  },
 ]
 
-export const mockApi = {
-  // Mock SignUp
-  signUp: async (userData) => {
-    await delay(1000) // Giả lập delay network
+export const mockSignIn = async (citizenId, password) => {
+  const user = mockUsers.find(
+    (u) => u.citizenId === citizenId && u.password === password
+  )
 
-    // Kiểm tra căn cước đã tồn tại
-    const existingUser = users.find(u => u.citizenId === userData.citizenId)
-    if (existingUser) {
-      throw {
-        response: {
-          data: {
-            message: 'Số căn cước đã được đăng ký'
-          }
-        }
-      }
-    }
-
-    // Kiểm tra số điện thoại đã tồn tại
-    const existingPhone = users.find(u => u.phoneNumber === userData.phoneNumber)
-    if (existingPhone) {
-      throw {
-        response: {
-          data: {
-            message: 'Số điện thoại đã được sử dụng'
-          }
-        }
-      }
-    }
-
-    // Tạo user mới
-    const newUser = {
-      id: Date.now().toString(),
-      fullName: userData.fullName,
-      citizenId: userData.citizenId,
-      phoneNumber: userData.phoneNumber,
-    }
-
-    users.push(newUser)
-
-    return {
-      data: {
-        success: true,
-        user: {
-          id: newUser.id,
-          fullName: newUser.fullName,
-          citizenId: newUser.citizenId,
-          phoneNumber: newUser.phoneNumber,
-        },
-        token: `fake_token_${newUser.id}`,
-      }
-    }
-  },
-
-  // Mock SignIn
-  signIn: async (credentials) => {
-    await delay(1000)
-
-    const user = users.find(
-      u => u.citizenId === credentials.citizenId && u.phoneNumber === credentials.phoneNumber
-    )
-
-    if (!user) {
-      throw {
-        response: {
-          data: {
-            message: 'Số căn cước hoặc số điện thoại không đúng'
-          }
-        }
-      }
-    }
-
-    return {
-      data: {
-        success: true,
-        user: {
-          id: user.id,
-          fullName: user.fullName,
-          citizenId: user.citizenId,
-          phoneNumber: user.phoneNumber,
-        },
-        token: `fake_token_${user.id}`,
-      }
-    }
-  },
-
-  // Mock Check Auth
-  checkAuth: async () => {
-    await delay(500)
-
-    const token = localStorage.getItem('token')
-    if (!token || !token.startsWith('fake_token_')) {
-      throw {
-        response: {
-          status: 401,
-          data: {
-            message: 'Token không hợp lệ'
-          }
-        }
-      }
-    }
-
-    const userId = token.replace('fake_token_', '')
-    const user = users.find(u => u.id === userId)
-
-    if (!user) {
-      throw {
-        response: {
-          status: 401,
-          data: {
-            message: 'Người dùng không tồn tại'
-          }
-        }
-      }
-    }
-
-    return {
-      data: {
-        success: true,
-        user: {
-          id: user.id,
-          fullName: user.fullName,
-          citizenId: user.citizenId,
-          phoneNumber: user.phoneNumber,
-        }
-      }
-    }
+  if (!user) {
+    throw new Error('Sai căn cước công dân hoặc mật khẩu')
   }
+
+  const token = 'mock-token-' + Math.random().toString(36).substring(2, 10)
+
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve({
+        token,
+        user: {
+          citizenId: user.citizenId,
+          fullName: user.fullName,
+          role: user.role,
+          phoneNumber: user.phoneNumber,
+          address: user.address,
+          householdBookId: user.householdBookId,
+        },
+      })
+    }, 600)
+  })
+}
+
+export const mockSignUp = async (newUser) => {
+  const exists = mockUsers.some((u) => u.citizenId === newUser.citizenId)
+  if (exists) {
+    throw new Error('Căn cước công dân đã tồn tại trong hệ thống')
+  }
+
+  const user = {
+    ...newUser,
+    password: newUser.password || '123456',
+  }
+
+  mockUsers.push(user)
+
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve({ message: 'Đăng ký thành công', user })
+    }, 800)
+  })
+}
+
+export const mockGetUser = async (citizenId) => {
+  const user = mockUsers.find((u) => u.citizenId === citizenId)
+  if (!user) throw new Error('Không tìm thấy người dùng')
+
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(user)
+    }, 400)
+  })
+}
+
+export const mockSignOut = async () => {
+  localStorage.removeItem('token')
+  localStorage.removeItem('user')
+
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve({ message: 'Đăng xuất thành công' })
+    }, 300)
+  })
+}
+
+export default {
+  mockSignIn,
+  mockSignUp,
+  mockGetUser,
+  mockSignOut,
 }

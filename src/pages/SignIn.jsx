@@ -1,67 +1,60 @@
 import { useState } from 'react'
 import { useNavigate, Link as RouterLink } from 'react-router-dom'
 import {
-  Container,
-  Box,
-  Card,
-  CardContent,
-  TextField,
-  Button,
-  Typography,
-  Link,
-  Alert,
-  InputAdornment,
+  Container, Box, Card, CardContent, TextField, Button, Typography,
+  Link, Alert, InputAdornment, MenuItem
 } from '@mui/material'
-import { CreditCard, Phone, Users } from 'lucide-react'
+import { CreditCard, Lock, Users } from 'lucide-react'
 import useAuthStore from '../store/authStore'
 import { signInSchema } from '../utils/validation'
+import { ROLES, ROLE_DESCRIPTIONS } from '../constants/roles'
+
+const roleOptions = [
+  { value: ROLES.CU_DAN, label: ROLE_DESCRIPTIONS[ROLES.CU_DAN] },
+  { value: ROLES.CHU_HO, label: ROLE_DESCRIPTIONS[ROLES.CHU_HO] },
+  { value: ROLES.KIEM_TOAN, label: ROLE_DESCRIPTIONS[ROLES.KIEM_TOAN] },
+  { value: ROLES.TO_DAN_PHO, label: ROLE_DESCRIPTIONS[ROLES.TO_DAN_PHO] },
+]
 
 function SignIn() {
   const navigate = useNavigate()
-  const { signIn, loading, error, clearError } = useAuthStore()
-  
+  const { signIn, isLoading, error: authError } = useAuthStore()
+
   const [formData, setFormData] = useState({
     citizenId: '',
-    phoneNumber: '',
+    password: '',
+    role: ROLES.TDANPHO,
   })
-  
   const [errors, setErrors] = useState({})
 
   const handleChange = (e) => {
     const { name, value } = e.target
-    // Chỉ cho phép nhập số
-    if (name === 'citizenId' || name === 'phoneNumber') {
-      if (value && !/^\d*$/.test(value)) {
-        return
-      }
-    }
-    
     setFormData(prev => ({ ...prev, [name]: value }))
-    // Clear error khi user nhập
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }))
     }
-    if (error) clearError()
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     
-    // Validate với Zod
     try {
       signInSchema.parse(formData)
       setErrors({})
-      
-      // Gọi API đăng nhập
-      const result = await signIn(formData)
-      
+
+      const result = await signIn({
+        citizenId: formData.citizenId,
+        password: formData.password,
+        role: formData.role,
+      })
+
       if (result.success) {
         navigate('/dashboard')
       }
     } catch (err) {
       if (err.errors) {
         const formattedErrors = {}
-        err.errors.forEach(error => {
+        err.errors.forEach((error) => {
           formattedErrors[error.path[0]] = error.message
         })
         setErrors(formattedErrors)
@@ -84,17 +77,17 @@ function SignIn() {
           <CardContent sx={{ p: 4 }}>
             <Box sx={{ textAlign: 'center', mb: 3 }}>
               <Users size={48} color="#1976d2" style={{ marginBottom: '16px' }} />
-              <Typography variant="h4" component="h1" gutterBottom fontWeight="bold">
-                Quản Lý Nhân Khẩu
+              <Typography variant="h4" fontWeight="bold" gutterBottom>
+                Đăng nhập hệ thống
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Đăng nhập bằng số căn cước và số điện thoại
+                Chọn vai trò và nhập thông tin đăng nhập
               </Typography>
             </Box>
 
-            {error && (
-              <Alert severity="error" sx={{ mb: 2 }} onClose={clearError}>
-                {error}
+            {authError && (
+              <Alert severity="error" sx={{ mb: 2 }} onClose={() => {}}>
+                {authError}
               </Alert>
             )}
 
@@ -106,7 +99,7 @@ function SignIn() {
                 value={formData.citizenId}
                 onChange={handleChange}
                 error={!!errors.citizenId}
-                helperText={errors.citizenId || '12 chữ số'}
+                helperText={errors.citizenId || 'Nhập đủ 12 chữ số'}
                 margin="normal"
                 placeholder="001234567890"
                 inputProps={{ maxLength: 12 }}
@@ -117,41 +110,64 @@ function SignIn() {
                     </InputAdornment>
                   ),
                 }}
+                autoComplete="username"
               />
 
               <TextField
                 fullWidth
-                label="Số điện thoại"
-                name="phoneNumber"
-                value={formData.phoneNumber}
+                label="Mật khẩu"
+                type="password"
+                name="password"
+                value={formData.password}
                 onChange={handleChange}
-                error={!!errors.phoneNumber}
-                helperText={errors.phoneNumber || 'VD: 0912345678'}
+                error={!!errors.password}
+                helperText={errors.password}
                 margin="normal"
-                placeholder="0912345678"
-                inputProps={{ maxLength: 10 }}
+                placeholder="••••••••"
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <Phone size={20} />
+                      <Lock size={20} />
                     </InputAdornment>
                   ),
                 }}
+                autoComplete="current-password"
               />
+
+              <TextField
+                fullWidth
+                select
+                label="Chọn vai trò"
+                name="role"
+                value={formData.role}
+                onChange={handleChange}
+                error={!!errors.role}
+                helperText={errors.role}
+                margin="normal"
+                SelectProps={{
+                  MenuProps: { disablePortal: true },
+                }}
+              >
+                {roleOptions.map((option) => (
+                  <MenuItem key={option.value} value={option.value}>
+                    {option.label}
+                  </MenuItem>
+                ))}
+              </TextField>
 
               <Button
                 fullWidth
                 type="submit"
                 variant="contained"
                 size="large"
-                disabled={loading}
+                disabled={isLoading}
                 sx={{ mt: 3, mb: 2, py: 1.5 }}
               >
-                {loading ? 'Đang đăng nhập...' : 'Đăng Nhập'}
+                {isLoading ? 'Đang đăng nhập...' : 'Đăng Nhập'}
               </Button>
 
               <Typography variant="body2" align="center">
-                Chưa đăng ký thông tin?{' '}
+                Chưa có tài khoản?{' '}
                 <Link component={RouterLink} to="/signup" fontWeight="bold">
                   Đăng ký ngay
                 </Link>

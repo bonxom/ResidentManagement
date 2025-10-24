@@ -37,7 +37,7 @@ function RequirePermission({
         >
           <strong>Không có quyền truy cập</strong>
           <br />
-          Bạn không có quyền để xem nội dung này. Vui lòng liên hệ quản trị viên nếu bạn cần quyền truy cập.
+          Bạn không có quyền để xem nội dung này.
         </Alert>
       </Box>
     )
