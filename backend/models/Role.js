@@ -12,15 +12,6 @@ const roleSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-    versionKey: false,
-    toJSON: {
-      virtuals: true,
-      transform: (_doc, ret) => {
-        ret.id = ret._id;    // map _id -> id khi trả JSON
-        delete ret._id;
-        return ret;
-      },
-    },
   }
 );
 

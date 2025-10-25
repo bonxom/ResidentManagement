@@ -18,7 +18,7 @@ app.use(morgan("dev"));
 await connectDB();
 console.log("Connected to Database");
 
-app.use("/api/permissions", permissionRoutes);
+app.use("/permissions", permissionRoutes);
 
 app.listen(PORT, () => console.log(`Server running on ${PORT}`));
 
