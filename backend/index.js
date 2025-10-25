@@ -5,6 +5,7 @@ import cors from "cors";
 import morgan from "morgan";
 
 import permissionRoutes from "./routes/permissionRoutes.js";
+import roleRoutes from "./routes/roleRoutes.js";
 
 const PORT = process.env.PORT;
 
@@ -19,6 +20,7 @@ await connectDB();
 console.log("Connected to Database");
 
 app.use("/permissions", permissionRoutes);
+app.use("/roles", roleRoutes)
 
 app.listen(PORT, () => console.log(`Server running on ${PORT}`));
 

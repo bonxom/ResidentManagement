@@ -9,6 +9,11 @@ const roleSchema = new mongoose.Schema(
       uppercase: true,   // lưu dưới dạng chữ hoa
       trim: true,
     },
+    permissions: [{ // kết nối n-n đến Permission
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Permission",
+      trim: true,
+    }]
   },
   {
     timestamps: true,

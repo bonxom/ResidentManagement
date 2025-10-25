@@ -22,4 +22,19 @@ const permissionSchema = new mongoose.Schema(
   }
 )
 
+permissionSchema.statics.findByName = (name) => {
+  return this.findOne({ permission_name: name }, null, { runSettersOnQuery: true });
+};
+
+permissionSchema.statics.findByListOfName = async function (names) {
+  const perList = [];
+  for (const permission_name of names) {
+    const permission = await this.findOne({ permission_name });
+    if (permission) {
+      perList.push(permission);
+    }
+  }
+  return perList;
+}
+
 export default mongoose.model("Permission", permissionSchema);
