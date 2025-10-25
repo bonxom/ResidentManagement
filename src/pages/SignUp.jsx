@@ -30,8 +30,6 @@ import { ROLES, ROLE_DESCRIPTIONS } from '../constants/roles'
 const roleOptions = [
   { value: ROLES.CU_DAN, label: ROLE_DESCRIPTIONS[ROLES.CU_DAN] },
   { value: ROLES.CHU_HO, label: ROLE_DESCRIPTIONS[ROLES.CHU_HO] },
-  { value: ROLES.KIEM_TOAN, label: ROLE_DESCRIPTIONS[ROLES.KIEM_TOAN] },
-  { value: ROLES.TO_DAN_PHO, label: ROLE_DESCRIPTIONS[ROLES.TO_DAN_PHO] },
 ]
 
 function SignUp() {
