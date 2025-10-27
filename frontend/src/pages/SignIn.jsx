@@ -2,29 +2,22 @@ import { useState } from 'react'
 import { useNavigate, Link as RouterLink } from 'react-router-dom'
 import {
   Container, Box, Card, CardContent, TextField, Button, Typography,
-  Link, Alert, InputAdornment, MenuItem
+  Link, Alert, InputAdornment
 } from '@mui/material'
-import { CreditCard, Lock, Users } from 'lucide-react'
+import {Lock, Users, Mail } from 'lucide-react'
 import useAuthStore from '../store/authStore'
 import { signInSchema } from '../utils/validation'
-import { ROLES, ROLE_DESCRIPTIONS } from '../constants/roles'
-
-const roleOptions = [
-  { value: ROLES.CU_DAN, label: ROLE_DESCRIPTIONS[ROLES.CU_DAN] },
-  { value: ROLES.CHU_HO, label: ROLE_DESCRIPTIONS[ROLES.CHU_HO] },
-  { value: ROLES.KIEM_TOAN, label: ROLE_DESCRIPTIONS[ROLES.KIEM_TOAN] },
-  { value: ROLES.TO_DAN_PHO, label: ROLE_DESCRIPTIONS[ROLES.TO_DAN_PHO] },
-]
 
 function SignIn() {
   const navigate = useNavigate()
   const { signIn, isLoading, error: authError } = useAuthStore()
 
+  // Sửa lại state ban đầu
   const [formData, setFormData] = useState({
-    citizenId: '',
+    email: '', // Đổi từ citizenId
     password: '',
-    role: ROLES.TDANPHO,
-  })
+    // Xóa 'role' khỏi đây
+  });
   const [errors, setErrors] = useState({})
 
   const handleChange = (e) => {
@@ -35,21 +28,23 @@ function SignIn() {
     }
   }
 
+  // Sửa lại hàm handleSubmit
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    
+    e.preventDefault();
     try {
-      signInSchema.parse(formData)
-      setErrors({})
+      // Bạn cũng sẽ cần sửa file 'signInSchema'
+      signInSchema.parse(formData); 
+      setErrors({});
 
+      // Chỉ gửi email và password
       const result = await signIn({
-        citizenId: formData.citizenId,
+        email: formData.email,
         password: formData.password,
-        role: formData.role,
-      })
+        // Xóa 'role' khỏi đây
+      });
 
       if (result.success) {
-        navigate('/dashboard')
+        navigate('/dashboard');
       }
     } catch (err) {
       if (err.errors) {
@@ -60,7 +55,7 @@ function SignIn() {
         setErrors(formattedErrors)
       }
     }
-  }
+  };
 
   return (
     <Container maxWidth="sm">
@@ -81,7 +76,7 @@ function SignIn() {
                 Đăng nhập hệ thống
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Chọn vai trò và nhập thông tin đăng nhập
+                Vui lòng nhập email và mật khẩu của bạn
               </Typography>
             </Box>
 
@@ -94,23 +89,22 @@ function SignIn() {
             <form onSubmit={handleSubmit}>
               <TextField
                 fullWidth
-                label="Số căn cước công dân"
-                name="citizenId"
-                value={formData.citizenId}
+                label="Email"
+                name="email" // Đổi name
+                value={formData.email}
                 onChange={handleChange}
-                error={!!errors.citizenId}
-                helperText={errors.citizenId || 'Nhập đủ 12 chữ số'}
+                error={!!errors.email} // Đổi error
+                helperText={errors.email} // Đổi helperText
                 margin="normal"
-                placeholder="001234567890"
-                inputProps={{ maxLength: 12 }}
+                placeholder="example@gmail.com"
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <CreditCard size={20} />
+                      <Mail size={20} /> {/* Dùng icon Mail */}
                     </InputAdornment>
                   ),
                 }}
-                autoComplete="username"
+                autoComplete="email"
               />
 
               <TextField
@@ -133,27 +127,6 @@ function SignIn() {
                 }}
                 autoComplete="current-password"
               />
-
-              <TextField
-                fullWidth
-                select
-                label="Chọn vai trò"
-                name="role"
-                value={formData.role}
-                onChange={handleChange}
-                error={!!errors.role}
-                helperText={errors.role}
-                margin="normal"
-                SelectProps={{
-                  MenuProps: { disablePortal: true },
-                }}
-              >
-                {roleOptions.map((option) => (
-                  <MenuItem key={option.value} value={option.value}>
-                    {option.label}
-                  </MenuItem>
-                ))}
-              </TextField>
 
               <Button
                 fullWidth

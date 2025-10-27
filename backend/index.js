@@ -6,7 +6,8 @@ import morgan from "morgan";
 
 import permissionRoutes from "./routes/permissionRoutes.js";
 import roleRoutes from "./routes/roleRoutes.js";
-
+import userRoutes from "./routes/userRoutes.js";
+import authRoutes from "./routes/authRoutes.js"; 
 const PORT = process.env.PORT;
 
 console.log("Hello");
@@ -21,7 +22,8 @@ console.log("Connected to Database");
 
 app.use("/permissions", permissionRoutes);
 app.use("/roles", roleRoutes)
-
+app.use("/users", userRoutes);
+app.use("/auth", authRoutes);
 app.listen(PORT, () => console.log(`Server running on ${PORT}`));
 
 export default app;

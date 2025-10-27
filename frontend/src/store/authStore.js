@@ -1,140 +1,175 @@
 import { create } from 'zustand'
-import * as jose from 'jose'
-import { authAPI, userAPI } from '../services/apiService'
+// import * as jose from 'jose' // <--- KHÔNG CẦN NỮA
+import { authAPI, userAPI } from '../services/apiService' // Giả sử file này gọi axiosInstance
+
+// Helper để lấy user/token từ localStorage một cách an toàn
+const getInitialToken = () => localStorage.getItem('token') || null;
+const getInitialUser = () => {
+  try {
+    return JSON.parse(localStorage.getItem('user')) || null;
+  } catch (e) {
+    return null;
+  }
+};
 
 const useAuthStore = create((set, get) => ({
-  token: localStorage.getItem('token') || null,
-  user: null,
+  token: getInitialToken(),
+  user: getInitialUser(),
   isLoading: false,
   error: null,
+  isLoggedIn: !!getInitialToken(), // Thêm state này
 
-  // Đăng nhập
+  // ===== SỬA HÀM ĐĂNG NHẬP =====
   signIn: async (credentials) => {
+    // credentials từ form là { email, password }
     set({ isLoading: true, error: null })
     try {
-      const data = await authAPI.signIn(credentials)
+      // 1. Gọi API (giả sử authAPI.signIn gọi POST /auth/login)
+      // Backend trả về { token, user }
+      const data = await authAPI.signIn(credentials) 
       
-      // Lưu token
-      localStorage.setItem('token', data.token)
-      
-      // Decode token để lấy thông tin user
-      const decoded = jose.decodeJwt(data.token)
-      const user = {
-        id: decoded.userId,
-        fullName: decoded.fullName,
-        role: decoded.role,
-        permissions: decoded.permissions || [],
-        citizenId: decoded.citizenId,
-        phoneNumber: decoded.phoneNumber,
-        address: decoded.address,
-        householdBookId: decoded.householdBookId,
-      }
-      
+      // 2. Chúng ta lấy 'user' trực tiếp từ response, KHÔNG CẦN DECODE TOKEN
+      const { user, token } = data;
+
+      // 3. Lưu vào localStorage và state
+      localStorage.setItem('token', token)
       localStorage.setItem('user', JSON.stringify(user))
       
-      set({ token: data.token, user, isLoading: false })
+      set({ token, user, isLoading: false, isLoggedIn: true, error: null })
       return { success: true }
     } catch (error) {
-      set({ isLoading: false, error: error.customMessage || 'Đăng nhập thất bại' })
-      return { success: false, error: error.customMessage }
+      const message = error.customMessage || 'Đăng nhập thất bại'
+      set({ isLoading: false, error: message, isLoggedIn: false })
+      return { success: false, error: message }
     }
   },
 
-  // Đăng ký
+  // ===== SỬA HÀM ĐĂNG KÝ =====
   signUp: async (userData) => {
+    // userData từ form SignUp là { fullName, phoneNumber, email, address, password }
     set({ isLoading: true, error: null })
     try {
-      const data = await authAPI.signUp(userData)
+      // 1. Map tên trường Frontend -> Backend
+      const apiPayload = {
+        ten: userData.fullName,
+        email: userData.email,
+        password: userData.password,
+        soDienThoai: userData.phoneNumber,
+        noiO: userData.address,
+        // Backend sẽ tự gán role "CƯ DÂN"
+      };
+
+      // 2. Gọi API (giả sử authAPI.signUp gọi POST /users)
+      const data = await authAPI.signUp(apiPayload)
       set({ isLoading: false })
       return { success: true, data }
     } catch (error) {
-      set({ isLoading: false, error: error.customMessage || 'Đăng ký thất bại' })
-      return { success: false, error: error.customMessage }
+      const message = error.customMessage || 'Đăng ký thất bại'
+      set({ isLoading: false, error: message })
+      return { success: false, error: message }
     }
   },
-
-  // Kiểm tra auth
+  
+  // ===== SỬA HÀM CHECK AUTH (Đơn giản hóa) =====
   checkAuth: async () => {
     const token = get().token
-    if (!token) return false
+    if (!token) {
+      set({ isLoggedIn: false });
+      return false
+    }
 
     try {
-      // Kiểm tra token có expired không
-      const decoded = jose.decodeJwt(token)
-      const now = Math.floor(Date.now() / 1000)
+      // authAPI.verifyToken() nên gọi 'GET /auth/me' của chúng ta
+      // Endpoint này sẽ tự kiểm tra token và trả về user mới nhất
+      const user = await authAPI.verifyToken(); 
       
-      if (decoded.exp < now) {
-        get().signOut()
-        return false
-      }
-
-      // Optional: Verify với backend
-      await authAPI.verifyToken()
+      // Cập nhật lại user phòng khi có thay đổi
+      localStorage.setItem('user', JSON.stringify(user))
+      set({ user, isLoggedIn: true });
       return true
     } catch (error) {
       console.error('Auth check failed:', error)
-      get().signOut()
+      get().signOut() // Token hỏng hoặc hết hạn -> Đăng xuất
       return false
     }
   },
 
-  // Đăng xuất
+  // Đăng xuất (Thêm isLoggedIn: false)
   signOut: () => {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
-    set({ token: null, user: null })
+    set({ token: null, user: null, isLoggedIn: false }) // Thêm isLoggedIn
   },
 
-  // Load user từ localStorage
+  // Load user (Giữ nguyên, nhưng nên được gọi ở file index/main)
   loadUserFromStorage: () => {
-    const userData = localStorage.getItem('user')
-    if (userData) {
-      try {
-        const user = JSON.parse(userData)
-        set({ user })
-      } catch (error) {
-        console.error('Failed to parse user data:', error)
-        get().signOut()
-      }
+    const user = getInitialUser();
+    if (user) {
+      set({ user });
     }
   },
 
-  // Kiểm tra permission
+  // ===== SỬA CÁC HÀM PERMISSION =====
+  // (Giả định backend đã được sửa ở Bước 1)
+  _getPermissionNames: () => {
+    const user = get().user;
+    if (!user || !user.role || !user.role.permissions) {
+      return [];
+    }
+    // user.role.permissions bây giờ là [ {permission_name: '...'}, ... ]
+    return user.role.permissions.map(p => p.permission_name.toUpperCase());
+  },
+
   hasPermission: (permission) => {
-    const user = get().user
-    if (!user || !user.permissions) return false
-    return user.permissions.includes(permission)
+    const userPermissions = get()._getPermissionNames();
+    return userPermissions.includes(permission.toUpperCase());
   },
 
   hasAnyPermission: (permissions) => {
-    const user = get().user
-    if (!user || !user.permissions) return false
-    return permissions.some(p => user.permissions.includes(p))
+    const userPermissions = get()._getPermissionNames();
+    return permissions.some(p => userPermissions.includes(p.toUpperCase()));
   },
 
   hasAllPermissions: (permissions) => {
-    const user = get().user
-    if (!user || !user.permissions) return false
-    return permissions.every(p => user.permissions.includes(p))
+    const userPermissions = get()._getPermissionNames();
+    return permissions.every(p => userPermissions.includes(p.toUpperCase()));
   },
-
-  // Cập nhật profile
+  
+   // ===== SỬA HÀM CẬP NHẬT PROFILE =====
   updateProfile: async (userData) => {
+    // userData từ form là { fullName, phoneNumber }
     set({ isLoading: true, error: null })
     try {
-      const data = await userAPI.updateProfile(userData)
+      // 1. Lấy ID của user đang đăng nhập từ state
+      const userId = get().user._id; 
+      if (!userId) throw new Error("Không tìm thấy ID người dùng");
+
+      // 2. Map tên trường Frontend -> Backend
+      const apiPayload = {
+        ten: userData.fullName,
+        soDienThoai: userData.phoneNumber,
+        // Thêm các trường khác bạn muốn cho phép cập nhật
+      };
+
+      // 3. Gọi hàm 'update' chính xác từ apiService
+      // (chứ không phải hàm 'updateProfile' đã bị xóa)
+      const data = await userAPI.update(userId, apiPayload); 
       
-      // Cập nhật user trong store
-      const updatedUser = { ...get().user, ...data.user }
+      // 4. Cập nhật lại user trong state với thông tin mới
+      const updatedUser = { ...get().user, ...data }; // data là user đã cập nhật
       localStorage.setItem('user', JSON.stringify(updatedUser))
       set({ user: updatedUser, isLoading: false })
       
       return { success: true, data }
     } catch (error) {
-      set({ isLoading: false, error: error.customMessage })
-      return { success: false, error: error.customMessage }
+      const message = error.message || 'Cập nhật thất bại'
+      set({ isLoading: false, error: message })
+      return { success: false, error: message }
     }
   },
 }))
+
+// Gọi hàm này 1 lần khi app khởi động (trong main.jsx hoặc App.jsx)
+useAuthStore.getState().loadUserFromStorage();
 
 export default useAuthStore

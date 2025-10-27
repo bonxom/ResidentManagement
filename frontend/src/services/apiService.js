@@ -1,34 +1,32 @@
-import api from './mockApi'
+import api from '../api/axiosInstance'; // Import file thật
 
 export const authAPI = {
   // Đăng nhập
   signIn: async (credentials) => {
-    const response = await api.post('/auth/signin', credentials)
+    const response = await api.post('/auth/login', credentials)
     return response.data
   },
 
   // Đăng ký
   signUp: async (userData) => {
-    const response = await api.post('/auth/signup', userData)
+    const response = await api.post('/users', userData)
     return response.data
   },
 
   // Verify token
   verifyToken: async () => {
-    const response = await api.get('/auth/verify')
+    const response = await api.get('/auth/me')
     return response.data
   },
 
   // Đăng xuất
   signOut: async () => {
-    const response = await api.post('/auth/signout')
-    return response.data
+    // Backend của ta không có API này, ta chỉ cần xóa token ở client
+    return Promise.resolve(); // Chỉ cần trả về thành công
   },
-
   // Refresh token (nếu backend hỗ trợ)
   refreshToken: async (refreshToken) => {
-    const response = await api.post('/auth/refresh', { refreshToken })
-    return response.data
+    return Promise.reject("Chưa hỗ trợ"); 
   },
 }
 
@@ -64,17 +62,12 @@ export const userAPI = {
     return response.data
   },
 
-  // Lấy profile của user hiện tại
+  // Lấy profile (API này không tồn tại, ta dùng /auth/me)
   getProfile: async () => {
-    const response = await api.get('/users/profile')
-    return response.data
+    const response = await api.get('/auth/me'); // Sửa
+    return response.data;
   },
 
-  // Cập nhật profile
-  updateProfile: async (userData) => {
-    const response = await api.put('/users/profile', userData)
-    return response.data
-  },
 }
 
 // ============= HOUSEHOLD API =============
