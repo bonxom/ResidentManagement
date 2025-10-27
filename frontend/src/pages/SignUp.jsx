@@ -27,29 +27,21 @@ import useAuthStore from '../store/authStore'
 import { signUpSchema } from '../utils/validation'
 import { ROLES, ROLE_DESCRIPTIONS } from '../constants/roles'
 
-const roleOptions = [
-  { value: ROLES.CU_DAN, label: ROLE_DESCRIPTIONS[ROLES.CU_DAN] },
-  { value: ROLES.CHU_HO, label: ROLE_DESCRIPTIONS[ROLES.CHU_HO] },
-  { value: ROLES.KIEM_TOAN, label: ROLE_DESCRIPTIONS[ROLES.KIEM_TOAN] },
-  { value: ROLES.TO_DAN_PHO, label: ROLE_DESCRIPTIONS[ROLES.TO_DAN_PHO] },
-]
 
 function SignUp() {
   const navigate = useNavigate()
   const { signUp, isLoading, error: authError } = useAuthStore()
 
-  const [formData, setFormData] = useState({
-    fullName: '',
-    citizenId: '',
-    phoneNumber: '',
-    email: '',
-    address: '',
-    curAddress: '',
-    householdBookId: '',
-    password: '',
-    confirmPassword: '',
-    role: ROLES.CUDAN,
-  })
+  // Sửa lại state ban đầu
+const [formData, setFormData] = useState({
+  fullName: '', // Sẽ map sang 'ten'
+  phoneNumber: '', // Sẽ map sang 'soDienThoai'
+  email: '',
+  address: '', // Sẽ map sang 'noiO'
+  password: '',
+  confirmPassword: '',
+  // Xóa citizenId, curAddress, householdBookId, role
+});
 
   const [errors, setErrors] = useState({})
 
@@ -158,26 +150,6 @@ function SignUp() {
 
               <TextField
                 fullWidth
-                label="Số căn cước công dân"
-                name="citizenId"
-                value={formData.citizenId}
-                onChange={handleChange}
-                error={!!errors.citizenId}
-                helperText={errors.citizenId || '12 chữ số'}
-                margin="normal"
-                placeholder="001234567890"
-                inputProps={{ maxLength: 12 }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <CreditCard size={20} />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-
-              <TextField
-                fullWidth
                 label="Số điện thoại"
                 name="phoneNumber"
                 value={formData.phoneNumber}
@@ -237,67 +209,6 @@ function SignUp() {
                   ),
                 }}
               />
-
-              <TextField
-                fullWidth
-                label="Địa chỉ hiện tại"
-                name="curAddress"
-                value={formData.curAddress}
-                onChange={handleChange}
-                error={!!errors.curAddress}
-                helperText={errors.curAddress || 'Để trống nếu trùng với địa chỉ thường trú'}
-                margin="normal"
-                placeholder="Số nhà, phường/xã, quận/huyện, tỉnh/thành phố"
-                multiline
-                rows={2}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start" sx={{ alignSelf: 'flex-start', mt: 2 }}>
-                      <MapPin size={20} />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-
-              <TextField
-                fullWidth
-                label="Số sổ hộ khẩu"
-                name="householdBookId"
-                value={formData.householdBookId}
-                onChange={handleChange}
-                error={!!errors.householdBookId}
-                helperText={errors.householdBookId || 'Để trống nếu chưa có'}
-                margin="normal"
-                placeholder="SHK-000123"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Home size={20} />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-
-              <TextField
-                fullWidth
-                select
-                label="Đối tượng đăng ký"
-                name="role"
-                value={formData.role}
-                onChange={handleChange}
-                error={!!errors.role}
-                helperText={errors.role || 'Chọn vai trò phù hợp với bạn'}
-                margin="normal"
-                SelectProps={{
-                  MenuProps: { disablePortal: true },
-                }}
-              >
-                {roleOptions.map((option) => (
-                  <MenuItem key={option.value} value={option.value}>
-                    {option.label}
-                  </MenuItem>
-                ))}
-              </TextField>
 
               <TextField
                 fullWidth
