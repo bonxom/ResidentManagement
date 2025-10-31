@@ -1,3 +1,5 @@
+import { AppError } from "../middleware/AppError.js";
+import { ERROR_CODE } from "../middleware/errorCode.js";
 import Permission from "../models/Permission.js";
 import Role from "../models/Role.js";
 import mongoose from "mongoose";
@@ -6,7 +8,7 @@ export const createRole = async (req, res) => {
   const { role_name, permissions } = req.body;
 
   if (!role_name) {
-    return res.status(404).json({ message: "Role name is required"});
+    throw new AppError(ERROR_CODE.ROLE_NAME_REQUIRED);
   }
 
   if (await Role.findOne({ role_name })) {
