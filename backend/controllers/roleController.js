@@ -12,7 +12,7 @@ export const createRole = async (req, res) => {
   }
 
   if (await Role.findOne({ role_name })) {
-    return res.status(400).json({ message: "Role name already exists"})
+    throw new AppError(ERROR_CODE.ROLE_NAME_EXISTED);
   }
 
   const perList = await Permission.findByListOfName(permissions);

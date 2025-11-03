@@ -10,5 +10,11 @@ export const ERROR_CODE = {
     code: 1000,
     message: "Role name is required",
     statusCode: 400
+  },
+
+  ROLE_NAME_EXISTED: {
+    code: 1000,
+    message: "Role name already exists",
+    statusCode: 400
   }
 }
