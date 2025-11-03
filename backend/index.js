@@ -9,6 +9,7 @@ import roleRoutes from "./routes/roleRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import authRoutes from "./routes/authRoutes.js"; 
 import { errorHandler } from "./middleware/errorHandler.js";
+import householdRoutes from "./routes/householdRoutes.js";
 
 const PORT = process.env.PORT;
 
@@ -23,10 +24,10 @@ await connectDB();
 console.log("Connected to Database");
 
 app.use("/permissions", permissionRoutes);
-app.use("/roles", roleRoutes)
+app.use("/roles", roleRoutes);
 app.use("/users", userRoutes);
 app.use("/auth", authRoutes);
-
+app.use("/households", householdRoutes);
 app.use(errorHandler);
 
 app.listen(PORT, () => console.log(`Server running on ${PORT}`));
