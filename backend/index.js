@@ -21,7 +21,7 @@ await connectDB();
 console.log("Connected to Database");
 
 app.use("/permissions", permissionRoutes);
-app.use("/roles", roleRoutes)
+app.use("/roles", roleRoutes);
 app.use("/users", userRoutes);
 app.use("/auth", authRoutes);
 app.listen(PORT, () => console.log(`Server running on ${PORT}`));

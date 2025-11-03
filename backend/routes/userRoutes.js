@@ -6,10 +6,12 @@ import {
   updateUser,
   deleteUser,
 } from "../controllers/userController.js";
-// Import các middleware
 import { protect, authorize } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
+
+// Tổ trường: xem tất cả user, xóa user, cập nhật user
+// Cư dân: Chỉ xem thông tin của mình
 
 // Định tuyến
 
