@@ -3,7 +3,7 @@ import User from "../models/User.js";
 
 // @desc    Tạo hộ khẩu mới
 // @route   POST /households
-// @access  Private (Tổ trưởng)
+// @access  Private (HAMLET LEADER)
 export const createHousehold = async (req, res) => {
   const { maHoKhau, diaChiHo, chuHoId } = req.body;
 
@@ -41,12 +41,12 @@ export const createHousehold = async (req, res) => {
 
 // @desc    Lấy tất cả hộ khẩu
 // @route   GET /households
-// @access  Private (Tổ trưởng)
+// @access  Private (HAMLET LEADER)
 export const getAllHouseholds = async (req, res) => {
   try {
     const households = await Household.find({})
-      .populate("chuHo", "ten email") // Lấy thông tin 'ten' và 'email' của chủ hộ
-      .populate("thanhVien", "ten email"); // Lấy thông tin 'ten' và 'email' của thành viên
+      .populate("chuHo", "name email") // Lấy thông tin 'name' và 'email' của chủ hộ
+      .populate("thanhVien", "name email"); // Lấy thông tin 'name' và 'email' của thành viên
 
     res.status(200).json(households);
   } catch (error) {
@@ -60,8 +60,8 @@ export const getAllHouseholds = async (req, res) => {
 export const getHouseholdById = async (req, res) => {
   try {
     const household = await Household.findById(req.params.id)
-      .populate("chuHo", "ten email")
-      .populate("thanhVien", "ten email");
+      .populate("chuHo", "name email")
+      .populate("thanhVien", "name email");
 
     if (!household) {
       return res.status(404).json({ message: "Không tìm thấy hộ khẩu" });
@@ -74,7 +74,7 @@ export const getHouseholdById = async (req, res) => {
 
 // @desc    Cập nhật hộ khẩu (địa chỉ, chủ hộ)
 // @route   PUT /households/:id
-// @access  Private (Tổ trưởng)
+// @access  Private (HAMLET LEADER)
 export const updateHousehold = async (req, res) => {
   const { maHoKhau, diaChiHo, chuHoId } = req.body;
   try {
@@ -105,7 +105,7 @@ export const updateHousehold = async (req, res) => {
 
 // @desc    Xóa hộ khẩu
 // @route   DELETE /households/:id
-// @access  Private (Tổ trưởng)
+// @access  Private (HAMLET LEADER)
 export const deleteHousehold = async (req, res) => {
   try {
     const household = await Household.findById(req.params.id);
@@ -126,7 +126,7 @@ export const getMembers = async (req, res) => {
   try {
     const household = await Household.findById(req.params.id).populate(
       "thanhVien",
-      "ten email"
+      "name email"
     );
     if (!household) {
       return res.status(404).json({ message: "Không tìm thấy hộ khẩu" });
@@ -139,7 +139,7 @@ export const getMembers = async (req, res) => {
 
 // @desc    Thêm thành viên vào hộ
 // @route   POST /households/:id/members
-// @access  Private (Tổ trưởng)
+// @access  Private (HAMLET LEADER)
 export const addMember = async (req, res) => {
   const { userId } = req.body; // ID của User cần thêm
   const householdId = req.params.id;
@@ -170,7 +170,7 @@ export const addMember = async (req, res) => {
 
 // @desc    Xóa thành viên khỏi hộ
 // @route   DELETE /households/:householdId/members/:memberId
-// @access  Private (Tổ trưởng)
+// @access  Private (HAMLET LEADER)
 export const removeMember = async (req, res) => {
   const { householdId, memberId } = req.params;
 

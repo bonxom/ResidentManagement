@@ -28,24 +28,27 @@ export const protect = async (req, res, next) => {
       next(); // Đi tiếp đến controller
     } catch (error) {
       console.error(error);
-      res.status(401).json({ message: "Token không hợp lệ, không có quyền truy cập" });
+      return res.status(401).json({ message: "Token không hợp lệ, không có quyền truy cập" });
     }
   }
 
   if (!token) {
-    res.status(401).json({ message: "Không tìm thấy token, không có quyền truy cập" });
+    return res.status(401).json({ message: "Không tìm thấy token, không có quyền truy cập" });
   }
 };
 
 
 // Middleware 2: "authorize" - Phân quyền dựa trên vai trò
 // (...roles) là một mảng các vai trò được phép
-// Ví dụ: authorize('Tổ trưởng', 'Kiểm toán')
+// Ví dụ: authorize('HAMLET LEADER', 'Kiểm toán')
 export const authorize = (...roles) => {
   return (req, res, next) => {
     
     if (!req.user || !req.user.role) {
-         return res.status(403).json({ message: "Lỗi phân quyền, không tìm thấy vai trò." });
+         return res.status(403).json({ 
+            message: "Lỗi phân quyền, không tìm thấy vai trò." ,
+            role: req.user  || "ok"
+          });
     }
 
     // LẤY ROLE CỦA USER VÀ CHUYỂN SANG VIẾT HOA

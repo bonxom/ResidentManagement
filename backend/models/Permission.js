@@ -22,7 +22,7 @@ const permissionSchema = new mongoose.Schema(
   }
 )
 
-permissionSchema.statics.findByName = (name) => {
+permissionSchema.statics.findByName = function(name) {
   return this.findOne({ permission_name: name }, null, { runSettersOnQuery: true });
 };
 

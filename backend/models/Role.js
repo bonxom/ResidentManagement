@@ -21,5 +21,9 @@ const roleSchema = new mongoose.Schema(
   }
 );
 
+roleSchema.statics.findByName = function(name) {
+  return this.findOne({role_name: name}, null, { runSettersOnQuery: true })
+};
+
 
 export default mongoose.model("Role", roleSchema);

@@ -7,7 +7,7 @@ import Role from "../models/Role.js"; // Giả sử bạn có model Role
 export const createUser = async (req, res) => {
   try {
     // 1. Chỉ lấy các trường an toàn từ body. Bỏ qua 'roleName'.
-    const { email, password, ten, gioiTinh, ngaySinh, noiO, soDienThoai } =
+    const { email, password, name, sex, dob, location, phoneNumber } =
       req.body;
 
     // 2. Kiểm tra xem email đã tồn tại chưa
@@ -28,11 +28,11 @@ export const createUser = async (req, res) => {
     const user = await User.create({
       email,
       password,
-      ten,
-      gioiTinh,
-      ngaySinh,
-      noiO,
-      soDienThoai,
+      name,
+      sex,
+      dob,
+      location,
+      phoneNumber,
       role: defaultRole._id, // <--- GÁN CỨNG VAI TRÒ MẶC ĐỊNH
     });
 
@@ -40,7 +40,7 @@ export const createUser = async (req, res) => {
       res.status(201).json({
         _id: user._id,
         email: user.email,
-        ten: user.ten,
+        name: user.name,
         role: defaultRole.name,
       });
     } else {
@@ -53,7 +53,7 @@ export const createUser = async (req, res) => {
 
 // @desc    Lấy tất cả User
 // @route   GET /users
-// @access  Private (Chỉ Tổ trưởng/Admin)
+// @access  Private (Chỉ HAMLET LEADER/Admin)
 export const getAllUsers = async (req, res) => {
   try {
     // .populate('role') sẽ lấy thông tin chi tiết của Role thay vì chỉ ID
@@ -89,11 +89,11 @@ export const updateUser = async (req, res) => {
     const user = await User.findById(req.params.id);
 
     if (user) {
-      user.ten = req.body.ten || user.ten;
-      user.gioiTinh = req.body.gioiTinh || user.gioiTinh;
-      user.ngaySinh = req.body.ngaySinh || user.ngaySinh;
-      user.noiO = req.body.noiO || user.noiO;
-      user.soDienThoai = req.body.soDienThoai || user.soDienThoai;
+      user.name = req.body.name || user.name;
+      user.sex = req.body.sex || user.sex;
+      user.dob = req.body.dob || user.dob;
+      user.location = req.body.location || user.location;
+      user.phoneNumber = req.body.phoneNumber || user.phoneNumber;
 
       // Xử lý cập nhật Role nếu có
       if (req.body.roleName) {
@@ -120,7 +120,7 @@ export const updateUser = async (req, res) => {
 
 // @desc    Xóa User
 // @route   DELETE /users/:id
-// @access  Private (Chỉ Tổ trưởng/Admin)
+// @access  Private (Chỉ HAMLET LEADER/Admin)
 export const deleteUser = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);

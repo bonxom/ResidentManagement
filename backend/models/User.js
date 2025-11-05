@@ -15,21 +15,21 @@ const userSchema = new mongoose.Schema(
       required: [true, "Mật khẩu là bắt buộc"],
       select: false, // Tự động ẩn mật khẩu khi truy vấn User
     },
-    ten: {
+    name: {
       type: String,
       required: [true, "Tên là bắt buộc"],
     },
-    gioiTinh: {
+    sex: {
       type: String,
       enum: ["Nam", "Nữ", "Khác"], // Chỉ chấp nhận các giá trị này
     },
-    ngaySinh: {
+    dob: {
       type: Date,
     },
-    noiO: {
+    location: {
       type: String,
     },
-    soDienThoai: {
+    phoneNumber: {
       type: String,
     },
     // Đây là phần liên kết với Role có sẵn của bạn
@@ -59,6 +59,10 @@ userSchema.pre("save", async function (next) {
 userSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
+
+userSchema.statics.findByEmail = function(email) {
+  return this.findOne({email : email}, null, { runSettersOnQuery: true });
+}
 
 const User = mongoose.model("User", userSchema);
 export default User;

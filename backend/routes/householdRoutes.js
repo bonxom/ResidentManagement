@@ -17,18 +17,18 @@ const router = express.Router();
 
 router
   .route("/")
-  // Tổ trưởng tạo hộ khẩu
+  // HAMLET LEADER tạo hộ khẩu
   .post(protect, authorize("TỔ TRƯỞNG"), createHousehold)
-  // Tổ trưởng xem tất cả hộ khẩu
+  // HAMLET LEADER xem tất cả hộ khẩu
   .get(protect, authorize("TỔ TRƯỞNG"), getAllHouseholds);
 
 router
   .route("/:id")
   // Mọi người đã đăng nhập có thể xem chi tiết
   .get(protect, getHouseholdById)
-  // Tổ trưởng cập nhật hộ khẩu
+  // HAMLET LEADER cập nhật hộ khẩu
   .put(protect, authorize("TỔ TRƯỞNG"), updateHousehold)
-  // Tổ trưởng xóa hộ khẩu
+  // HAMLET LEADER xóa hộ khẩu
   .delete(protect, authorize("TỔ TRƯỞNG"), deleteHousehold);
 
 // --- Các route cho Thành viên (Members) ---
@@ -37,10 +37,10 @@ router
 router
   .route("/:id/members")
   .get(protect, getMembers)
-  // Tổ trưởng thêm thành viên vào hộ
+  // HAMLET LEADER thêm thành viên vào hộ
   .post(protect, authorize("TỔ TRƯỞNG"), addMember);
 
-// Tổ trưởng xóa thành viên khỏi hộ
+// HAMLET LEADER xóa thành viên khỏi hộ
 router
   .route("/:householdId/members/:memberId")
   .delete(protect, authorize("TỔ TRƯỞNG"), removeMember);

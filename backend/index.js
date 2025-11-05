@@ -10,6 +10,7 @@ import userRoutes from "./routes/userRoutes.js";
 import authRoutes from "./routes/authRoutes.js"; 
 import { errorHandler } from "./middleware/errorHandler.js";
 import householdRoutes from "./routes/householdRoutes.js";
+import { defaultInit } from "./config/initialize.js";
 
 const PORT = process.env.PORT;
 
@@ -22,6 +23,8 @@ app.use(morgan("dev"));
 
 await connectDB();
 console.log("Connected to Database");
+
+await defaultInit();
 
 app.use("/permissions", permissionRoutes);
 app.use("/roles", roleRoutes);
