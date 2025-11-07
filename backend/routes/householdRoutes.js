@@ -13,36 +13,17 @@ import { protect, authorize } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// --- Các route chính cho Hộ khẩu ---
+router.post("/", protect, authorize("HAMLET LEADER"), createHousehold);
+router.get("/", protect, authorize("HAMLET LEADER"), getAllHouseholds);
 
-router
-  .route("/")
-  // HAMLET LEADER tạo hộ khẩu
-  .post(protect, authorize("TỔ TRƯỞNG"), createHousehold)
-  // HAMLET LEADER xem tất cả hộ khẩu
-  .get(protect, authorize("TỔ TRƯỞNG"), getAllHouseholds);
+router.get("/:id", protect, getHouseholdById)
+router.put("/:id",protect, authorize("HAMLET LEADER"), updateHousehold)
+router.delete("/:id", protect, authorize("HAMLET LEADER"), deleteHousehold);
 
-router
-  .route("/:id")
-  // Mọi người đã đăng nhập có thể xem chi tiết
-  .get(protect, getHouseholdById)
-  // HAMLET LEADER cập nhật hộ khẩu
-  .put(protect, authorize("TỔ TRƯỞNG"), updateHousehold)
-  // HAMLET LEADER xóa hộ khẩu
-  .delete(protect, authorize("TỔ TRƯỞNG"), deleteHousehold);
-
-// --- Các route cho Thành viên (Members) ---
-
-// Lấy danh sách thành viên của 1 hộ
-router
-  .route("/:id/members")
-  .get(protect, getMembers)
-  // HAMLET LEADER thêm thành viên vào hộ
-  .post(protect, authorize("TỔ TRƯỞNG"), addMember);
+router.get("/:id/members", protect, getMembers)
+router.post("/:id/members",protect, authorize("HAMLET LEADER"), addMember);
 
 // HAMLET LEADER xóa thành viên khỏi hộ
-router
-  .route("/:householdId/members/:memberId")
-  .delete(protect, authorize("TỔ TRƯỞNG"), removeMember);
+router.delete("/:householdId/members/:memberId", protect, authorize("HAMLET LEADER"), removeMember);
 
 export default router;

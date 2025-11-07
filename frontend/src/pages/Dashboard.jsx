@@ -17,9 +17,9 @@ function Dashboard() {
   // Lấy tên vai trò (đã sửa ở backend để chống lỗi hoa/thường)
   const userRole = user.role?.role_name || 'Không có vai trò';
 
-  // Kiểm tra có phải Tổ trưởng không
-  // (Chúng ta đã sửa middleware nên 'TỔ TRƯỞNG' hay 'Tổ trưởng' đều đúng)
-  const isToTruong = userRole.toUpperCase() === 'TỔ TRƯỞNG';
+  // Kiểm tra có phải Hamlet Leader không
+  // (Chúng ta đã sửa middleware nên 'HAMLET LEADER' hay 'Hamlet Leader' đều đúng)
+  const isHamletLeader = userRole.toUpperCase() === 'HAMLET LEADER';
 
   const handleLogout = () => {
     signOut();
@@ -60,8 +60,8 @@ function Dashboard() {
         </CardContent>
       </Card>
 
-      {/* === NÚT ĐIỀU KIỆN CHO TỔ TRƯỞNG === */}
-      {isToTruong && (
+      {/* === NÚT ĐIỀU KIỆN CHO HAMLET LEADER === */}
+      {isHamletLeader && (
         <Card>
           <CardContent>
             <Typography variant="h6">Chức năng Quản lý</Typography>

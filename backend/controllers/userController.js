@@ -7,17 +7,16 @@ import Role from "../models/Role.js"; // Giả sử bạn có model Role
 // @access  Public (hoặc Private tùy bạn)
 export const createUser = async (req, res) => {
   try {
-    // 1. Chỉ lấy các trường an toàn từ body. Bỏ qua 'roleName'.
+    // Chỉ lấy các trường an toàn từ body. Bỏ qua 'roleName'.
     const { email, password, name, sex, dob, location, phoneNumber } =
       req.body;
 
-    // 2. Kiểm tra xem email đã tồn tại chưa
+    // Kiểm tra xem email đã tồn tại chưa
     const userExists = await User.findByEmail(email);
     if (userExists) {
       return res.status(400).json({ message: "Email đã tồn tại" });
     }
 
-    // 3. TÌM VAI TRÒ MẶC ĐỊNH (ví dụ: "Cư dân")
     // Đảm bảo bạn đã có vai trò "Cư dân" trong database
     const defaultRole = await Role.findByName("HOUSE MEMBER"); 
     if (!defaultRole) {
@@ -25,7 +24,7 @@ export const createUser = async (req, res) => {
       return res.status(500).json({ message: "Lỗi: Không tìm thấy vai trò mặc định." });
     }
 
-    // 4. Tạo user mới
+    // Tạo user mới
     const user = await User.create({
       email,
       password,

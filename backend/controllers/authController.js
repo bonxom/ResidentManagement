@@ -9,7 +9,6 @@ export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // 1. Kiểm tra email và password có được cung cấp không
     if (!email || !password) {
       return res.status(400).json({ message: "Vui lòng cung cấp email và mật khẩu" });
     }
@@ -23,7 +22,7 @@ export const loginUser = async (req, res) => {
         path: "role",
         populate: {
           path: "permissions",
-          select: "permission_name", // Chỉ lấy tên quyền
+          select: "permission_name", 
         },
       });
     console.timeEnd('DB_FIND_USER');

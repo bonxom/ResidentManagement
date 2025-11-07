@@ -1,38 +1,38 @@
 import mongoose from "mongoose";
 
 const householdSchema = new mongoose.Schema(
-    {
-        maHoKhau: {
-            type: String,
-            required: [true, "Mã hộ khẩu là bắt buộc"],
-            unique: true,
-            trim: true,
-            uppercase: true,
-        },
-        diaChiHo: {
-            type: String,
-            required: [true, "Địa chỉ hộ là bắt buộc"],
-            trim: true,
-        },
-        chuHo: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
-            required: [true, "Chủ hộ là bắt buộc"],
-        },
-        thanhVien: [
-            {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: "User",
-            },
-        ],
+  {
+    houseHoldID: {
+      type: String,
+      required: [true, "Household ID is required"],
+      unique: true,
+      trim: true,
+      uppercase: true,
     },
-    {timestamps: true,}
-)
+    address: {
+      type: String,
+      required: [true, "Address is required"],
+      trim: true,
+    },
+    leader: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: [true, "Household leader is required"],
+    },
+    members: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+  },
+  { timestamps: true }
+);
 
 householdSchema.pre("save", function (next) {
-  if (this.isModified("chuHo") || this.isModified("thanhVien")) {
-    if (!this.thanhVien.includes(this.chuHo)) {
-      this.thanhVien.push(this.chuHo);
+  if (this.isModified("leader") || this.isModified("members")) {
+    if (!this.members.includes(this.leader)) {
+      this.members.push(this.leader);
     }
   }
   next();
