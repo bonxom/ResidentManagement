@@ -4,7 +4,6 @@ import User from "../models/User.js";
 // Middleware 1: "protect" - Xác thực người dùng
 export const protect = async (req, res, next) => {
   let token;
-
   // 1. Đọc token từ header "Authorization"
   if (
     req.headers.authorization &&
@@ -13,16 +12,13 @@ export const protect = async (req, res, next) => {
     try {
       // Tách lấy token (format: "Bearer <token>")
       token = req.headers.authorization.split(" ")[1];
-
       // 2. Xác thực token
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
       // 3. Lấy thông tin user từ ID trong token (đã có role)
       // Gắn user vào đối tượng 'req' để các hàm controller sau có thể dùng
       req.user = await User.findById(decoded.id).select("-password").populate("role");
-
       if (!req.user) {
-         return res.status(401).json({ message: "Người dùng không tồn tại" });
+        return res.status(401).json({ message: "Người dùng không tồn tại" });
       }
 
       next(); // Đi tiếp đến controller
@@ -43,7 +39,9 @@ export const protect = async (req, res, next) => {
 // Ví dụ: authorize('HAMLET LEADER', 'Kiểm toán')
 export const authorize = (...roles) => {
   return (req, res, next) => {
-    
+    const { user } = req;
+    const role = user?.role;
+    const role_name = role?.role_name;
     if (!req.user || !req.user.role) {
          return res.status(403).json({ 
             message: "Lỗi phân quyền, không tìm thấy vai trò." ,
@@ -51,16 +49,9 @@ export const authorize = (...roles) => {
           });
     }
 
-    // LẤY ROLE CỦA USER VÀ CHUYỂN SANG VIẾT HOA
-    const userRole = req.user.role.role_name.toUpperCase();
-
-    // CHUYỂN TẤT CẢ ROLE ĐƯỢC PHÉP (TỪ ROUTER) SANG VIẾT HOA
-    const allowedRoles = roles.map(r => r.toUpperCase());
-
-    // SO SÁNH HAI CHUỖI VIẾT HOA
-    if (!allowedRoles.includes(userRole)) {
+    if (!roles.includes(role_name)) {
       return res.status(403).json({ 
-        message: `Vai trò "${req.user.role.role_name}" không có quyền thực hiện hành động này` 
+        message: `Vai trò "${role_name}" không có quyền thực hiện hành động này` 
       });
     }
     

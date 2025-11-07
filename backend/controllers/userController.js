@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import User from "../models/User.js";
 import Role from "../models/Role.js"; // Giả sử bạn có model Role
 
@@ -11,14 +12,14 @@ export const createUser = async (req, res) => {
       req.body;
 
     // 2. Kiểm tra xem email đã tồn tại chưa
-    const userExists = await User.findOne({ email });
+    const userExists = await User.findByEmail(email);
     if (userExists) {
       return res.status(400).json({ message: "Email đã tồn tại" });
     }
 
     // 3. TÌM VAI TRÒ MẶC ĐỊNH (ví dụ: "Cư dân")
     // Đảm bảo bạn đã có vai trò "Cư dân" trong database
-    const defaultRole = await Role.findOne({ role_name: /^CƯ DÂN$/i }); 
+    const defaultRole = await Role.findByName("HOUSE MEMBER"); 
     if (!defaultRole) {
       // Đây là lỗi nghiêm trọng của hệ thống
       return res.status(500).json({ message: "Lỗi: Không tìm thấy vai trò mặc định." });
@@ -41,7 +42,7 @@ export const createUser = async (req, res) => {
         _id: user._id,
         email: user.email,
         name: user.name,
-        role: defaultRole.name,
+        role: defaultRole.role_name,
       });
     } else {
       res.status(400).json({ message: "Dữ liệu người dùng không hợp lệ" });
@@ -53,11 +54,11 @@ export const createUser = async (req, res) => {
 
 // @desc    Lấy tất cả User
 // @route   GET /users
-// @access  Private (Chỉ HAMLET LEADER/Admin)
+// @access  Private (Chỉ Tổ trưởng/Admin)
 export const getAllUsers = async (req, res) => {
   try {
     // .populate('role') sẽ lấy thông tin chi tiết của Role thay vì chỉ ID
-    const users = await User.find({}).populate("role", "name description"); 
+    const users = await User.find({}).populate("role", "role_name description"); 
     res.status(200).json(users);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -97,7 +98,7 @@ export const updateUser = async (req, res) => {
 
       // Xử lý cập nhật Role nếu có
       if (req.body.roleName) {
-        const newRole = await Role.findOne({ name: req.body.roleName });
+        const newRole = await Role.findByName(req.body.roleName);
         if (newRole) {
           user.role = newRole._id;
         } else {
@@ -120,18 +121,19 @@ export const updateUser = async (req, res) => {
 
 // @desc    Xóa User
 // @route   DELETE /users/:id
-// @access  Private (Chỉ HAMLET LEADER/Admin)
+// @access  Private (Chỉ Tổ trưởng/Admin)
 export const deleteUser = async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id);
+  const { id } = req.params;
+  if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({ message: "Invalid user ID" });
 
-    if (user) {
-      await user.deleteOne(); // Hoặc user.remove() tùy phiên bản
-      res.status(200).json({ message: "Người dùng đã được xóa" });
-    } else {
-      res.status(404).json({ message: "Không tìm thấy người dùng" });
-    }
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+  if (req.user?._id?.toString() === id) {
+    return res.status(400).json({ message: "You cannot delete your own account" });
   }
+
+  const user = await User.findByIdAndDelete(id);
+  if (!user) return res.status(404).json({ message: "User not found" });
+
+  return res.status(200).json({
+    message: "Deleted user"
+  })
 };

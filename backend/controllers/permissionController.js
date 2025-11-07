@@ -5,10 +5,10 @@ export const createPermission = async (req, res) => {
   const { permission_name, description } = req.body;
 
   if (!permission_name) {
-    return res.status(404).json({ message: "Permission name is required"});
+    return res.status(400).json({ message: "Permission name is required"});
   }
   
-  if (await Permission.findOne({ permission_name })) {
+  if (await Permission.findByName(permission_name)) {
     return res.status(400).json({ message: "Permission name already exists"});
   }
 
@@ -51,11 +51,14 @@ export const updatePermission = async (req, res) => {
   const permission = await Permission.findById(id);
   if (!permission) return res.status(404).json({message: "Permission not found"});
 
-  if (await Permission.findOne({ permission_name })) {
-    return res.status(400).json({ message: "Permission name already exists"});
+  if (permission_name !== undefined) {
+    const duplicate = await Permission.findByName(permission_name)
+    if (duplicate) {
+      return res.status(400).json({ message: "Permission name already exists"});
+    }
+    permission.permission_name = permission_name;
   }
   
-  if (permission_name !== undefined) permission.permission_name = permission_name;
   if (description !== undefined) permission.description = description;
 
   await permission.save();
