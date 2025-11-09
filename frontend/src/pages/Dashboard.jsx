@@ -166,7 +166,7 @@ function Dashboard() {
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
         <Box>
           <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-            Chào mừng trở lại, {user.ten}!
+            App quản lý nhân khẩu
           </Typography>
           <Typography variant="body2" color="text.secondary">
             Vai trò: {userRole}
