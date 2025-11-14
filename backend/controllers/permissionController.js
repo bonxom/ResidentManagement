@@ -68,7 +68,7 @@ export const updatePermission = async (req, res) => {
 
   if (permission_name !== undefined) {
     const duplicate = await Permission.findByName(permission_name)
-    if (duplicate) {
+    if (duplicate && duplicate._id.toString() !== id) {
       return res.status(400).json({ message: "Permission name already exists"});
     }
     //name is provided and not duplicate

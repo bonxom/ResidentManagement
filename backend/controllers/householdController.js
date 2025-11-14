@@ -150,8 +150,10 @@ export const addMember = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Kiểm tra xem đã là thành viên chưa
-    if (household.members.includes(userId)) {
+    const alreadyMember = household.members.some(
+      (member) => member?.toString() === userId
+    );
+    if (alreadyMember) {
       return res.status(400).json({ message: "User is already a household member" });
     }
 

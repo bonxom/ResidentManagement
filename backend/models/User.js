@@ -10,6 +10,12 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
     },
+    userCardID: {
+      type: Number,
+      required: true, 
+      unique: true,
+      trim: true,
+    },
     password: {
       type: String,
       required: [true, "Mật khẩu là bắt buộc"],
@@ -60,8 +66,13 @@ userSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
 
+// runSettersOnQuery: chạy setter lowercase trước khi tìm -> có thể search bằng kí tự upper
 userSchema.statics.findByEmail = function(email) {
   return this.findOne({email : email}, null, { runSettersOnQuery: true });
+}
+
+userSchema.statics.findByUserCardID = function(userCardID){
+  return this.findOne({userCardID: userCardID}, null);
 }
 
 const User = mongoose.model("User", userSchema);

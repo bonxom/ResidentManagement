@@ -121,6 +121,7 @@ const initAdmin = async () => {
 
     await User.create({
       email: "admin@res.com",
+      userCardID: 1,
       password: "123456",
       name: "admin",
       role: hamletRole._id,

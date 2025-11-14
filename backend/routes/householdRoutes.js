@@ -9,21 +9,20 @@ import {
   addMember,
   removeMember,
 } from "../controllers/householdController.js";
-import { protect, authorize } from "../middleware/authMiddleware.js";
+import { protect, authorizePermission } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.post("/", protect, authorize("HAMLET LEADER"), createHousehold);
-router.get("/", protect, authorize("HAMLET LEADER"), getAllHouseholds);
+router.post("/", protect, authorizePermission("CREATE HOUSEHOLD"), createHousehold);
+router.get("/", protect, authorizePermission("VIEW HOUSEHOLD LIST"), getAllHouseholds);
 
-router.get("/:id", protect, getHouseholdById)
-router.put("/:id",protect, authorize("HAMLET LEADER"), updateHousehold)
-router.delete("/:id", protect, authorize("HAMLET LEADER"), deleteHousehold);
+router.get("/:id", protect, authorizePermission("VIEW HOUSEHOLD"), getHouseholdById);
+router.put("/:id",protect, authorizePermission("EDIT HOUSEHOLD"), updateHousehold);
+router.delete("/:id", protect, authorizePermission("DELETE HOUSEHOLD"), deleteHousehold);
 
-router.get("/:id/members", protect, getMembers)
-router.post("/:id/members",protect, authorize("HAMLET LEADER"), addMember);
+router.get("/:id/members", protect, authorizePermission("VIEW HOUSEHOLD"), getMembers);
+router.post("/:id/members",protect, authorizePermission("EDIT HOUSEHOLD"), addMember);
 
-// HAMLET LEADER xóa thành viên khỏi hộ
-router.delete("/:householdId/members/:memberId", protect, authorize("HAMLET LEADER"), removeMember);
+router.delete("/:householdId/members/:memberId", protect, authorizePermission("EDIT HOUSEHOLD"), removeMember);
 
 export default router;

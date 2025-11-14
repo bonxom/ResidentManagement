@@ -4,32 +4,51 @@ import User from "../models/User.js";
 // Middleware 1: "protect" - Xác thực người dùng
 export const protect = async (req, res, next) => {
   let token;
-  // 1. Đọc token từ header "Authorization"
+
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith("Bearer")
   ) {
     try {
-      // Tách lấy token (format: "Bearer <token>")
       token = req.headers.authorization.split(" ")[1];
-      // 2. Xác thực token
+
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      // 3. Lấy thông tin user từ ID trong token (đã có role)
-      // Gắn user vào đối tượng 'req' để các hàm controller sau có thể dùng
-      req.user = await User.findById(decoded.id).select("-password").populate("role");
-      if (!req.user) {
-        return res.status(401).json({ message: "Người dùng không tồn tại" });
+
+      const user = await User.findById(decoded.id)
+        .select("-password")
+        .populate({
+          path: "role",
+          populate: {
+            path: "permissions",
+            model: "Permission",
+          },
+        });
+
+      if (!user) {
+        return res
+          .status(401)
+          .json({ message: "Không tìm thấy người dùng tương ứng với token." });
       }
 
-      next(); // Đi tiếp đến controller
+      const rolePermissions =
+        user.role?.permissions?.map((p) => p.permission_name) || [];
+
+      user.permissions = rolePermissions;
+
+      req.user = user;
+      return next();
     } catch (error) {
       console.error(error);
-      return res.status(401).json({ message: "Token không hợp lệ, không có quyền truy cập" });
+      return res.status(401).json({
+        message: "Token không hợp lệ hoặc đã hết hạn.",
+      });
     }
   }
 
   if (!token) {
-    return res.status(401).json({ message: "Không tìm thấy token, không có quyền truy cập" });
+    return res.status(401).json({
+      message: "Không tìm thấy token. Vui lòng đăng nhập.",
+    });
   }
 };
 
@@ -55,6 +74,38 @@ export const authorize = (...roles) => {
       });
     }
     
+    next();
+  };
+};
+
+export const authorizePermission = (...requiredPermissions) => {
+  return (req, res, next) => {
+    if (!req.user) {
+      return res
+        .status(401)
+        .json({ message: "Chưa xác thực người dùng (thiếu req.user)." });
+    }
+
+    const userPermissions = req.user.permissions || [];
+
+    // Chuẩn hóa: tất cả uppercase để khớp với permission_name trong DB
+    const normalizedUserPerms = userPermissions.map((p) => p.toUpperCase());
+    const normalizedRequired = requiredPermissions.map((p) =>
+      p.toUpperCase()
+    );
+
+    const hasPermission = normalizedRequired.some((perm) =>
+      normalizedUserPerms.includes(perm)
+    );
+
+    if (!hasPermission) {
+      return res.status(403).json({
+        message: "Bạn không có quyền thực hiện hành động này.",
+        required: normalizedRequired,
+        yourPermissions: normalizedUserPerms,
+      });
+    }
+
     next();
   };
 };

@@ -30,8 +30,12 @@ const householdSchema = new mongoose.Schema(
 );
 
 householdSchema.pre("save", function (next) {
-  if (this.isModified("leader") || this.isModified("members")) {
-    if (!this.members.includes(this.leader)) {
+  if ((this.isModified("leader") || this.isModified("members")) && this.leader) {
+    const leaderId = this.leader.toString();
+    const hasLeader = (this.members || []).some(
+      (member) => member?.toString() === leaderId
+    );
+    if (!hasLeader) {
       this.members.push(this.leader);
     }
   }

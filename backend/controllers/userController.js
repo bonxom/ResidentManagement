@@ -8,13 +8,22 @@ import Role from "../models/Role.js"; // Giả sử bạn có model Role
 export const createUser = async (req, res) => {
   try {
     // Chỉ lấy các trường an toàn từ body. Bỏ qua 'roleName'.
-    const { email, password, name, sex, dob, location, phoneNumber } =
+    const { email, password, name, sex, dob, location, phoneNumber, userCardID } =
       req.body;
+
+    if (!userCardID) {
+      return res.status(400).json({ message: "Thiếu userCardID" });
+    }
 
     // Kiểm tra xem email đã tồn tại chưa
     const userExists = await User.findByEmail(email);
     if (userExists) {
       return res.status(400).json({ message: "Email đã tồn tại" });
+    }
+
+    const userCardExists = await User.findByUserCardID(userCardID);
+    if (userCardExists) {
+      return res.status(400).json({ message: "User card ID đã tồn tại" });
     }
 
     // Đảm bảo bạn đã có vai trò "Cư dân" trong database
@@ -27,6 +36,7 @@ export const createUser = async (req, res) => {
     // Tạo user mới
     const user = await User.create({
       email,
+      userCardID,
       password,
       name,
       sex,
@@ -40,6 +50,7 @@ export const createUser = async (req, res) => {
       res.status(201).json({
         _id: user._id,
         email: user.email,
+        userCardID: user.userCardID,
         name: user.name,
         role: defaultRole.role_name,
       });

@@ -1,0 +1,584 @@
+{
+  "info": {
+    "name": "Hamlet Management API",
+    "_postman_id": "a5c7d0d1-1111-2222-3333-444455556666",
+    "description": "Collection test API quản lý tổ dân phố (User, Role, Permission, Household, Auth).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:5000"
+    },
+    {
+      "key": "token",
+      "value": ""
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@test.com\",\n  \"password\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "let json = {};\n",
+                  "try { json = pm.response.json(); } catch (e) {}\n",
+                  "if (json.token) {\n",
+                  "  pm.collectionVariables.set('token', json.token);\n",
+                  "  console.log('Saved token to collection variable');\n",
+                  "} else {\n",
+                  "  console.log('No token found in response');\n",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Me",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Create User (public)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"newuser@test.com\",\n  \"password\": \"123456\",\n  \"name\": \"New User\",\n  \"userCardID\": 10001,\n  \"sex\": \"Nam\",\n  \"dob\": \"2000-01-01\",\n  \"location\": \"To 1, KP 1\",\n  \"phoneNumber\": \"0900000000\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get User By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/{{userId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "{{userId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Name\",\n  \"sex\": \"Nữ\",\n  \"dob\": \"1998-05-01\",\n  \"location\": \"Địa chỉ mới\",\n  \"phoneNumber\": \"0911111111\",\n  \"roleName\": \"HOUSE MEMBER\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users/{{userId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "{{userId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/{{userId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "{{userId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Permissions",
+      "item": [
+        {
+          "name": "Create Permission",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"permission_name\": \"VIEW USER LIST\",\n  \"description\": \"xem danh sách người dùng\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/permissions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "permissions"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Permissions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/permissions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "permissions"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Permission By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/permissions/{{permissionId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "permissions",
+                "{{permissionId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Permission",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"permission_name\": \"EDIT USER\",\n  \"description\": \"chỉnh sửa thông tin người dùng\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/permissions/{{permissionId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "permissions",
+                "{{permissionId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Permission",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/permissions/{{permissionId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "permissions",
+                "{{permissionId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Roles",
+      "item": [
+        {
+          "name": "Create Role",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role_name\": \"HAMLET LEADER\",\n  \"permissions\": [\n    \"VIEW USER LIST\",\n    \"CREATE HOUSEHOLD\",\n    \"VIEW HOUSEHOLD LIST\",\n    \"EDIT HOUSEHOLD\",\n    \"DELETE HOUSEHOLD\"\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/roles",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "roles"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Roles",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/roles",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "roles"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Role By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/roles/{{roleId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "roles",
+                "{{roleId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Role",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role_name\": \"HOUSE MEMBER\",\n  \"permissions\": [\n    \"VIEW HOUSEHOLD\",\n    \"VIEW HOUSEHOLD LIST\"\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/roles/{{roleId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "roles",
+                "{{roleId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Role",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/roles/{{roleId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "roles",
+                "{{roleId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Households",
+      "item": [
+        {
+          "name": "Create Household",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"houseHoldID\": \"HK001\",\n  \"address\": \"123 Tổ 1, KP1\",\n  \"leaderId\": \"{{leaderId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/households",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "households"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Households",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/households",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "households"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Household By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/households/{{householdId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "households",
+                "{{householdId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Household",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"address\": \"Địa chỉ mới\",\n  \"leaderId\": \"{{newLeaderId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/households/{{householdId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "households",
+                "{{householdId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Household",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/households/{{householdId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "households",
+                "{{householdId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Members of Household",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/households/{{householdId}}/members",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "households",
+                "{{householdId}}",
+                "members"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add Member to Household",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{memberUserId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/households/{{householdId}}/members",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "households",
+                "{{householdId}}",
+                "members"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Remove Member from Household",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/households/{{householdId}}/members/{{memberId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "households",
+                "{{householdId}}",
+                "members",
+                "{{memberId}}"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

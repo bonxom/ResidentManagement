@@ -38,7 +38,7 @@ export const createRole = async (req, res) => {
 // @route   GET /roles
 // @access  Private (Admin)
 export const getAllRoles = async (req, res) => {
-  const roles = await Role.find().sort({ createAt: -1 });
+  const roles = await Role.find().sort({ createdAt: -1 });
   res.status(200).json({
     message: "Request success",
     roles
@@ -81,7 +81,7 @@ export const updateRole = async (req, res) => {
 
   if (role_name !== undefined) {
     const duplicate = await Role.findByName(role_name);
-    if (duplicate) {
+    if (duplicate && duplicate._id.toString() !== id) {
       throw new AppError(ERROR_CODE.ROLE_NAME_EXISTED);
     }
     // role_name is provided and not duplicated

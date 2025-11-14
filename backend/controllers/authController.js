@@ -13,10 +13,12 @@ export const loginUser = async (req, res) => {
       return res.status(400).json({ message: "Vui lòng cung cấp email và mật khẩu" });
     }
 
+    const normalizedEmail = email.toLowerCase();
+
     // 2. Tìm user trong DB
     // Chúng ta phải .select('+password') vì trong Model ta đã ẩn nó đi\
     console.time('DB_FIND_USER');
-    const user = await User.findOne({ email })
+    const user = await User.findOne({ email: normalizedEmail })
       .select("+password")
       .populate({
         path: "role",

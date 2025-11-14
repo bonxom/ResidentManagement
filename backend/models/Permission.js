@@ -27,6 +27,7 @@ permissionSchema.statics.findByName = function(name) {
 };
 
 permissionSchema.statics.findByListOfName = async function (names) {
+  if (!Array.isArray(names) || names.length === 0) return [];
   const perList = [];
   for (const permission_name of names) {
     const permission = await this.findOne({ permission_name });
