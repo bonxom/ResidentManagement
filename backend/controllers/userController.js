@@ -57,7 +57,8 @@ export const createUser = async (req, res) => {
 export const getAllUsers = async (req, res) => {
   try {
     // .populate('role') sẽ lấy thông tin chi tiết của Role thay vì chỉ ID
-    const users = await User.find({}).populate("role", "name description"); 
+    const users = await User.find({}).populate("role", "role_name description");
+    // sửa từ name description thành role_name description
     res.status(200).json(users);
   } catch (error) {
     res.status(500).json({ message: error.message });
