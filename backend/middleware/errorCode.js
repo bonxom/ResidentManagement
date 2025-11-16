@@ -29,9 +29,14 @@ export const ERROR_CODE = {
     message: "Role not existed",
     statusCode: 404,
   },
+  ROLE_PERMISSION_NOT_EXIST: {
+    code: 1004,
+    message: "Some permissions do not exist",
+    statusCode: 400,
+  },
 
   //PERMISSION
-  PERMISSION_LIST_IVALID: {
+  PERMISSION_LIST_INVALID: {
     code: 2000,
     message: "Input permission must be an array",
     statusCode: 400,
@@ -60,6 +65,12 @@ export const ERROR_CODE = {
     message: "Permission ID must be a mongoose.Types.ObjectId",
     statusCode: 400,
   },
+  PERMISSION_LIST_EMPTY: {
+    code: 2005,
+    message: "Permission list cannot be empty",
+    statusCode: 400,
+  },
+
   //Không có quyền truy cập route
   FORBIDDEN: {
     code: 3000,
@@ -79,7 +90,26 @@ export const ERROR_CODE = {
     message: "User role not found",
     statusCode: 403,
   },
+  //Middleware kiểm tra role đã có nhưng chưa có mã lỗi.
+  AUTHORIZATION_ROLE_NOT_ALLOWED: {
+    code: 3003,
+    message: "Your role is not allowed to access this resource",
+    statusCode: 403,
+  },
+  //Middleware check quyền → bạn có logic nhưng không có mã lỗi.
+  AUTHORIZATION_PERMISSION_DENIED: {
+    code: 3004,
+    message: "You do not have the required permission",
+    statusCode: 403,
+  },
+
   //Lỗi liên quan đến User
+  USER_NAME_REQUIRED: {
+    code: 4003,
+    message: "User name is required",
+    statusCode: 400,
+  },
+
   //User không tồn tại
   USER_NOT_EXISTED: {
     code: 4000,
@@ -113,6 +143,18 @@ export const ERROR_CODE = {
     code: 5002,
     message: "Token has expired",
     statusCode: 401,
+  },
+
+  // Xác thực thất bại
+  INVALID_CREDENTIALS: {
+    code: 5003,
+    message: "Email or password is incorrect",
+    statusCode: 401,
+  },
+  PASSWORD_REQUIRED: {
+    code: 5004,
+    message: "Password is required",
+    statusCode: 400,
   },
   MISSING_FIELDS: {
     code: 6000,
