@@ -29,6 +29,13 @@ function Dashboard() {
     navigate('/signin');
   };
 
+  const menuItems = [
+    { text: 'Quản lý nhân khẩu', path: '/nhankhau' },
+    { text: 'Quản lý hộ khẩu', path: '/hokhau' },
+    { text: 'Quản lý thu chi', path: '/thuchi' },
+    { text: 'Danh sách người cần phê duyệt', path: '/pheduyet'},
+  ];
+
    return (
     <Box sx={{ display: "flex" }}>
       
@@ -44,10 +51,10 @@ function Dashboard() {
         <Toolbar />
         <Box sx={{ overflow: 'auto' }}>
           <List>
-            {['Quản lý nhân khẩu', 'Quản lý hộ khẩu', 'Quản lý thu chi'].map((text) => (
-              <ListItem key={text} disablePadding>
-                <ListItemButton>
-                  <ListItemText primary={text} />
+            {menuItems.map(item => (
+              <ListItem key={item.text} disablePadding>
+                <ListItemButton onClick={() => navigate(item.path)}>
+                  <ListItemText primary={item.text} />
                 </ListItemButton>
               </ListItem>
             ))}
@@ -56,7 +63,8 @@ function Dashboard() {
           <Box sx={{ mt: 2 }}>
             <Button 
             variant="text"
-            onClick={handleLogout}>
+            onClick={handleLogout}
+            color="error">
               Đăng xuất
             </Button>
           </Box>
@@ -69,15 +77,6 @@ function Dashboard() {
         <Typography variant="h4" gutterBottom>
           Chào mừng trở lại, {user.ten}!
         </Typography>
-
-        <Button
-          variant="contained"
-          color="error"
-          onClick={handleLogout}
-          sx={{ mb: 3 }}
-        >
-          Đăng xuất
-        </Button>
 
         <Card sx={{ mb: 3 }}>
           <CardContent>
