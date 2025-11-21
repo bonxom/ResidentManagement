@@ -12,3 +12,6 @@ Introduction to SE project
 
 * Tải mongoDB copy connection string, tạo file .env trong backend, thêm các biến môi trường MONGO_URI, MONGO_DB_NAME
 ![alt text](image.png)
+
+
+tạo front-end admin 
