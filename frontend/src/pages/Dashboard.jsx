@@ -1,12 +1,15 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
-import { Box, Typography, Button, Card, CardContent, Avatar } from '@mui/material';
+import { Divider, Toolbar, Drawer, List, ListItem, ListItemText, Box, Typography, Button, Card, CardContent, Avatar, ListItemButton } from '@mui/material';
+
 
 function Dashboard() {
   const navigate = useNavigate();
   // Lấy user và hàm signOut từ store
   const { user, signOut } = useAuthStore(); 
+
+  const drawerWidth = 240;
 
   // Nếu không có user (lỗi gì đó), quay về login
   if (!user) {
@@ -26,57 +29,76 @@ function Dashboard() {
     navigate('/signin');
   };
 
-  return (
-    <Box sx={{ p: 4 }}>
-      <Typography variant="h4" gutterBottom>
-        Chào mừng trở lại, {user.ten}!
-      </Typography>
+   return (
+    <Box sx={{ display: "flex" }}>
       
-      <Button 
-        variant="contained" 
-        color="error" 
-        onClick={handleLogout} 
-        sx={{ mb: 3 }}
+      {/* ==== SIDEBAR ==== */}
+      <Drawer
+        variant="permanent"
+        sx={{
+          width: drawerWidth,
+          flexShrink: 0,
+          '& .MuiDrawer-paper': { width: drawerWidth, boxSizing: "border-box" }
+        }}
       >
-        Đăng xuất
-      </Button>
-
-      {/* Box hiển thị thông tin cá nhân (cho mọi role) */}
-      <Card sx={{ mb: 3 }}>
-        <CardContent>
-          <Typography variant="h6">Thông tin cá nhân</Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
-            <Avatar sx={{ mr: 2, width: 56, height: 56 }}>
-              {user.ten ? user.ten.charAt(0).toUpperCase() : 'U'}
-            </Avatar>
-            <Box>
-              <Typography><strong>Họ tên:</strong> {user.ten}</Typography>
-              <Typography><strong>Email:</strong> {user.email}</Typography>
-              <Typography><strong>Số điện thoại:</strong> {user.soDienThoai || 'Chưa cập nhật'}</Typography>
-              <Typography><strong>Nơi ở:</strong> {user.noiO || 'Chưa cập nhật'}</Typography>
-              <Typography><strong>Vai trò:</strong> {user.role.role_name}</Typography>
-            </Box>
-          </Box>
-        </CardContent>
-      </Card>
-
-      {/* === NÚT ĐIỀU KIỆN CHO HAMLET LEADER === */}
-      {isHamletLeader && (
-        <Card>
-          <CardContent>
-            <Typography variant="h6">Chức năng Quản lý</Typography>
-            <Typography variant="body2" sx={{ mb: 2 }}>
-              Bạn là Tổ trưởng, bạn có các quyền quản lý.
-            </Typography>
+        <Toolbar />
+        <Box sx={{ overflow: 'auto' }}>
+          <List>
+            {['Quản lý nhân khẩu', 'Quản lý hộ khẩu', 'Quản lý thu chi'].map((text) => (
+              <ListItem key={text} disablePadding>
+                <ListItemButton>
+                  <ListItemText primary={text} />
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
+          <Divider />
+          <Box sx={{ mt: 2 }}>
             <Button 
-              variant="contained" 
-              onClick={() => navigate('/quan-ly-dan-cu')} // (Giả sử bạn có route này)
-            >
-              Xem tất cả dân cư
+            variant="text"
+            onClick={handleLogout}>
+              Đăng xuất
             </Button>
+          </Box>
+        </Box>
+      </Drawer>
+
+      {/* ==== MAIN CONTENT ==== */}
+      <Box sx={{ flexGrow: 1, p: 4, ml: `${drawerWidth}px` }}>
+        
+        <Typography variant="h4" gutterBottom>
+          Chào mừng trở lại, {user.ten}!
+        </Typography>
+
+        <Button
+          variant="contained"
+          color="error"
+          onClick={handleLogout}
+          sx={{ mb: 3 }}
+        >
+          Đăng xuất
+        </Button>
+
+        <Card sx={{ mb: 3 }}>
+          <CardContent>
+            <Typography variant="h6">Thông tin cá nhân</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
+              <Avatar sx={{ mr: 2, width: 56, height: 56 }}>
+                {user.ten ? user.ten.charAt(0).toUpperCase() : 'U'}
+              </Avatar>
+
+              <Box>
+                <Typography><strong>Họ tên:</strong> {user.ten}</Typography>
+                <Typography><strong>Email:</strong> {user.email}</Typography>
+                <Typography><strong>Số điện thoại:</strong> {user.soDienThoai || 'Chưa cập nhật'}</Typography>
+                <Typography><strong>Nơi ở:</strong> {user.noiO || 'Chưa cập nhật'}</Typography>
+                <Typography><strong>Vai trò:</strong> {user.role.role_name}</Typography>
+              </Box>
+            </Box>
           </CardContent>
         </Card>
-      )}
+
+      </Box>
 
     </Box>
   );
