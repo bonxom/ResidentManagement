@@ -11,12 +11,9 @@ import {
   Link,
   Alert,
   InputAdornment,
-  MenuItem,
 } from '@mui/material'
 import {
-  CreditCard,
   Phone,
-  Home,
   Mail,
   User,
   MapPin,
@@ -25,7 +22,6 @@ import {
 } from 'lucide-react'
 import useAuthStore from '../store/authStore'
 import { signUpSchema } from '../utils/validation'
-import { ROLES, ROLE_DESCRIPTIONS } from '../constants/roles'
 
 
 function SignUp() {

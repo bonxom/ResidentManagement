@@ -1,5 +1,4 @@
 import { z } from 'zod'
-import { ROLES } from '../constants/roles'
 
 export const signUpSchema = z.object({
   fullName: z
