@@ -7,6 +7,7 @@ import {
 import {Lock, Users, Mail } from 'lucide-react'
 import useAuthStore from '../store/authStore'
 import { signInSchema } from '../utils/validation'
+import '../pages/background.css' 
 
 function SignIn() {
   const navigate = useNavigate()
@@ -58,6 +59,7 @@ function SignIn() {
   };
 
   return (
+
     <Container maxWidth="sm">
       <Box
         sx={{
