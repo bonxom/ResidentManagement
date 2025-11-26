@@ -20,7 +20,7 @@ export const signUpSchema = z.object({
     .min(1, 'Vui lòng nhập email')
     .email('Email không hợp lệ'),
   
-  address: z
+  location: z
     .string()
     .min(1, 'Vui lòng nhập địa chỉ') // Đổi tên lỗi
     .max(200, 'Địa chỉ không được quá 200 ký tự'),

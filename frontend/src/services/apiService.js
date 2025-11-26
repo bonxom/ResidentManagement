@@ -46,8 +46,8 @@ export const userAPI = {
 
   // Tạo user mới
   create: async (userData) => {
-    const response = await api.post('/users', userData)
-    return response.data
+    const response = await api.post("/users", userData);
+    return response.data;
   },
 
   // Cập nhật user

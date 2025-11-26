@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useNavigate, Link as RouterLink } from 'react-router-dom'
+import { useState } from "react";
+import { useNavigate, Link as RouterLink } from "react-router-dom";
 import {
   Container,
   Box,
@@ -11,105 +11,112 @@ import {
   Link,
   Alert,
   InputAdornment,
-} from '@mui/material'
-import {
-  Phone,
-  Mail,
-  User,
-  MapPin,
-  Lock,
-  Users,
-} from 'lucide-react'
-import useAuthStore from '../store/authStore'
-import { signUpSchema } from '../utils/validation'
-
+} from "@mui/material";
+import { IdCard, Phone, Mail, User, MapPin, Lock, Users } from "lucide-react";
+import { userAPI } from "../services/apiService";
+import { signUpSchema } from "../utils/validation";
 
 function SignUp() {
-  const navigate = useNavigate()
-  const { signUp, isLoading, error: authError } = useAuthStore()
+  const navigate = useNavigate();
 
-  // Sửa lại state ban đầu
-const [formData, setFormData] = useState({
-  fullName: '', // Sẽ map sang 'ten'
-  phoneNumber: '', // Sẽ map sang 'soDienThoai'
-  email: '',
-  address: '', // Sẽ map sang 'noiO'
-  password: '',
-  confirmPassword: '',
-  // Xóa citizenId, curAddress, householdBookId, role
-});
+  const [formData, setFormData] = useState({
+    fullName: "",
+    phoneNumber: "",
+    userCardID: "",
+    email: "",
+    location: "",
+    password: "",
+    confirmPassword: "",
+    dob: "",
+  });
 
-  const [errors, setErrors] = useState({})
+  const [errors, setErrors] = useState({});
+  const [backendError, setBackendError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e) => {
-    const { name, value } = e.target
-    
-    if (name === 'citizenId' || name === 'phoneNumber') {
-      if (value && !/^\d*$/.test(value)) return
+    const { name, value } = e.target;
+
+    if (name === "userCardID" || name === "phoneNumber") {
+      if (value && !/^\d*$/.test(value)) return;
     }
 
-    setFormData((prev) => ({ ...prev, [name]: value }))
-    
-    // Clear error khi user nhập lại
+    setFormData((prev) => ({ ...prev, [name]: value }));
+
     if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: '' }))
+      setErrors((prev) => ({ ...prev, [name]: "" }));
     }
-  }
+    if (backendError) setBackendError("");
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
+
+    // Check confirm password
+    if (formData.password !== formData.confirmPassword) {
+      setErrors({ confirmPassword: "Mật khẩu không trùng khớp" });
+      return;
+    }
 
     try {
-      signUpSchema.parse(formData)
-      setErrors({})
+      // Validate form data
+      signUpSchema.parse(formData);
+      setErrors({});
+      setIsLoading(true);
 
-      const result = await signUp(formData)
+      // Map payload đúng backend
+      const payload = {
+        name: formData.fullName,
+        email: formData.email,
+        password: formData.password,
+        dob: formData.dob,
+        location: formData.location,
+        phoneNumber: formData.phoneNumber,
+        userCardID: formData.userCardID,
+      };
 
-      if (result.success) {
-        alert(
-          'Đăng ký thành công!\n\n' +
-          'Tài khoản của bạn đang chờ duyệt. ' +
-          'Bạn sẽ được thông báo khi tài khoản được kích hoạt.'
-        )
-        navigate('/signin')
-      }
+      const result = await userAPI.create(payload);
+
+      // Nếu thành công
+      alert(
+        "Đăng ký thành công!\n\n" +
+          "Tài khoản của bạn đang chờ duyệt. " +
+          "Bạn sẽ được thông báo khi tài khoản được kích hoạt."
+      );
+      navigate("/signin");
     } catch (err) {
       if (err.errors) {
-        const formattedErrors = {}
+        // Lỗi validate
+        const formattedErrors = {};
         err.errors.forEach((error) => {
-          formattedErrors[error.path[0]] = error.message
-        })
-        setErrors(formattedErrors)
+          formattedErrors[error.path[0]] = error.message;
+        });
+        setErrors(formattedErrors);
+      } else if (err.message) {
+        // Lỗi backend
+        setBackendError(err.message);
       }
+    } finally {
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <Container maxWidth="sm">
       <Box
         sx={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
           py: 4,
         }}
       >
-        <Card sx={{ width: '100%', boxShadow: 3 }}>
+        <Card sx={{ width: "100%", boxShadow: 3 }}>
           <CardContent sx={{ p: 4 }}>
-            {/* Header */}
-            <Box sx={{ textAlign: 'center', mb: 3 }}>
-              <Users
-                size={48}
-                color="#1976d2"
-                style={{ marginBottom: '16px' }}
-              />
-              <Typography
-                variant="h4"
-                component="h1"
-                gutterBottom
-                fontWeight="bold"
-              >
+            <Box sx={{ textAlign: "center", mb: 3 }}>
+              <Users size={48} color="#1976d2" style={{ marginBottom: "16px" }} />
+              <Typography variant="h4" component="h1" gutterBottom fontWeight="bold">
                 Đăng ký tài khoản
               </Typography>
               <Typography variant="body2" color="text.secondary">
@@ -117,9 +124,9 @@ const [formData, setFormData] = useState({
               </Typography>
             </Box>
 
-            {authError && (
+            {backendError && (
               <Alert severity="error" sx={{ mb: 2 }}>
-                {authError}
+                {backendError}
               </Alert>
             )}
 
@@ -146,12 +153,32 @@ const [formData, setFormData] = useState({
 
               <TextField
                 fullWidth
+                label="Căn cước công dân"
+                name="userCardID"
+                type="text"
+                value={formData.userCardID}
+                onChange={handleChange}
+                error={!!errors.userCardID}
+                helperText={errors.userCardID}
+                margin="normal"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <IdCard size={20} />
+                    </InputAdornment>
+                  ),
+                }}
+                autoComplete="idcard"
+              />
+
+              <TextField
+                fullWidth
                 label="Số điện thoại"
                 name="phoneNumber"
                 value={formData.phoneNumber}
                 onChange={handleChange}
                 error={!!errors.phoneNumber}
-                helperText={errors.phoneNumber || 'VD: 0912345678'}
+                helperText={errors.phoneNumber || "VD: 0912345678"}
                 margin="normal"
                 inputProps={{ maxLength: 10 }}
                 InputProps={{
@@ -188,22 +215,35 @@ const [formData, setFormData] = useState({
               <TextField
                 fullWidth
                 label="Địa chỉ thường trú"
-                name="address"
-                value={formData.address}
+                name="location"
+                value={formData.location}
                 onChange={handleChange}
-                error={!!errors.address}
-                helperText={errors.address}
+                error={!!errors.location}
+                helperText={errors.location}
                 margin="normal"
                 placeholder="Số nhà, phường/xã, quận/huyện, tỉnh/thành phố"
                 multiline
                 rows={2}
                 InputProps={{
                   startAdornment: (
-                    <InputAdornment position="start" sx={{ alignSelf: 'flex-start', mt: 2 }}>
+                    <InputAdornment position="start" sx={{ alignSelf: "flex-start", mt: 2 }}>
                       <MapPin size={20} />
                     </InputAdornment>
                   ),
                 }}
+              />
+
+              <TextField
+                fullWidth
+                label="Ngày sinh"
+                name="dob"
+                type="date"
+                value={formData.dob}
+                onChange={handleChange}
+                error={!!errors.dob}
+                helperText={errors.dob}
+                margin="normal"
+                InputLabelProps={{ shrink: true }}
               />
 
               <TextField
@@ -214,7 +254,7 @@ const [formData, setFormData] = useState({
                 value={formData.password}
                 onChange={handleChange}
                 error={!!errors.password}
-                helperText={errors.password || 'Tối thiểu 6 ký tự'}
+                helperText={errors.password || "Tối thiểu 6 ký tự"}
                 margin="normal"
                 InputProps={{
                   startAdornment: (
@@ -254,11 +294,11 @@ const [formData, setFormData] = useState({
                 disabled={isLoading}
                 sx={{ mt: 3, mb: 2, py: 1.5 }}
               >
-                {isLoading ? 'Đang gửi yêu cầu...' : 'Gửi yêu cầu đăng ký'}
+                {isLoading ? "Đang gửi yêu cầu..." : "Gửi yêu cầu đăng ký"}
               </Button>
 
               <Typography variant="body2" align="center">
-                Đã có tài khoản?{' '}
+                Đã có tài khoản?{" "}
                 <Link component={RouterLink} to="/signin" fontWeight="bold">
                   Đăng nhập
                 </Link>
@@ -268,7 +308,7 @@ const [formData, setFormData] = useState({
         </Card>
       </Box>
     </Container>
-  )
+  );
 }
 
-export default SignUp
+export default SignUp;
