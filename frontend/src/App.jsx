@@ -4,6 +4,10 @@ import SignIn from './pages/SignIn'
 import SignUp from './pages/SignUp'
 import Dashboard from './pages/Dashboard'
 import ProtectedRoute from './components/ProtectedRoute'
+import Quanlydancu from "./pages/Admin/Quanlydancu";
+import Trangchinh from  "./pages/Admin/trangchinh";
+
+
 
 const theme = createTheme({
   palette: {
@@ -36,6 +40,7 @@ function App() {
           <Route path="/" element={<Navigate to="/signin" replace />} />
           <Route path="/signin" element={<SignIn />} />
           <Route path="/signup" element={<SignUp />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route 
             path="/dashboard" 
             element={
@@ -44,6 +49,8 @@ function App() {
               </ProtectedRoute>
             } 
           />
+          <Route path="/qldc" element={<Quanlydancu />} />
+          <Route path="/tc" element={<Trangchinh />} />
         </Routes>
       </Router>
     </ThemeProvider>
