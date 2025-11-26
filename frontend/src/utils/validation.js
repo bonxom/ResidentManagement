@@ -1,14 +1,11 @@
 import { z } from 'zod'
 
 export const signUpSchema = z.object({
-  fullName: z
-    .string()
-    .min(1, 'Vui lòng nhập họ tên')
-    .min(3, 'Họ tên phải có ít nhất 3 ký tự')
-    .max(100, 'Họ tên không được quá 100 ký tự')
-    .regex(/^[\p{L}\s]+$/u, 'Họ tên chỉ chứa chữ cái và khoảng trắng'),
-  
-  // Xóa 'citizenId'
+  name: z
+  .string()
+  .min(3, 'Họ tên phải có ít nhất 3 ký tự')
+  .max(100, 'Họ tên không được quá 100 ký tự')
+  .regex(/^[\p{L}\d\s]+$/u, 'Họ tên chỉ chứa chữ cái, số và khoảng trắng'),
 
   phoneNumber: z
     .string()

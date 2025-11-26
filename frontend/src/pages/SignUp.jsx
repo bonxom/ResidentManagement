@@ -20,7 +20,7 @@ function SignUp() {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
-    fullName: "",
+    name: "",
     phoneNumber: "",
     userCardID: "",
     email: "",
@@ -49,35 +49,17 @@ function SignUp() {
     if (backendError) setBackendError("");
   };
 
-  const handleSubmit = async (e) => {
+   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Check confirm password
-    if (formData.password !== formData.confirmPassword) {
-      setErrors({ confirmPassword: "Mật khẩu không trùng khớp" });
-      return;
-    }
-
     try {
-      // Validate form data
+      // Validate form data bằng Zod
       signUpSchema.parse(formData);
       setErrors({});
       setIsLoading(true);
 
-      // Map payload đúng backend
-      const payload = {
-        name: formData.fullName,
-        email: formData.email,
-        password: formData.password,
-        dob: formData.dob,
-        location: formData.location,
-        phoneNumber: formData.phoneNumber,
-        userCardID: formData.userCardID,
-      };
+      await userAPI.create(formData);
 
-      const result = await userAPI.create(payload);
-
-      // Nếu thành công
       alert(
         "Đăng ký thành công!\n\n" +
           "Tài khoản của bạn đang chờ duyệt. " +
@@ -86,20 +68,21 @@ function SignUp() {
       navigate("/signin");
     } catch (err) {
       if (err.errors) {
-        // Lỗi validate
+        // Nếu là lỗi Zod
         const formattedErrors = {};
         err.errors.forEach((error) => {
           formattedErrors[error.path[0]] = error.message;
         });
         setErrors(formattedErrors);
       } else if (err.message) {
-        // Lỗi backend
+        // Lỗi từ backend
         setBackendError(err.message);
       }
     } finally {
       setIsLoading(false);
     }
   };
+
 
   return (
     <Container maxWidth="sm">
@@ -134,11 +117,11 @@ function SignUp() {
               <TextField
                 fullWidth
                 label="Họ và tên"
-                name="fullName"
-                value={formData.fullName}
+                name="name"
+                value={formData.name}
                 onChange={handleChange}
-                error={!!errors.fullName}
-                helperText={errors.fullName}
+                error={!!errors.name}
+                helperText={errors.name}
                 margin="normal"
                 placeholder="Nguyễn Văn A"
                 InputProps={{

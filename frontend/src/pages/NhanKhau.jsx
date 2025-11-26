@@ -21,18 +21,20 @@ import {
   MenuItem,
   Alert
 } from "@mui/material";
-import { signUpSchema } from "../utils/validation";
 
 function NhanKhau() {
   const navigate = useNavigate();
   const { user, signOut } = useAuthStore();
+
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [backendError, setBackendError] = useState("");
 
   // Dialog state
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
-    fullname: "",
+    name: "",
     userCardID: "",
     email: "",
     phoneNumber: "",
@@ -41,14 +43,11 @@ function NhanKhau() {
     password: "",
     role: ""
   });
-  const [errors, setErrors] = useState({});
-  const [backendError, setBackendError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
 
   const roles = [
     { _id: "1", role_name: "Chủ hộ" },
     { _id: "2", role_name: "Kế toán" },
-    { _id: "3", role_name: "Thành viên" },
+    { _id: "3", role_name: "Thành viên" }
   ];
 
   if (!user) {
@@ -61,17 +60,19 @@ function NhanKhau() {
     navigate("/signin");
   };
 
+  // Lấy danh sách nhân khẩu
+  const fetchUsers = async () => {
+    try {
+      const data = await userAPI.getAll();
+      setUsers(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const data = await userAPI.getAll();
-        setUsers(data);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchUsers();
   }, []);
 
@@ -88,7 +89,6 @@ function NhanKhau() {
       password: "",
       role: ""
     });
-    setErrors({});
     setBackendError("");
   };
 
@@ -98,57 +98,43 @@ function NhanKhau() {
       if (value && !/^\d*$/.test(value)) return;
     }
     setFormData(prev => ({ ...prev, [name]: value }));
-    if (errors[name]) setErrors(prev => ({ ...prev, [name]: "" }));
     if (backendError) setBackendError("");
   };
 
   const handleSubmit = async () => {
   try {
-    // Validate bằng signUpSchema
-    signUpSchema.parse(formData);
-    setErrors({});
-
+    setBackendError("");
     setIsLoading(true);
+
     await userAPI.create(formData);
-    const data = await userAPI.getAll();
-    setUsers(data);
+
+    // Lấy danh sách mới nhất từ backend
+    await fetchUsers();
+
     handleClose();
     alert("Tạo nhân khẩu thành công!");
   } catch (err) {
-    if (err.errors) {
-      // Lỗi từ Zod
-      const formattedErrors = {};
-      err.errors.forEach((error) => {
-        formattedErrors[error.path[0]] = error.message;
-      });
-      setErrors(formattedErrors);
-    } else {
-      // Lỗi backend
-      setBackendError(err.message || "Có lỗi xảy ra");
+    setBackendError(err.message || "Có lỗi xảy ra");
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Bạn có chắc muốn xóa nhân khẩu này?")) return;
+
+    try {
+      setIsLoading(true);
+      await userAPI.delete(id);
+      setUsers(prev => prev.filter(u => u._id !== id)); // Xóa trực tiếp khỏi state
+      alert("Xóa nhân khẩu thành công!");
+    } catch (err) {
+      setBackendError(err.message || "Có lỗi xảy ra khi xóa");
+    } finally {
+      setIsLoading(false);
     }
-  } finally {
-    setIsLoading(false);
-  }
-};
-
-const handleDelete = async (id, roleName) => {
-  if (!window.confirm("Bạn có chắc muốn xóa nhân khẩu này?")) return;
-
-  try {
-    setIsLoading(true);
-    await userAPI.delete(id);
-    const data = await userAPI.getAll();
-    setUsers(data);
-    alert("Xóa nhân khẩu thành công!");
-  } catch (err) {
-    setBackendError(err.message || "Có lỗi xảy ra khi xóa");
-  } finally {
-    setIsLoading(false);
-  }
-};
-
-
-
+  };
 
   return (
     <Box sx={{ display: "flex" }}>
@@ -167,15 +153,13 @@ const handleDelete = async (id, roleName) => {
           <DialogTitle>Nhập thông tin nhân khẩu</DialogTitle>
           <DialogContent>
             {backendError && <Alert severity="error" sx={{ mb: 2 }}>{backendError}</Alert>}
-            
+
             <TextField
               fullWidth
               label="Họ và tên"
               name="name"
               value={formData.name}
               onChange={handleChange}
-              error={!!errors.name}
-              helperText={errors.name}
               margin="normal"
             />
             <TextField
@@ -184,8 +168,6 @@ const handleDelete = async (id, roleName) => {
               name="userCardID"
               value={formData.userCardID}
               onChange={handleChange}
-              error={!!errors.userCardID}
-              helperText={errors.userCardID}
               margin="normal"
             />
             <TextField
@@ -195,8 +177,6 @@ const handleDelete = async (id, roleName) => {
               type="email"
               value={formData.email}
               onChange={handleChange}
-              error={!!errors.email}
-              helperText={errors.email}
               margin="normal"
             />
             <TextField
@@ -205,8 +185,6 @@ const handleDelete = async (id, roleName) => {
               name="phoneNumber"
               value={formData.phoneNumber}
               onChange={handleChange}
-              error={!!errors.phoneNumber}
-              helperText={errors.phoneNumber}
               margin="normal"
             />
             <TextField
@@ -215,8 +193,6 @@ const handleDelete = async (id, roleName) => {
               name="location"
               value={formData.location}
               onChange={handleChange}
-              error={!!errors.location}
-              helperText={errors.location}
               margin="normal"
               multiline
               rows={2}
@@ -228,8 +204,6 @@ const handleDelete = async (id, roleName) => {
               type="date"
               value={formData.dob}
               onChange={handleChange}
-              error={!!errors.dob}
-              helperText={errors.dob}
               margin="normal"
               InputLabelProps={{ shrink: true }}
             />
@@ -240,8 +214,6 @@ const handleDelete = async (id, roleName) => {
               type="password"
               value={formData.password}
               onChange={handleChange}
-              error={!!errors.password}
-              helperText={errors.password}
               margin="normal"
             />
             <TextField
@@ -251,8 +223,6 @@ const handleDelete = async (id, roleName) => {
               select
               value={formData.role}
               onChange={handleChange}
-              error={!!errors.role}
-              helperText={errors.role}
               margin="normal"
             >
               {roles.map(r => (
@@ -274,35 +244,31 @@ const handleDelete = async (id, roleName) => {
           <Paper sx={{ mt: 2 }}>
             <Table>
               <TableHead>
-  <TableRow>
-    <TableCell>CCCD</TableCell>
-    <TableCell>Họ tên</TableCell>
-    <TableCell>Email</TableCell>
-    <TableCell>Số điện thoại</TableCell>
-    <TableCell>Vai trò</TableCell>
-    <TableCell>Hành động</TableCell> {/* thêm cột */}
-  </TableRow>
-</TableHead>
-<TableBody>
-  {users.map(u => (
-    <TableRow key={u._id}>
-      <TableCell>{u.userCardID}</TableCell>
-      <TableCell>{u.name}</TableCell>
-      <TableCell>{u.email}</TableCell>
-      <TableCell>{u.phoneNumber || "-"}</TableCell>
-      <TableCell>{u.role?.role_name || "-"}</TableCell>
-      <TableCell>
-        <Button 
-          color="error" 
-          onClick={() => handleDelete(u._id)}
-        >
-          Xóa
-        </Button>
-      </TableCell>
-    </TableRow>
-  ))}
-</TableBody>
-
+                <TableRow>
+                  <TableCell>CCCD</TableCell>
+                  <TableCell>Họ tên</TableCell>
+                  <TableCell>Email</TableCell>
+                  <TableCell>Số điện thoại</TableCell>
+                  <TableCell>Vai trò</TableCell>
+                  <TableCell>Hành động</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {users.map(u => (
+                  <TableRow key={u._id}>
+                    <TableCell>{u.userCardID}</TableCell>
+                    <TableCell>{u.name}</TableCell>
+                    <TableCell>{u.email}</TableCell>
+                    <TableCell>{u.phoneNumber || "-"}</TableCell>
+                    <TableCell>{u.role?.role_name || "-"}</TableCell>
+                    <TableCell>
+                      <Button color="error" onClick={() => handleDelete(u._id)}>
+                        Xóa
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
             </Table>
           </Paper>
         )}
