@@ -39,7 +39,7 @@ axiosInstance.interceptors.response.use(
     }
     
     // Ném lỗi để các hàm .catch() (như trong authStore) có thể bắt
-    return Promise.reject(error.response.data); 
+    return Promise.reject(error.response.data || error.message); 
   }
 );
 

@@ -1,90 +1,54 @@
-import { Box, Typography } from "@mui/material";
-import { Home, Users, User, FileText, PlusCircle, History, CheckCircle, Repeat } from "lucide-react";
+import React from 'react';
+import { Divider, Toolbar, Drawer, List, ListItem, ListItemText, ListItemButton, Box, Typography, Button } from '@mui/material';
+const drawerWidth = 240;
 
-export default function Sidebar() {
+const defaultMenuItems = [
+  { text: 'Quản lý nhân khẩu', path: '/nhankhau' },
+  { text: 'Quản lý hộ khẩu', path: '/hokhau' },
+  { text: 'Quản lý thu chi', path: '/thuchi' },
+  { text: 'Danh sách người cần phê duyệt', path: '/pheduyet' },
+];
+
+function Sidebar({ user, navigate, onLogout }) {
   return (
-    <Box
+    <Drawer
+      variant="permanent"
       sx={{
-        width: "304px",
-        height: "100vh",
-        backgroundColor: "#1F2335",
-        padding: "24px 20px",
-        color: "#D4DBE5",
-        display: "flex",
-        flexDirection: "column",
-        gap: "18px",
+        width: drawerWidth,
+        flexShrink: 0,
+        '& .MuiDrawer-paper': { width: drawerWidth, boxSizing: 'border-box' },
       }}
     >
-
-      {/* Title */}
-      <Typography
-        sx={{
-          fontSize: "30px",
-          fontWeight: 700,
-          color: "white",
-          textAlign: "center",
-          mb: 4,
-          mt: 4,
-        }}
+      <Box
+        sx={{ p: 2, cursor: 'pointer' }}
+        onClick={() => navigate('/dashboard')}
       >
-        MY APP
-      </Typography>
-
-      {/* MENU */}
-      <SectionTitle text="Menu" />
-      <MenuItem icon={<Home size={18} />} label="Dashboard" />
-      <MenuItem icon={<Users size={18} />} label="Quản lý hộ khẩu" />
-      <MenuItem icon={<User size={18} />} label="Quản lý nhân khẩu" />
-
-      {/* ACTION */}
-      <SectionTitle text="Action" />
-      <MenuItem icon={<FileText size={18} />} label="Danh sách cần phê duyệt" />
-      <MenuItem icon={<PlusCircle size={18} />} label="Thêm thông tin cư dân" />
-
-      {/* HISTORY */}
-      <SectionTitle text="History" />
-      <MenuItem icon={<History size={18} />} label="Lịch sử giao dịch" />
-      <MenuItem icon={<CheckCircle size={18} />} label="Lịch sử phê duyệt" />
-      <MenuItem icon={<Repeat size={18} />} label="Lịch sử thay đổi" />
-
-    </Box>
+        <Typography variant="h6" gutterBottom>
+          App quản lý cư dân
+        </Typography>
+      </Box>
+      <Toolbar />
+      <Box sx={{ overflow: 'auto' }}>
+        <List>
+          {defaultMenuItems.map(item => (
+            <ListItem key={item.text} disablePadding>
+              <ListItemButton onClick={() => navigate(item.path)}>
+                <ListItemText primary={item.text} />
+              </ListItemButton>
+            </ListItem>
+          ))}
+        </List>
+        <Divider />
+        <Box sx={{ mt: 2, px: 2 }}>
+          <Box sx={{ mt: 1 }}>
+            <Button variant="text" color="error" onClick={onLogout}>
+              Đăng xuất
+            </Button>
+          </Box>
+        </Box>
+      </Box>
+    </Drawer>
   );
 }
 
-function SectionTitle({ text }) {
-  return (
-    <Typography
-      sx={{
-        fontSize: "12px",
-        fontWeight: 600,
-        color: "#A0A8B0",
-        mt: 1,
-        mb: "-4px",
-      }}
-    >
-      {text}
-    </Typography>
-  );
-}
-
-function MenuItem({ icon, label }) {
-  return (
-    <Box
-      sx={{
-        display: "flex",
-        alignItems: "center",
-        gap: "10px",
-        padding: "10px",
-        cursor: "pointer",
-        transition: "0.2s",
-        "&:hover": {
-          color: "white",
-          backgroundColor: "#2A2E42",
-        },
-      }}
-    >
-      {icon}
-      <Typography sx={{ fontSize: "14px" }}>{label}</Typography>
-    </Box>
-  );
-}
+export { Sidebar, drawerWidth };

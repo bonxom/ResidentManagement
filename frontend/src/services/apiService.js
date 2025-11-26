@@ -46,8 +46,8 @@ export const userAPI = {
 
   // Tạo user mới
   create: async (userData) => {
-    const response = await api.post('/users', userData)
-    return response.data
+    const response = await api.post("/users", userData);
+    return response.data;
   },
 
   // Cập nhật user
@@ -117,74 +117,6 @@ export const householdAPI = {
   // Xóa thành viên khỏi hộ gia đình
   removeMember: async (householdId, memberId) => {
     const response = await api.delete(`/households/${householdId}/members/${memberId}`)
-    return response.data
-  },
-}
-
-// ============= FEE API =============
-export const feeAPI = {
-  // Lấy tất cả phí
-  getAll: async (params = {}) => {
-    const response = await api.get('/fees', { params })
-    return response.data
-  },
-
-  // Lấy phí theo ID
-  getById: async (id) => {
-    const response = await api.get(`/fees/${id}`)
-    return response.data
-  },
-
-  // Tạo phí mới
-  create: async (feeData) => {
-    const response = await api.post('/fees', feeData)
-    return response.data
-  },
-
-  // Cập nhật phí
-  update: async (id, feeData) => {
-    const response = await api.put(`/fees/${id}`, feeData)
-    return response.data
-  },
-
-  // Xóa phí
-  delete: async (id) => {
-    const response = await api.delete(`/fees/${id}`)
-    return response.data
-  },
-
-  // Thanh toán phí
-  pay: async (id, paymentData) => {
-    const response = await api.post(`/fees/${id}/pay`, paymentData)
-    return response.data
-  },
-
-  // Lấy lịch sử thanh toán
-  getPaymentHistory: async (id) => {
-    const response = await api.get(`/fees/${id}/payments`)
-    return response.data
-  },
-}
-
-// ============= STATISTICS API =============
-export const statisticsAPI = {
-  // Dashboard overview
-  getOverview: async () => {
-    const response = await api.get('/statistics/overview')
-    return response.data
-  },
-
-  // Thống kê theo tháng
-  getMonthly: async (year, month) => {
-    const response = await api.get('/statistics/monthly', {
-      params: { year, month }
-    })
-    return response.data
-  },
-
-  // Thống kê tài chính
-  getFinancial: async (params = {}) => {
-    const response = await api.get('/statistics/financial', { params })
     return response.data
   },
 }

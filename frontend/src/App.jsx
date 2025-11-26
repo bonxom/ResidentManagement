@@ -4,6 +4,7 @@ import SignIn from './pages/SignIn'
 import SignUp from './pages/SignUp'
 import Dashboard from './pages/Dashboard'
 import ProtectedRoute from './components/ProtectedRoute'
+import NhanKhau from './pages/NhanKhau'
 import Quanlydancu from "./pages/Admin/Quanlydancu";
 import Trangchinh from  "./pages/Admin/trangchinh";
 
@@ -49,6 +50,7 @@ function App() {
               </ProtectedRoute>
             } 
           />
+          <Route path="/nhankhau" element={<NhanKhau />} />
           <Route path="/qldc" element={<Quanlydancu />} />
           <Route path="/tc" element={<Trangchinh />} />
         </Routes>
