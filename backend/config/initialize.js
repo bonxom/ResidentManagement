@@ -31,6 +31,16 @@ const INIT_PERMISSIONS = {
   "CREATE HOUSEHOLD": "Create a household"  ,
   "EDIT HOUSEHOLD": "Edit household information"  ,
   "DELETE HOUSEHOLD": "Delete a household" ,
+  // fee & contribution
+  "VIEW FEES": "See all fees/contributions",
+  "CREATE FEE": "Create a fee or contribution",
+  "EDIT FEE": "Edit fee information",
+  "DELETE FEE": "Delete a fee",
+  "CALCULATE FEE": "Calculate household fee payable",
+  "RECORD PAYMENT": "Record fee payment transaction",
+  "VIEW FEE STATS": "View fee collection statistics",
+  // registration approval
+  "APPROVE REQUEST": "Approve or reject registration requests",
 }
 
 const INIT_ROLES = {
@@ -62,7 +72,16 @@ const INIT_ROLES = {
     "VIEW HOUSEHOLD",
     "CREATE HOUSEHOLD",
     "EDIT HOUSEHOLD",
-    "DELETE HOUSEHOLD"
+    "DELETE HOUSEHOLD",
+    // fee
+    "VIEW FEES",
+    "CREATE FEE",
+    "EDIT FEE",
+    "DELETE FEE",
+    "CALCULATE FEE",
+    "RECORD PAYMENT",
+    "VIEW FEE STATS",
+    "APPROVE REQUEST",
   ],
 
   "ACCOUNTANT": [
@@ -72,6 +91,11 @@ const INIT_ROLES = {
     "VIEW ROLES",
     "VIEW HOUSEHOLD LIST",
     "VIEW HOUSEHOLD",
+    // fee
+    "VIEW FEES",
+    "CALCULATE FEE",
+    "RECORD PAYMENT",
+    "VIEW FEE STATS",
   ],
 
   "HOUSE MEMBER": [

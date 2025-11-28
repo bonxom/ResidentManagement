@@ -52,6 +52,8 @@ const userSchema = new mongoose.Schema(
 
 // Middleware của Mongoose: Tự động HASH mật khẩu trước khi LƯU
 userSchema.pre("save", async function (next) {
+  // Cho phép bỏ qua hash nếu đã được hash sẵn (dùng khi duyệt đăng ký).
+  if (this.$locals?.skipHash) return next();
   // Chỉ hash nếu mật khẩu được thay đổi (hoặc là user mới)
   if (!this.isModified("password")) return next();
 

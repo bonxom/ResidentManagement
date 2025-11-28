@@ -9,6 +9,7 @@ import {
   addMember,
   removeMember,
 } from "../controllers/householdController.js";
+import { calculateHouseholdFee } from "../controllers/feeController.js";
 import { protect, authorizePermission } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
@@ -24,5 +25,12 @@ router.get("/:id/members", protect, authorizePermission("VIEW HOUSEHOLD"), getMe
 router.post("/:id/members",protect, authorizePermission("EDIT HOUSEHOLD"), addMember);
 
 router.delete("/:householdId/members/:memberId", protect, authorizePermission("EDIT HOUSEHOLD"), removeMember);
+
+router.post(
+  "/:id/calculate-fee",
+  protect,
+  authorizePermission("CALCULATE FEE"),
+  calculateHouseholdFee
+);
 
 export default router;
