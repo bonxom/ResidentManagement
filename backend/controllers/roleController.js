@@ -28,9 +28,12 @@ export const createRole = async (req, res) => {
     permissions: perList,
   });
 
+  const populatedRole = await Role.findById(role._id)
+    .populate("permissions", "permission_name description");
+
   res.status(200).json({
     message: "Created role",
-    role
+    role: populatedRole
   });
 }
 
@@ -38,7 +41,9 @@ export const createRole = async (req, res) => {
 // @route   GET /roles
 // @access  Private (Admin)
 export const getAllRoles = async (req, res) => {
-  const roles = await Role.find().sort({ createdAt: -1 });
+  const roles = await Role.find()
+    .populate("permissions", "permission_name description")
+    .sort({ createdAt: -1 });
   res.status(200).json({
     message: "Request success",
     roles
@@ -55,7 +60,8 @@ export const getRole = async (req, res) => {
     throw new AppError(ERROR_CODE.ROLE_ID_INVALID);
   }
   // check if role is existed
-  const role = await Role.findById(id);
+  const role = await Role.findById(id)
+    .populate("permissions", "permission_name description");
   if (!role) throw new AppError(ERROR_CODE.ROLE_NOT_EXISTED);
 
   res.status(200).json({
@@ -97,9 +103,12 @@ export const updateRole = async (req, res) => {
 
   await role.save();
 
+  const populatedRole = await Role.findById(role._id)
+    .populate("permissions", "permission_name description");
+
   res.status(200).json({
     message: "Updated role",
-    role
+    role: populatedRole
   });
 }
 
@@ -117,4 +126,61 @@ export const deleteRole = async (req, res) => {
   res.status(200).json({
     message: "Deleted role"
   })
+}
+
+// @desc    Get permissions of a role
+// @route   GET /roles/:id/permissions
+// @access  Private (Hamlet Leader)
+export const getRolePermissions = async (req, res) => {
+  const { id } = req.params;
+  
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new AppError(ERROR_CODE.ROLE_ID_INVALID);
+  }
+
+  const role = await Role.findById(id)
+    .populate("permissions", "permission_name description");
+    
+  if (!role) {
+    throw new AppError(ERROR_CODE.ROLE_NOT_EXISTED);
+  }
+
+  res.status(200).json({
+    message: "Request success",
+    role_name: role.role_name,
+    permissions: role.permissions
+  });
+}
+
+// @desc    Update permissions of a role
+// @route   PUT /roles/:id/permissions
+// @access  Private (Hamlet Leader)
+export const updateRolePermissions = async (req, res) => {
+  const { id } = req.params;
+  const { permissions } = req.body;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new AppError(ERROR_CODE.ROLE_ID_INVALID);
+  }
+
+  if (!Array.isArray(permissions)) {
+    return res.status(400).json({ message: "Permissions must be an array" });
+  }
+
+  const role = await Role.findById(id);
+  if (!role) {
+    throw new AppError(ERROR_CODE.ROLE_NOT_EXISTED);
+  }
+
+  // Cập nhật danh sách permissions
+  role.permissions = await Permission.findByListOfName(permissions);
+  await role.save();
+
+  const updatedRole = await Role.findById(id)
+    .populate("permissions", "permission_name description");
+
+  res.status(200).json({
+    message: "Updated role permissions",
+    role: updatedRole
+  });
 }

@@ -8,9 +8,10 @@ import permissionRoutes from "./routes/permissionRoutes.js";
 import roleRoutes from "./routes/roleRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import authRoutes from "./routes/authRoutes.js"; 
-import { errorHandler } from "./middleware/errorHandler.js";
 import householdRoutes from "./routes/householdRoutes.js";
+import { errorHandler } from "./middleware/errorHandler.js";
 import { defaultInit } from "./config/initialize.js";
+
 
 const PORT = process.env.PORT;
 
