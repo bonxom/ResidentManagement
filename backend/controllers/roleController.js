@@ -19,7 +19,7 @@ export const createRole = async (req, res) => {
   }
 
   if (permissions !== undefined && !Array.isArray(permissions)) {
-    throw new AppError(ERROR_CODE.PERMISSION_LIST_IVALID);
+    throw new AppError(ERROR_CODE.PERMISSION_LIST_INVALID);
   }
 
   const perList = await Permission.findByListOfName(permissions);
@@ -30,9 +30,9 @@ export const createRole = async (req, res) => {
 
   res.status(200).json({
     message: "Created role",
-    role
+    role,
   });
-}
+};
 
 // @desc    Get all roles
 // @route   GET /roles
@@ -41,9 +41,9 @@ export const getAllRoles = async (req, res) => {
   const roles = await Role.find().sort({ createdAt: -1 });
   res.status(200).json({
     message: "Request success",
-    roles
+    roles,
   });
-}
+};
 
 // @desc    Get role by ID
 // @route   GET /roles/:id
@@ -60,9 +60,9 @@ export const getRole = async (req, res) => {
 
   res.status(200).json({
     message: "Request success",
-    role
+    role,
   });
-}
+};
 
 // @desc    Update an existing role
 // @route   PUT /roles/:id
@@ -71,7 +71,7 @@ export const updateRole = async (req, res) => {
   const { id } = req.params;
   // ID must be a mongoose ID
   if (!mongoose.Types.ObjectId.isValid(id)) {
-    throw new AppError(ERROR_CODE.ROLE_ID_INVALID)
+    throw new AppError(ERROR_CODE.ROLE_ID_INVALID);
   }
   // check input
   const { role_name, permissions } = req.body;
@@ -99,9 +99,9 @@ export const updateRole = async (req, res) => {
 
   res.status(200).json({
     message: "Updated role",
-    role
+    role,
   });
-}
+};
 
 // @desc    Delete a role
 // @route   DELETE /roles/:id
@@ -109,12 +109,18 @@ export const updateRole = async (req, res) => {
 export const deleteRole = async (req, res) => {
   const { id } = req.params;
   // ID must be a mongoose ID
-  if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({ message: "Invalid role ID" });
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    // return res.status(400).json({ message: "Invalid role ID" });
+    throw new AppError(ERROR_CODE.ROLE_ID_INVALID);
+  }
 
   const role = await Role.findByIdAndDelete(id);
-  if (!role) return res.status(404).json({ message: "Role not found" });
+  if (!role) {
+    // return res.status(404).json({ message: "Role not found" });
+    throw new AppError(ERROR_CODE.ROLE_NOT_EXISTED);
+  }
   // console.log(role.role_name);
   res.status(200).json({
-    message: "Deleted role"
-  })
-}
+    message: "Deleted role",
+  });
+};

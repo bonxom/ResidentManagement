@@ -65,43 +65,8 @@ export const ERROR_CODE = {
     message: "Permission ID must be a mongoose.Types.ObjectId",
     statusCode: 400,
   },
-  PERMISSION_LIST_EMPTY: {
-    code: 2005,
-    message: "Permission list cannot be empty",
-    statusCode: 400,
-  },
 
-  //Không có quyền truy cập route
-  FORBIDDEN: {
-    code: 3000,
-    message: "You do not have permission to access this resource",
-    statusCode: 403,
-  },
-
-  //Thiếu req.user (chưa đăng nhập)
-  UNAUTHORIZED: {
-    code: 3001,
-    message: "Authentication required",
-    statusCode: 401,
-  },
-  //Missing role in user
-  USER_ROLE_NOT_FOUND: {
-    code: 3002,
-    message: "User role not found",
-    statusCode: 403,
-  },
-  //Middleware kiểm tra role đã có nhưng chưa có mã lỗi.
-  AUTHORIZATION_ROLE_NOT_ALLOWED: {
-    code: 3003,
-    message: "Your role is not allowed to access this resource",
-    statusCode: 403,
-  },
-  //Middleware check quyền → bạn có logic nhưng không có mã lỗi.
-  AUTHORIZATION_PERMISSION_DENIED: {
-    code: 3004,
-    message: "You do not have the required permission",
-    statusCode: 403,
-  },
+  //Lỗi liên quan đến Role
 
   //Lỗi liên quan đến User
   USER_NAME_REQUIRED: {
@@ -156,14 +121,61 @@ export const ERROR_CODE = {
     message: "Password is required",
     statusCode: 400,
   },
+  USER_NOT_FOUND: {
+    code: 5005,
+    message: "User not found",
+    statusCode: 404,
+  },
+
   MISSING_FIELDS: {
     code: 6000,
     message: "Missing required fields",
     statusCode: 400,
   },
-  // INVALID_PAYLOAD: {
-  //   code: 6001,
-  //   message: "Invalid request payload",
-  //   statusCode: 400,
-  // },
+  EMAIL_PASSWORD_REQUIRED: {
+    code: 6001,
+    message: "Email and password are required",
+    statusCode: 400,
+  },
+  // HOUSEHOLD MODULE
+  HOUSEHOLD_INFO_INCOMPLETE: {
+    code: 7001,
+    message: "Household ID, address, and leader ID are required",
+    statusCode: 400,
+  },
+
+  HOUSEHOLD_ID_EXISTED: {
+    code: 7002,
+    message: "Household ID already exists",
+    statusCode: 400,
+  },
+
+  HOUSEHOLD_NOT_FOUND: {
+    code: 7003,
+    message: "Household not found",
+    statusCode: 404,
+  },
+
+  USER_ALREADY_HOUSEHOLD_MEMBER: {
+    code: 7004,
+    message: "User is already a member of this household",
+    statusCode: 400,
+  },
+
+  CANNOT_REMOVE_HOUSEHOLD_LEADER: {
+    code: 7005,
+    message: "Cannot remove household leader. Assign a new leader first",
+    statusCode: 400,
+  },
+
+  USER_CARD_ID_EXISTED: {
+    code: 8001,
+    message: "User card ID already exists",
+    statusCode: 400,
+  },
+  CANNOT_DELETE_OWN_ACCOUNT: {
+    code: 8002,
+    message: "You cannot delete your own account",
+    statusCode: 400,
+  },
 };

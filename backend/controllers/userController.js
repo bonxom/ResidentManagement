@@ -1,3 +1,5 @@
+import { AppError } from "../middleware/AppError.js";
+import { ERROR_CODE } from "../middleware/errorCode.js";
 import mongoose from "mongoose";
 import User from "../models/User.js";
 import Role from "../models/Role.js"; // Giả sử bạn có model Role
@@ -8,29 +10,43 @@ import Role from "../models/Role.js"; // Giả sử bạn có model Role
 export const createUser = async (req, res) => {
   try {
     // Chỉ lấy các trường an toàn từ body. Bỏ qua 'roleName'.
-    const { email, password, name, sex, dob, location, phoneNumber, userCardID } =
-      req.body;
+    const {
+      email,
+      password,
+      name,
+      sex,
+      dob,
+      location,
+      phoneNumber,
+      userCardID,
+    } = req.body;
 
     if (!userCardID) {
-      return res.status(400).json({ message: "Thiếu userCardID" });
+      // return res.status(400).json({ message: "Thiếu userCardID" });
+      throw new AppError(ERROR_CODE.MISSING_FIELDS);
     }
 
     // Kiểm tra xem email đã tồn tại chưa
     const userExists = await User.findByEmail(email);
     if (userExists) {
-      return res.status(400).json({ message: "Email đã tồn tại" });
+      // return res.status(400).json({ message: "Email đã tồn tại" });
+      throw new AppError(ERROR_CODE.USER_EMAIL_EXISTED);
     }
 
     const userCardExists = await User.findByUserCardID(userCardID);
     if (userCardExists) {
-      return res.status(400).json({ message: "User card ID đã tồn tại" });
+      // return res.status(400).json({ message: "User card ID đã tồn tại" });
+      throw new AppError(ERROR_CODE.USER_CARD_ID_EXISTED);
     }
 
     // Đảm bảo bạn đã có vai trò "Cư dân" trong database
-    const defaultRole = await Role.findByName("HOUSE MEMBER"); 
+    const defaultRole = await Role.findByName("HOUSE MEMBER");
     if (!defaultRole) {
       // Đây là lỗi nghiêm trọng của hệ thống
-      return res.status(500).json({ message: "Lỗi: Không tìm thấy vai trò mặc định." });
+      // return res
+      //   .status(500)
+      //   .json({ message: "Lỗi: Không tìm thấy vai trò mặc định." });
+      throw new AppError(ERROR_CODE.ROLE_NOT_EXISTED);
     }
 
     // Tạo user mới
@@ -68,7 +84,7 @@ export const createUser = async (req, res) => {
 export const getAllUsers = async (req, res) => {
   try {
     // .populate('role') sẽ lấy thông tin chi tiết của Role thay vì chỉ ID
-    const users = await User.find({}).populate("role", "role_name description"); 
+    const users = await User.find({}).populate("role", "role_name description");
     res.status(200).json(users);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -112,10 +128,13 @@ export const updateUser = async (req, res) => {
         if (newRole) {
           user.role = newRole._id;
         } else {
-           return res.status(400).json({ message: "Vai trò cập nhật không hợp lệ" });
+          // return res
+          //   .status(400)
+          //   .json({ message: "Vai trò cập nhật không hợp lệ" });
+          throw new AppError(ERROR_CODE.ROLE_NOT_EXISTED);
         }
       }
-      
+
       // Lưu ý: Nếu bạn cho phép cập nhật mật khẩu ở đây,
       // bạn cần xử lý hash riêng vì 'findByIdAndUpdate' không kích hoạt 'pre-save'
 
@@ -134,16 +153,24 @@ export const updateUser = async (req, res) => {
 // @access  Private (Chỉ Tổ trưởng/Admin)
 export const deleteUser = async (req, res) => {
   const { id } = req.params;
-  if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({ message: "Invalid user ID" });
+  if (!mongoose.Types.ObjectId.isValid(id))
+    // return res.status(400).json({ message: "Invalid user ID" });
+    throw new AppError(ERROR_CODE.USER_ID_INVALID);
 
   if (req.user?._id?.toString() === id) {
-    return res.status(400).json({ message: "You cannot delete your own account" });
+    // return res
+    //   .status(400)
+    //   .json({ message: "You cannot delete your own account" });
+    throw new AppError(ERROR_CODE.CANNOT_DELETE_OWN_ACCOUNT);
   }
 
   const user = await User.findByIdAndDelete(id);
-  if (!user) return res.status(404).json({ message: "User not found" });
+  if (!user) {
+    // return res.status(404).json({ message: "User not found" });
+    throw new AppError(ERROR_CODE.USER_NOT_FOUND);
+  }
 
   return res.status(200).json({
-    message: "Deleted user"
-  })
+    message: "Deleted user",
+  });
 };
