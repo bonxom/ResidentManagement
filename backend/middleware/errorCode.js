@@ -66,8 +66,6 @@ export const ERROR_CODE = {
     statusCode: 400,
   },
 
-  //Lỗi liên quan đến Role
-
   //Lỗi liên quan đến User
   USER_NAME_REQUIRED: {
     code: 4003,
@@ -91,6 +89,11 @@ export const ERROR_CODE = {
     code: 4002,
     message: "Email already exists",
     statusCode: 400,
+  },
+  USER_NOT_FOUND: {
+    code: 4003,
+    message: "User not found",
+    statusCode: 404,
   },
   //Lỗi Authentication (JWT, login)
 
@@ -116,15 +119,11 @@ export const ERROR_CODE = {
     message: "Email or password is incorrect",
     statusCode: 401,
   },
+
   PASSWORD_REQUIRED: {
     code: 5004,
     message: "Password is required",
     statusCode: 400,
-  },
-  USER_NOT_FOUND: {
-    code: 5005,
-    message: "User not found",
-    statusCode: 404,
   },
 
   MISSING_FIELDS: {
