@@ -8,13 +8,16 @@ import permissionRoutes from "./routes/permissionRoutes.js";
 import roleRoutes from "./routes/roleRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import authRoutes from "./routes/authRoutes.js"; 
+
 import feeRoutes from "./routes/feeRoutes.js";
 import transactionRoutes from "./routes/transactionRoutes.js";
 import statsRoutes from "./routes/statsRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
-import { errorHandler } from "./middleware/errorHandler.js";
+
 import householdRoutes from "./routes/householdRoutes.js";
+import { errorHandler } from "./middleware/errorHandler.js";
 import { defaultInit } from "./config/initialize.js";
+
 
 const PORT = process.env.PORT;
 

@@ -44,6 +44,13 @@ const userSchema = new mongoose.Schema(
       ref: "Role", // Tên Model Role của bạn (phải khớp)
       required: true,
     },
+    // Link đến household (không bắt buộc)
+    household: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Household",
+      required: false,
+      default: null,
+    },
   },
   {
     timestamps: true, // Tự động thêm createdAt và updatedAt
