@@ -40,7 +40,10 @@ const INIT_PERMISSIONS = {
   "RECORD PAYMENT": "Record fee payment transaction",
   "VIEW FEE STATS": "View fee collection statistics",
   // registration approval
+  "READ REQUESTS LIST": "read requests list",
+  "REJECT REQUEST": "reject request",
   "APPROVE REQUEST": "Approve or reject registration requests",
+
 }
 
 const INIT_ROLES = {
@@ -81,6 +84,8 @@ const INIT_ROLES = {
     "CALCULATE FEE",
     "RECORD PAYMENT",
     "VIEW FEE STATS",
+     "READ REQUESTS LIST",
+    "REJECT REQUEST",
     "APPROVE REQUEST",
   ],
 

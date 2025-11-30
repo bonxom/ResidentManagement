@@ -19,7 +19,7 @@ export const createRole = async (req, res) => {
   }
 
   if (permissions !== undefined && !Array.isArray(permissions)) {
-    throw new AppError(ERROR_CODE.PERMISSION_LIST_IVALID);
+    throw new AppError(ERROR_CODE.PERMISSION_LIST_INVALID);
   }
 
   const perList = await Permission.findByListOfName(permissions);
@@ -90,7 +90,7 @@ export const updateRole = async (req, res) => {
 
   if (permissions !== undefined) {
     if (!Array.isArray(permissions)) {
-      throw new AppError(ERROR_CODE.PERMISSION_LIST_IVALID);
+      throw new AppError(ERROR_CODE.PERMISSION_LIST_INVALID);
     }
     role.permissions = await Permission.findByListOfName(permissions);
   }

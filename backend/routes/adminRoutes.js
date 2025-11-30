@@ -11,7 +11,7 @@ const router = Router();
 router.get(
   "/requests",
   protect,
-  authorizePermission("APPROVE REQUEST"),
+  authorizePermission("READ REQUESTS LIST"),
   getAllRequests
 );
 
@@ -25,7 +25,7 @@ router.post(
 router.post(
   "/requests/:id/reject",
   protect,
-  authorizePermission("APPROVE REQUEST"),
+  authorizePermission("REJECT REQUEST"),
   rejectRequest
 );
 
