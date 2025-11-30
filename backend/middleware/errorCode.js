@@ -161,9 +161,9 @@ export const ERROR_CODE = {
     message: "Missing required fields",
     statusCode: 400,
   },
-  // INVALID_PAYLOAD: {
-  //   code: 6001,
-  //   message: "Invalid request payload",
-  //   statusCode: 400,
-  // },
+  INVALID_PAYLOAD: {
+    code: 6001,
+    message: "Invalid request payload",
+    statusCode: 400,
+  },
 };
