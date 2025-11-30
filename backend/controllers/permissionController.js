@@ -49,7 +49,7 @@ export const getPermission = async (req, res) => {
   // ID must be a mongoose ID
   if (!mongoose.Types.ObjectId.isValid(id))
     // return res.status(400).json({ message: "Invalid permission ID" });
-    throw new AppError(ERROR_CODE.ROLE_ID_INVALID);
+    throw new AppError(ERROR_CODE.PERMISSION_ID_INVALID);
 
   const permission = await Permission.findById(id);
   if (!permission)
@@ -70,7 +70,7 @@ export const updatePermission = async (req, res) => {
   // ID must be a mongoose ID
   if (!mongoose.Types.ObjectId.isValid(id))
     // return res.status(400).json({ message: "Invalid permission ID" });
-    throw new AppError(ERROR_CODE.ROLE_ID_INVALID);
+    throw new AppError(ERROR_CODE.PERMISSION_ID_INVALID);
   const { permission_name, description } = req.body;
   //check input
   const permission = await Permission.findById(id);
@@ -107,7 +107,7 @@ export const deletePermission = async (req, res) => {
   // ID must be a mongoose ID
   if (!mongoose.Types.ObjectId.isValid(id))
     // return res.status(400).json({ message: "Invalid permission ID" });
-    throw new AppError(ERROR_CODE.ROLE_ID_INVALID);
+    throw new AppError(ERROR_CODE.PERMISSION_ID_INVALID);
 
   const permission = await Permission.findByIdAndDelete(id);
   if (!permission)

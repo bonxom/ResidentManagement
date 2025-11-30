@@ -12,7 +12,10 @@ import {
   addTemporaryResident,
   endOfTemporaryLiving
 } from "../controllers/householdController.js";
+
+import { calculateHouseholdFee } from "../controllers/feeController.js";
 import { protect, authorizePermission, authorize } from "../middleware/authMiddleware.js";
+
 
 const router = express.Router();
 
@@ -28,6 +31,12 @@ router.post("/:id/members",protect, authorizePermission("EDIT HOUSEHOLD"), addMe
 
 router.delete("/:householdId/members/:memberId", protect, authorizePermission("EDIT HOUSEHOLD"), removeMember);
 
+router.post(
+  "/:id/calculate-fee",
+  protect,
+  authorizePermission("CALCULATE FEE"),
+  calculateHouseholdFee
+);
 router.get("/:householdId/resident-histories", protect, authorize("HAMLET LEADER"), getResidentHistory);
 router.post("/:householdId/temporary-residents", protect, authorize("HAMLET LEADER"), addTemporaryResident);
 router.put("/:householdId/temporary-residents/end", protect, authorize("HAMLET LEADER"), endOfTemporaryLiving);
