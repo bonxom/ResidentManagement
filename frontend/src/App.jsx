@@ -5,6 +5,7 @@ import SignUp from './pages/SignUp'
 import Dashboard from './pages/Dashboard'
 import ProtectedRoute from './components/ProtectedRoute'
 import NhanKhau from './pages/NhanKhau'
+import Whoami from './pages/Whoami'
 
 const theme = createTheme({
   palette: {
@@ -46,6 +47,7 @@ function App() {
             } 
           />
           <Route path="/nhankhau" element={<NhanKhau />} />
+          <Route path="/whoami" element={<Whoami />} />
         </Routes>
       </Router>
     </ThemeProvider>
