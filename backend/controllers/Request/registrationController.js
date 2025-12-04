@@ -1,6 +1,6 @@
-import RegistrationRequest from "../models/RegistrationRequest.js";
-import User from "../models/User.js";
-import Role from "../models/Role.js";
+import RegistrationRequest from "../../models/Request/RegistrationRequest.js";
+import User from "../../models/User.js";
+import Role from "../../models/Role.js";
 
 export const register = async (req, res, next) => {
   try {

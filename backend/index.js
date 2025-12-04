@@ -10,9 +10,8 @@ import userRoutes from "./routes/userRoutes.js";
 import authRoutes from "./routes/authRoutes.js"; 
 
 import feeRoutes from "./routes/feeRoutes.js";
-import transactionRoutes from "./routes/transactionRoutes.js";
-import statsRoutes from "./routes/statsRoutes.js";
-import adminRoutes from "./routes/adminRoutes.js";
+import transactionRoutes from "./routes/Request/transactionRoutes.js";
+import registerRoutes from "./routes/Request/registerRoutes.js";
 
 import householdRoutes from "./routes/householdRoutes.js";
 import { errorHandler } from "./middleware/errorHandler.js";
@@ -39,9 +38,9 @@ app.use("/users", userRoutes);
 app.use("/auth", authRoutes);
 app.use("/households", householdRoutes);
 app.use("/fees", feeRoutes);
+// phê duyệt
 app.use("/transactions", transactionRoutes);
-app.use("/stats", statsRoutes);
-app.use("/admin", adminRoutes);
+app.use("/requests", registerRoutes);
 app.use(errorHandler);
 
 app.listen(PORT, () => console.log(`Server running on ${PORT}`));

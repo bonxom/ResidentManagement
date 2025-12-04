@@ -2,8 +2,9 @@ import { Router } from "express";
 import {
   createTransaction,
   listTransactions,
-} from "../controllers/transactionController.js";
-import { protect, authorizePermission } from "../middleware/authMiddleware.js";
+  getFeeStats,
+} from "../../controllers/Request/transactionController.js";
+import { protect, authorizePermission } from "../../middleware/authMiddleware.js";
 
 const router = Router();
 
@@ -19,5 +20,13 @@ router.get(
   authorizePermission("VIEW FEES"),
   listTransactions
 );
+
+router.get(
+  "/stats/:id",
+  protect,
+  authorizePermission("VIEW FEE STATS"),
+  getFeeStats
+);
+
 
 export default router;
