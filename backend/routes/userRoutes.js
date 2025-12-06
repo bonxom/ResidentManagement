@@ -7,11 +7,8 @@ import {
   deleteUser,
 } from "../controllers/userController.js";
 import { protect, authorize, authorizePermission } from "../middleware/authMiddleware.js";
-
-
 const router = express.Router();
-
-router.post("/", createUser);
+router.post("/", protect, authorizePermission("CREATE USER"), createUser);
 router.get("/", protect, authorizePermission("VIEW USER LIST"), getAllUsers);
 router.get("/:id", protect, authorizePermission("VIEW USER"), getUserById);
 router.put("/:id", protect, authorizePermission("EDIT USER"), updateUser);

@@ -11,10 +11,10 @@ import authRoutes from "./routes/authRoutes.js";
 import feeRoutes from "./routes/feeRoutes.js";
 import transactionRoutes from "./routes/transactionRoutes.js";
 import statsRoutes from "./routes/statsRoutes.js";
-import adminRoutes from "./routes/adminRoutes.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import householdRoutes from "./routes/householdRoutes.js";
 import { defaultInit } from "./config/initialize.js";
+import requestRoutes from "./routes/requestRoutes.js";
 
 const PORT = process.env.PORT;
 
@@ -30,15 +30,16 @@ console.log("Connected to Database");
 
 await defaultInit();
 
-app.use("/permissions", permissionRoutes);
-app.use("/roles", roleRoutes);
-app.use("/users", userRoutes);
-app.use("/auth", authRoutes);
-app.use("/households", householdRoutes);
-app.use("/fees", feeRoutes);
-app.use("/transactions", transactionRoutes);
-app.use("/stats", statsRoutes);
-app.use("/admin", adminRoutes);
+app.use("/api/permissions", permissionRoutes);
+app.use("/api/roles", roleRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/households", householdRoutes);
+app.use("/api/requests", requestRoutes);
+
+app.use("/api/fees", feeRoutes);
+app.use("/api/transactions", transactionRoutes);
+app.use("/api/stats", statsRoutes);
 app.use(errorHandler);
 
 app.listen(PORT, () => console.log(`Server running on ${PORT}`));

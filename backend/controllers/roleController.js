@@ -5,7 +5,7 @@ import Role from "../models/Role.js";
 import mongoose from "mongoose";
 
 // @desc    Create a new role
-// @route   POST /roles
+// @route   POST /api/roles
 // @access  Private (Admin)
 export const createRole = async (req, res) => {
   const { role_name, permissions } = req.body;
@@ -35,7 +35,7 @@ export const createRole = async (req, res) => {
 }
 
 // @desc    Get all roles
-// @route   GET /roles
+// @route   GET /api/roles
 // @access  Private (Admin)
 export const getAllRoles = async (req, res) => {
   const roles = await Role.find().sort({ createdAt: -1 });
@@ -46,7 +46,7 @@ export const getAllRoles = async (req, res) => {
 }
 
 // @desc    Get role by ID
-// @route   GET /roles/:id
+// @route   GET /api/roles/:id
 // @access  Private (Admin)
 export const getRole = async (req, res) => {
   const { id } = req.params;
@@ -65,7 +65,7 @@ export const getRole = async (req, res) => {
 }
 
 // @desc    Update an existing role
-// @route   PUT /roles/:id
+// @route   PUT /api/roles/:id
 // @access  Private (Admin)
 export const updateRole = async (req, res) => {
   const { id } = req.params;
@@ -104,7 +104,7 @@ export const updateRole = async (req, res) => {
 }
 
 // @desc    Delete a role
-// @route   DELETE /roles/:id
+// @route   DELETE /api/roles/:id
 // @access  Private (Admin)
 export const deleteRole = async (req, res) => {
   const { id } = req.params;
