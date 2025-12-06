@@ -1,11 +1,14 @@
 import { Box, Typography } from "@mui/material";
-import { Home, Users, User, FileText, PlusCircle, History, CheckCircle, Repeat } from "lucide-react";
+import { Home, Users, User, FileText, PlusCircle, History, CheckCircle, Repeat, UserCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+
 
 export default function Sidebar() {
+  const navigate = useNavigate();
   return (
     <Box
       sx={{
-        width: "304px",
+        width: "280px",
         height: "100vh",
         backgroundColor: "#1F2335",
         padding: "24px 20px",
@@ -32,8 +35,8 @@ export default function Sidebar() {
 
       {/* MENU */}
       <SectionTitle text="Menu" />
-      <MenuItem icon={<Home size={18} />} label="Dashboard" />
-      <MenuItem icon={<Users size={18} />} label="Quản lý hộ khẩu" />
+      <MenuItem icon={<Home size={18} />} label="Dashboard" to="/tc"/>
+      <MenuItem icon={<Users size={18} />} label="Quản lý hộ khẩu" to="/qldc" />
       <MenuItem icon={<User size={18} />} label="Quản lý nhân khẩu" />
 
       {/* ACTION */}
@@ -66,10 +69,12 @@ function SectionTitle({ text }) {
     </Typography>
   );
 }
+function MenuItem({ icon, label, to }) {
+  const navigate = useNavigate();
 
-function MenuItem({ icon, label }) {
   return (
     <Box
+      onClick={() => navigate(to)}
       sx={{
         display: "flex",
         alignItems: "center",
@@ -88,3 +93,4 @@ function MenuItem({ icon, label }) {
     </Box>
   );
 }
+

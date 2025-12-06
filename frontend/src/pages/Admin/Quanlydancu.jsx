@@ -18,11 +18,11 @@ export default function ResidentManagement() {
                 <Sidebar />
 
                 {/* Main content */}
-                <Box sx={{ flex: 1, position: "relative" }}>
+                <Box sx={{ flex: 1, position: "relative", display: "flex", flexDirection: "column" }}>
                     <Topbar />
 
                     {/* PAGE CONTENT */}
-                    <Box sx={{ padding: "24px 32px"}}>
+                    <Box sx={{ padding: "24px 32px",display:"flex", flexDirection:"column", flex:1}}>
 
                         {/* TITLE + BUTTON */}
                         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
@@ -177,12 +177,13 @@ export default function ResidentManagement() {
                         <Box
                             sx={{
                                 backgroundColor: "white",
-                                height: "595px",
+                                flex: 1,
                                 borderRadius: "16px",
                                 boxShadow: "0px 3px 12px rgba(0, 0, 0, 0.1)",
                                 display: "flex",
                                 justifyContent: "center",
-                                alignItems: "center"
+                                alignItems: "center",
+                                overflow: "auto",
                             }}
                         >
                             <Typography>Bảng thông tin</Typography>
