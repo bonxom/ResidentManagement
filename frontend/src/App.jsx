@@ -7,6 +7,8 @@ import ProtectedRoute from './components/ProtectedRoute'
 import NhanKhau from './pages/NhanKhau'
 import Quanlydancu from "./pages/Admin/Quanlydancu";
 import Trangchinh from  "./pages/Admin/trangchinh";
+import MainProfile from './pages/Profile/Mainprofile';
+import EditProfile from './pages/Profile/EditProfile';
 
 
 
@@ -53,6 +55,8 @@ function App() {
           <Route path="/nhankhau" element={<NhanKhau />} />
           <Route path="/qldc" element={<Quanlydancu />} />
           <Route path="/tc" element={<Trangchinh />} />
+          <Route path="/mainprofile" element={<MainProfile />} />
+          <Route path="/editprofile" element={<EditProfile />} />
         </Routes>
       </Router>
     </ThemeProvider>
