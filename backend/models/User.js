@@ -44,6 +44,13 @@ const userSchema = new mongoose.Schema(
       ref: "Role", // Tên Model Role của bạn (phải khớp)
       required: true,
     },
+    // Link đến household (không bắt buộc)
+    household: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Household",
+      required: false,
+      default: null,
+    },
   },
   {
     timestamps: true, // Tự động thêm createdAt và updatedAt
@@ -52,6 +59,8 @@ const userSchema = new mongoose.Schema(
 
 // Middleware của Mongoose: Tự động HASH mật khẩu trước khi LƯU
 userSchema.pre("save", async function (next) {
+  // Cho phép bỏ qua hash nếu đã được hash sẵn (dùng khi duyệt đăng ký).
+  if (this.$locals?.skipHash) return next();
   // Chỉ hash nếu mật khẩu được thay đổi (hoặc là user mới)
   if (!this.isModified("password")) return next();
 

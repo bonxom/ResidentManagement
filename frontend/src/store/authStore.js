@@ -46,12 +46,12 @@ const useAuthStore = create((set, get) => ({
 
   // ===== SỬA HÀM ĐĂNG KÝ =====
   signUp: async (userData) => {
-    // userData từ form SignUp là { fullName, phoneNumber, email, address, password }
+    // userData từ form SignUp là { name, phoneNumber, email, address, password }
     set({ isLoading: true, error: null });
     try {
       // 1. Map tên trường Frontend -> Backend
       const apiPayload = {
-        ten: userData.fullName,
+        ten: userData.name,
         email: userData.email,
         password: userData.password,
         soDienThoai: userData.phoneNumber,
@@ -137,7 +137,7 @@ const useAuthStore = create((set, get) => ({
 
   // ===== SỬA HÀM CẬP NHẬT PROFILE =====
   updateProfile: async (userData) => {
-    // userData từ form là { fullName, phoneNumber }
+    // userData từ form là { name, phoneNumber }
     set({ isLoading: true, error: null });
     try {
       // 1. Lấy ID của user đang đăng nhập từ state
@@ -146,7 +146,7 @@ const useAuthStore = create((set, get) => ({
 
       // 2. Map tên trường Frontend -> Backend
       const apiPayload = {
-        ten: userData.fullName,
+        ten: userData.name,
         soDienThoai: userData.phoneNumber,
         // Thêm các trường khác bạn muốn cho phép cập nhật
       };

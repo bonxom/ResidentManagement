@@ -8,9 +8,15 @@ import permissionRoutes from "./routes/permissionRoutes.js";
 import roleRoutes from "./routes/roleRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import authRoutes from "./routes/authRoutes.js"; 
-import { errorHandler } from "./middleware/errorHandler.js";
+
+import feeRoutes from "./routes/feeRoutes.js";
+import transactionRoutes from "./routes/Request/transactionRoutes.js";
+import registerRoutes from "./routes/Request/registerRoutes.js";
+
 import householdRoutes from "./routes/householdRoutes.js";
+import { errorHandler } from "./middleware/errorHandler.js";
 import { defaultInit } from "./config/initialize.js";
+
 
 const PORT = process.env.PORT;
 
@@ -31,6 +37,10 @@ app.use("/roles", roleRoutes);
 app.use("/users", userRoutes);
 app.use("/auth", authRoutes);
 app.use("/households", householdRoutes);
+app.use("/fees", feeRoutes);
+// phê duyệt
+app.use("/transactions", transactionRoutes);
+app.use("/requests", registerRoutes);
 app.use(errorHandler);
 
 app.listen(PORT, () => console.log(`Server running on ${PORT}`));

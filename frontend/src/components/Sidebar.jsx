@@ -30,7 +30,7 @@ export default function Sidebar() {
           mt: 4,
         }}
       >
-        MY APP
+        {appTitle}
       </Typography>
 
       {/* MENU */}

@@ -8,8 +8,14 @@ import {
   getMembers,
   addMember,
   removeMember,
+  getResidentHistory,
+  addTemporaryResident,
+  endOfTemporaryLiving
 } from "../controllers/householdController.js";
-import { protect, authorizePermission } from "../middleware/authMiddleware.js";
+
+import { calculateHouseholdFee } from "../controllers/feeController.js";
+import { protect, authorizePermission, authorize } from "../middleware/authMiddleware.js";
+
 
 const router = express.Router();
 
@@ -24,5 +30,15 @@ router.get("/:id/members", protect, authorizePermission("VIEW HOUSEHOLD"), getMe
 router.post("/:id/members",protect, authorizePermission("EDIT HOUSEHOLD"), addMember);
 
 router.delete("/:householdId/members/:memberId", protect, authorizePermission("EDIT HOUSEHOLD"), removeMember);
+
+router.post(
+  "/:id/calculate-fee",
+  protect,
+  authorizePermission("CALCULATE FEE"),
+  calculateHouseholdFee
+);
+router.get("/:householdId/resident-histories", protect, authorize("HAMLET LEADER"), getResidentHistory);
+router.post("/:householdId/temporary-residents", protect, authorize("HAMLET LEADER"), addTemporaryResident);
+router.put("/:householdId/temporary-residents/end", protect, authorize("HAMLET LEADER"), endOfTemporaryLiving);
 
 export default router;
