@@ -1,0 +1,110 @@
+import Request from "../models/Request.js";
+import User from "../models/User.js";
+import Transaction from "../models/Transaction.js"; // Giả sử sau này có bảng Transaction
+
+// @desc    Gửi yêu cầu cập nhật thông tin (Dành cho Người dân)
+// @route   POST /api/requests/update-info
+export const createUpdateRequest = async (req, res) => {
+  try {
+    const { newData } = req.body; // newData là object chứa các trường muốn sửa (vd: { job: "ABC", phoneNumber: "123" })
+
+    if (!newData || typeof newData !== "object" || Array.isArray(newData)) {
+      return res.status(400).json({ message: "Invalid payload" });
+    }
+    
+    // Validate: Không cho phép gửi yêu cầu sửa các trường nhạy cảm qua API này
+    const forbiddenFields = ["password", "role", "household", "status", "userCardID"];
+    const filteredData = Object.keys(newData).reduce((acc, key) => {
+        if (!forbiddenFields.includes(key)) {
+            acc[key] = newData[key];
+        }
+        return acc;
+    }, {});
+
+    if (Object.keys(filteredData).length === 0) {
+        return res.status(400).json({ message: "Nothing to update" });
+    }
+
+    const request = await Request.create({
+      requester: req.user._id, // Lấy ID từ token đăng nhập
+      type: "UPDATE_INFO",
+      requestData: filteredData,
+    });
+
+    res.status(201).json(request);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Lấy danh sách yêu cầu (Dành cho Tổ trưởng)
+// @route   GET /api/requests
+export const getAllRequests = async (req, res) => {
+  try {
+    const { status, type } = req.query;
+    const filter = {};
+    if (status) filter.status = status;
+    if (type) filter.type = type;
+
+    const requests = await Request.find(filter)
+      .populate("requester", "name email userCardID household") // Hiện tên người gửi
+      .sort({ createdAt: -1 }); // Mới nhất lên đầu
+
+    res.status(200).json(requests);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Xử lý duyệt/từ chối yêu cầu (Dành cho Tổ trưởng)
+// @route   PUT /api/requests/:id/review
+export const reviewRequest = async (req, res) => {
+  const { status, leaderComment } = req.body; // status = 'APPROVED' hoặc 'REJECTED'
+  const requestId = req.params.id;
+
+  if (!["APPROVED", "REJECTED"].includes(status)) {
+    return res.status(400).json({ message: "Review status is not valid" });
+  }
+
+  try {
+    const request = await Request.findById(requestId);
+    if (!request) return res.status(404).json({ message: "Request not found" });
+    
+    if (request.status !== "PENDING") {
+        return res.status(400).json({ message: "This request has been processed" });
+    }
+
+    if (status === "APPROVED") {
+      switch (request.type) {
+        case "REGISTER":
+          await User.findByIdAndUpdate(request.requester, { status: "VERIFIED" });
+          break;
+
+        // 2. Duyệt Cập nhật thông tin
+        case "UPDATE_INFO":
+          // Lấy data từ request đắp vào User
+          await User.findByIdAndUpdate(request.requester, { 
+             $set: request.requestData 
+          });
+          break;
+
+        // 3. Duyệt đóng tiền (Mở rộng cho tương lai)
+        case "PAYMENT":
+          // Ví dụ: Tạo bản ghi giao dịch, đánh dấu đã đóng phí
+          // await Transaction.create({ ...request.requestData, status: 'PAID' });
+          break;
+          
+        default:
+          break;
+      }
+    }
+
+    request.status = status;
+    request.leaderComment = leaderComment || "";
+    await request.save();
+
+    res.status(200).json({ message: ` ${status} successful`, request });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
