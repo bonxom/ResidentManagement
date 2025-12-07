@@ -4,25 +4,27 @@ const feeSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: true,
-      trim: true,
+      required: [true, "Tên khoản thu là bắt buộc"], 
+      trim: true, // Ví dụ: "Phí Vệ sinh 2024"
     },
-    is_compulsory: {
-      type: Boolean,
+    type: {
+      type: String,
+      enum: ["MANDATORY", "VOLUNTARY"], // MANDATORY: Phí bắt buộc, VOLUNTARY: Đóng góp
       required: true,
-      default: false,
-    },
-    year: {
-      type: Number,
-      required: true,
-      min: 2000,
-      max: 3000,
     },
     description: {
-      type: String,
-      trim: true,
-      default: "",
+      type: String, // Ví dụ: "Thu theo quy định số 123..."
     },
+    // Đơn giá áp dụng cho Phí bắt buộc
+    unitPrice: {
+      type: Number, 
+      default: 0, // Ví dụ: 6000 (đồng/người/tháng)
+    },
+    status: {
+        type: String,
+        enum: ["ACTIVE", "COMPLETED"], // ACTIVE: Đang thu, COMPLETED: Đã chốt sổ
+        default: "ACTIVE"
+    }
   },
   { timestamps: true }
 );

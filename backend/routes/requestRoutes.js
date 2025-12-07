@@ -1,6 +1,7 @@
 import express from "express";
 import {
   createUpdateRequest,
+  createPaymentRequest,
   getAllRequests,
   reviewRequest,
 } from "../controllers/requestController.js";
@@ -11,6 +12,7 @@ const router = express.Router();
 
 // --- KHU VỰC DÀNH CHO CƯ DÂN & NGƯỜI DÙNG ---
 router.post("/update-info", protect, createUpdateRequest);
+router.post("/payment", protect, createPaymentRequest);
 
 // --- KHU VỰC DÀNH RIÊNG CHO TỔ TRƯỞNG ---
 
