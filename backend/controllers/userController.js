@@ -1,3 +1,5 @@
+import { AppError } from "../middleware/AppError.js";
+import { ERROR_CODE } from "../middleware/errorCode.js";
 import mongoose from "mongoose";
 import User from "../models/User.js";
 import Role from "../models/Role.js"; // Giả sử bạn có model Role
@@ -22,6 +24,27 @@ export const createUser = async (req, res) => {
     const userExists = await User.findOne({ email });
     if (userExists) return res.status(400).json({ message: "Email has existed" });
 
+//     // Kiểm tra xem email đã tồn tại chưa
+//     const userExists = await User.findByEmail(email);
+//     if (userExists) {
+//       // return res.status(400).json({ message: "Email đã tồn tại" });
+//       throw new AppError(ERROR_CODE.USER_EMAIL_EXISTED);
+//     }
+
+//     const userCardExists = await User.findByUserCardID(userCardID);
+//     if (userCardExists) {
+//       // return res.status(400).json({ message: "User card ID đã tồn tại" });
+//       throw new AppError(ERROR_CODE.USER_CARD_ID_EXISTED);
+//     }
+
+//     // Đảm bảo bạn đã có vai trò "Cư dân" trong database
+//     const defaultRole = await Role.findByName("HOUSE MEMBER");
+//     if (!defaultRole) {
+//       // Đây là lỗi nghiêm trọng của hệ thống
+//       // return res
+//       //   .status(500)
+//       //   .json({ message: "Lỗi: Không tìm thấy vai trò mặc định." });
+//       throw new AppError(ERROR_CODE.ROLE_NOT_EXISTED);
     const cardExists = await User.findOne({ userCardID });
     if (cardExists) return res.status(400).json({ message: "userCardID has existed" });
 
@@ -175,19 +198,22 @@ export const updateUser = async (req, res) => {
 // @route   DELETE /api/users/:id
 export const deleteUser = async (req, res) => {
   const { id } = req.params;
+  if (!mongoose.Types.ObjectId.isValid(id))
+    // return res.status(400).json({ message: "Invalid user ID" });
+    throw new AppError(ERROR_CODE.USER_ID_INVALID);
 
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(400).json({ message: "Invalid userID" });
+  if (req.user?._id?.toString() === id) {
+    // return res
+    //   .status(400)
+    //   .json({ message: "You cannot delete your own account" });
+    throw new AppError(ERROR_CODE.CANNOT_DELETE_OWN_ACCOUNT);
   }
 
-  // Ngăn tự xóa chính mình (nếu cần)
-  if (req.user && req.user._id.toString() === id) {
-    return res.status(400).json({ message: "Cannot delete yourself" });
+  const user = await User.findByIdAndDelete(id);
+  if (!user) {
+    // return res.status(404).json({ message: "User not found" });
+    throw new AppError(ERROR_CODE.USER_NOT_FOUND);
   }
-
-  try {
-    const user = await User.findById(id);
-    if (!user) return res.status(404).json({ message: "User not found" });
 
     // 1. Nếu User này là CHỦ HỘ của một hộ nào đó -> Không cho xóa ngay
     const ledHousehold = await Household.findOne({ leader: id });
