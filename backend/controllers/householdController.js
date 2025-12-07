@@ -1,7 +1,5 @@
 import Household from "../models/Household.js";
-import ResidentHistory from "../models/ResidentHistory.js";
 import User from "../models/User.js";
-import mongoose from "mongoose";
 
 // @desc    Tạo hộ khẩu mới
 // @route   POST /api/households
@@ -117,6 +115,13 @@ export const updateHousehold = async (req, res) => {
       const newLeader = await User.findById(leaderId);
       if (!newLeader) return res.status(404).json({ message: "User not found" });
 
+      if (
+        newLeader.household &&
+        newLeader.household.toString() !== household._id.toString()
+      ) {
+        return res.status(400).json({ message: "New leader belongs to another household" });
+      }
+
       const oldLeaderId = household.leader;
       household.leader = leaderId;
       if (!household.members.includes(leaderId)) {
@@ -141,7 +146,7 @@ export const updateHousehold = async (req, res) => {
         (m) => m.toString() === oldLeaderId
       );
       if (!isOldLeaderStillMember) {
-        await User.findByIdAndUpdate(oldLeaderId, { household: null });
+        await User.findByIdAndUpdate(oldLeaderId, { household: null, relationshipWithHead: null });
       }
     }
 
@@ -570,9 +575,12 @@ export const moveMember = async (req, res) => {
     }
 
     // 4. Thêm vào Hộ mới
-    if (!targetHousehold.members.includes(userId)) {
-        targetHousehold.members.push(userId);
-        await targetHousehold.save();
+    const isAlreadyInTarget = targetHousehold.members.some(
+      (member) => member?.toString() === userId
+    );
+    if (!isAlreadyInTarget) {
+      targetHousehold.members.push(userId);
+      await targetHousehold.save();
     }
 
     // 5. Cập nhật User

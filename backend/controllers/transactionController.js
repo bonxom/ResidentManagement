@@ -1,102 +1,103 @@
 import Transaction from "../models/Transaction.js";
-import Household from "../models/Household.js";
 import Fee from "../models/Fee.js";
-import { calculateCompulsoryFeeAmount } from "../utils/feeCalculator.js";
+import Household from "../models/Household.js";
 
-export const createTransaction = async (req, res, next) => {
+// @desc    Ghi nhận nộp tiền
+// @route   POST /api/transactions
+export const createTransaction = async (req, res) => {
+  const { feeId, householdId, amount, note } = req.body;
+
   try {
-    const { household_id, fee_id, amount, payment_date, notes } = req.body;
-
-    if (!household_id || !fee_id || amount === undefined) {
-      return res
-        .status(400)
-        .json({ message: "household_id, fee_id, and amount are required" });
+    if (!amount || amount <= 0) {
+      return res.status(400).json({ message: "Amount must be greater than 0" });
     }
 
-    const [household, fee] = await Promise.all([
-      Household.findById(household_id).populate("members"),
-      Fee.findById(fee_id),
-    ]);
-
-    if (!household) {
-      return res.status(404).json({ message: "Household not found" });
-    }
-    if (!fee) {
-      return res.status(404).json({ message: "Fee not found" });
+    const fee = await Fee.findById(feeId);
+    if (!fee) return res.status(404).json({ message: "Fee not found" });
+    if (fee.status === "COMPLETED") {
+       return res.status(400).json({ message: "This fee collection is closed" });
     }
 
-    if (fee.is_compulsory) {
-      const { amount: requiredAmount } = calculateCompulsoryFeeAmount(household);
-      if (Number(amount) !== requiredAmount) {
-        return res.status(400).json({
-          message: "Invalid amount for compulsory fee",
-          requiredAmount,
-        });
-      }
-    }
+    const household = await Household.findById(householdId);
+    if (!household) return res.status(404).json({ message: "Household not found" });
+
+    // Logic Q3: Mặc định người nộp là Chủ hộ
+    const payerId = household.leader;
 
     const transaction = await Transaction.create({
-      household: household_id,
-      fee: fee_id,
+      fee: feeId,
+      household: householdId,
+      payer: payerId, 
       amount,
-      payment_date,
-      notes,
+      note
     });
 
     res.status(201).json(transaction);
   } catch (error) {
-    next(error);
+    res.status(500).json({ message: error.message });
   }
 };
 
-export const listTransactions = async (req, res, next) => {
+// @desc    Xem lịch sử giao dịch
+// @route   GET /api/transactions
+export const getTransactions = async (req, res) => {
+    // Có thể lọc theo Hộ hoặc theo Đợt thu
+    const { feeId, householdId } = req.query;
+    const filter = {};
+    if (feeId) filter.fee = feeId;
+    if (householdId) filter.household = householdId;
+
+    try {
+        const transactions = await Transaction.find(filter)
+            .populate("fee", "name type")
+            .populate("household", "houseHoldID address")
+            .populate("payer", "name") // Hiện tên chủ hộ nộp tiền
+            .sort({ createdAt: -1 });
+        
+        res.status(200).json(transactions);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
+
+// @desc    Sửa giao dịch (Ví dụ: Nhập sai số tiền hoặc ghi chú)
+// @route   PUT /api/transactions/:id
+export const updateTransaction = async (req, res) => {
   try {
-    const transactions = await Transaction.find()
-      .populate("household", "houseHoldID address")
-      .populate("fee", "name is_compulsory year");
-    res.status(200).json(transactions);
-  } catch (error) {
-    next(error);
-  }
-};
+    const { amount, note } = req.body;
+    const transaction = await Transaction.findById(req.params.id);
 
-
-export const getFeeStats = async (req, res, next) => {
-  try {
-    const feeId = req.params.id;
-
-    const fee = await Fee.findById(feeId);
-    if (!fee) {
-      return res.status(404).json({ message: "Fee not found" });
+    if (!transaction) {
+      return res.status(404).json({ message: "Giao dịch không tồn tại" });
     }
 
-    const transactions = await Transaction.find({ fee: feeId })
-      .populate("household", "houseHoldID address leader")
-      .sort({ payment_date: -1 });
+    // Cho phép sửa tiền và ghi chú
+    if (amount) transaction.amount = amount;
+    if (note) transaction.note = note;
 
-    const totalCollected = transactions.reduce(
-      (sum, t) => sum + (t.amount || 0),
-      0
-    );
-
-    const households = transactions.map((t) => ({
-      transactionId: t._id,
-      householdId: t.household?._id,
-      houseHoldID: t.household?.houseHoldID,
-      address: t.household?.address,
-      amount: t.amount,
-      payment_date: t.payment_date,
-      notes: t.notes,
-    }));
-
-    res.status(200).json({
-      feeId,
-      feeName: fee.name,
-      isCompulsory: fee.is_compulsory,
-      totalCollected,
-      households,
-    });
+    const updatedTransaction = await transaction.save();
+    res.status(200).json(updatedTransaction);
   } catch (error) {
-    next(error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Xóa giao dịch (Hủy phiếu thu)
+// @route   DELETE /api/transactions/:id
+export const deleteTransaction = async (req, res) => {
+  try {
+    const transaction = await Transaction.findById(req.params.id);
+
+    if (!transaction) {
+      return res.status(404).json({ message: "Giao dịch không tồn tại" });
+    }
+
+    // Có thể thêm logic: Chỉ cho phép xóa giao dịch mới tạo trong vòng 24h
+    // Hoặc chỉ Admin mới được xóa. Ở đây ta dùng Middleware authorizePermission để chặn.
+
+    await transaction.deleteOne();
+    res.status(200).json({ message: "Đã xóa giao dịch thành công" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
