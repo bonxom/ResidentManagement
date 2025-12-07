@@ -12,6 +12,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import NhanKhau from './pages/NhanKhau'
 import Quanlydancu from "./pages/Admin/Quanlydancu";
 import Trangchinh from "./pages/Admin/trangchinh";
+import Profile from './pages/Profile';
 import DanhSachDangKyTaiKhoan from "./pages/Admin/DanhSachDangKyTaiKhoan";
 import DanhSachKhaiBaoSinhTu from "./pages/Admin/DanhSachKhaiBaoSinhTu";
 import DanhSachThuTien from "./pages/Admin/DanhSachThuTien";
@@ -57,6 +58,7 @@ function App() {
           <Route path="/thutien" element={<DanhSachThuTien />} />
           <Route path="/tamtruvang" element={<DanhSachTamTruVang />} />
           <Route path="/nhankhau" element={<NhanKhau />} />
+          <Route path="/profile" element={<Profile />} />
         </Routes>
       </Router>
     </ThemeProvider>
