@@ -1,6 +1,7 @@
 import Request from "../models/Request.js";
 import User from "../models/User.js";
-import Transaction from "../models/Transaction.js"; // Giả sử sau này có bảng Transaction
+import Fee from "../models/Fee.js";
+import Transaction from "../models/Transaction.js";
 
 // @desc    Gửi yêu cầu cập nhật thông tin (Dành cho Người dân)
 // @route   POST /api/requests/update-info
@@ -36,7 +37,47 @@ export const createUpdateRequest = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+// @desc    Gửi yêu cầu nộp tiền (Cư dân gửi)
+// @route   POST /api/requests/payment
+export const createPaymentRequest = async (req, res) => {
+  try {
+    const { feeId, amount, note, proofImage } = req.body;
+    const user = req.user; // Lấy từ middleware protect
 
+    // 1. Validate dữ liệu
+    if (!feeId || !amount) {
+        return res.status(400).json({ message: "Vui lòng chọn khoản thu và nhập số tiền" });
+    }
+
+    if (!user.household) {
+        return res.status(400).json({ message: "Bạn chưa thuộc hộ khẩu nào để nộp phí" });
+    }
+
+    // 2. Kiểm tra khoản thu có hợp lệ không
+    const fee = await Fee.findById(feeId);
+    if (!fee) return res.status(404).json({ message: "Khoản thu không tồn tại" });
+    if (fee.status === "COMPLETED") {
+        return res.status(400).json({ message: "Đợt thu này đã kết thúc" });
+    }
+
+    // 3. Tạo Request
+    const request = await Request.create({
+      requester: user._id,
+      type: "PAYMENT",
+      requestData: {
+          feeId,
+          householdId: user.household, // Lưu snapshot hộ khẩu lúc nộp
+          amount: Number(amount),
+          note: note || "Nộp tiền Online",
+          proofImage: proofImage || "" // URL ảnh chuyển khoản (nếu có)
+      }
+    });
+
+    res.status(201).json(request);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 // @desc    Lấy danh sách yêu cầu (Dành cho Tổ trưởng)
 // @route   GET /api/requests
 export const getAllRequests = async (req, res) => {
@@ -88,10 +129,18 @@ export const reviewRequest = async (req, res) => {
           });
           break;
 
-        // 3. Duyệt đóng tiền (Mở rộng cho tương lai)
+        // --- LOGIC MỚI: DUYỆT THANH TOÁN ---
         case "PAYMENT":
-          // Ví dụ: Tạo bản ghi giao dịch, đánh dấu đã đóng phí
-          // await Transaction.create({ ...request.requestData, status: 'PAID' });
+          {
+            const { feeId, householdId, amount, note } = request.requestData || {};
+            const txNotes = note ? `${note} (Approved online)` : "Approved online";
+            await Transaction.create({
+              fee: feeId,
+              household: householdId,
+              amount,
+              notes: txNotes,
+            });
+          }
           break;
           
         default:

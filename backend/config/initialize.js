@@ -77,6 +77,8 @@ const INIT_ROLES = {
     "VIEW HOUSEHOLD LIST", "VIEW HOUSEHOLD",
     // Fee focus
     "VIEW FEES", "CALCULATE FEE", "RECORD PAYMENT", "VIEW FEE STATS",
+    "READ REQUESTS LIST", 
+    "APPROVE REQUEST"
   ],
 
   // Cư dân đã có hộ khẩu
@@ -91,7 +93,7 @@ const INIT_ROLES = {
   ],
 };
 
-const seedUser = {
+const SEED_USERS_DATA = {
   "ACCOUNTANT": [
     {
       email: "accountant@resident.test",
@@ -100,7 +102,7 @@ const seedUser = {
       name: "Trần Quốc Huy",
       sex: "Nam",
       dob: new Date("1990-11-02T00:00:00.000Z"),
-      location: "Tổ 3, Khu phố 1, Phường An Phú, TP. Thuận An",
+      birthLocation: "Tổ 3, Khu phố 1, Phường An Phú, TP. Thuận An",
       phoneNumber: "0987654321",
     },
     {
@@ -110,7 +112,7 @@ const seedUser = {
       name: "Nguyễn Thị Mai",
       sex: "Nữ",
       dob: new Date("1992-04-15T00:00:00.000Z"),
-      location: "Tổ 4, Khu phố 2, Phường Hiệp Thành, TP. Thủ Dầu Một",
+      birthLocation: "Tổ 4, Khu phố 2, Phường Hiệp Thành, TP. Thủ Dầu Một",
       phoneNumber: "0912003344",
     },
     {
@@ -120,7 +122,7 @@ const seedUser = {
       name: "Phạm Văn Dũng",
       sex: "Nam",
       dob: new Date("1987-12-03T00:00:00.000Z"),
-      location: "Tổ 6, Khu phố 5, Phường Bình Chuẩn, TP. Thuận An",
+      birthLocation: "Tổ 6, Khu phố 5, Phường Bình Chuẩn, TP. Thuận An",
       phoneNumber: "0938456123",
     },
   ],
@@ -132,7 +134,7 @@ const seedUser = {
       name: "Đặng Hoài Nam",
       sex: "Nam",
       dob: new Date("2002-09-09T00:00:00.000Z"),
-      location: "Tổ 2, Khu phố 4, Phường Chánh Nghĩa, TP. Thủ Dầu Một",
+      birthLocation: "Tổ 2, Khu phố 4, Phường Chánh Nghĩa, TP. Thủ Dầu Một",
       phoneNumber: "0966332211",
     },
     {
@@ -142,7 +144,7 @@ const seedUser = {
       name: "Lê Thị Hồng",
       sex: "Nữ",
       dob: new Date("1998-07-21T00:00:00.000Z"),
-      location: "Tổ 1, Khu phố 2, Phường Phú Lợi, TP. Thủ Dầu Một",
+      birthLocation: "Tổ 1, Khu phố 2, Phường Phú Lợi, TP. Thủ Dầu Một",
       phoneNumber: "0905123456",
     },
     {
@@ -152,7 +154,7 @@ const seedUser = {
       name: "Ngô Minh Trí",
       sex: "Nam",
       dob: new Date("1996-01-30T00:00:00.000Z"),
-      location: "Tổ 3, Khu phố 3, Phường Tân Đông Hiệp, TP. Dĩ An",
+      birthLocation: "Tổ 3, Khu phố 3, Phường Tân Đông Hiệp, TP. Dĩ An",
       phoneNumber: "0977889900",
     },
     {
@@ -162,7 +164,7 @@ const seedUser = {
       name: "Vũ Thị Lan",
       sex: "Nữ",
       dob: new Date("2001-03-12T00:00:00.000Z"),
-      location: "Tổ 5, Khu phố 6, Phường An Phú, TP. Thuận An",
+      birthLocation: "Tổ 5, Khu phố 6, Phường An Phú, TP. Thuận An",
       phoneNumber: "0923344556",
     },
     {
@@ -172,7 +174,7 @@ const seedUser = {
       name: "Bùi Quốc Khánh",
       sex: "Nam",
       dob: new Date("1994-10-05T00:00:00.000Z"),
-      location: "Tổ 7, Khu phố 1, Phường Tân Bình, TP. Dĩ An",
+      birthLocation: "Tổ 7, Khu phố 1, Phường Tân Bình, TP. Dĩ An",
       phoneNumber: "0911778899",
     },
     {
@@ -182,7 +184,7 @@ const seedUser = {
       name: "Trần Mai Anh",
       sex: "Nữ",
       dob: new Date("1999-05-18T00:00:00.000Z"),
-      location: "Tổ 2, Khu phố 7, Phường Bình An, TP. Dĩ An",
+      birthLocation: "Tổ 2, Khu phố 7, Phường Bình An, TP. Dĩ An",
       phoneNumber: "0988001122",
     },
     {
@@ -192,7 +194,7 @@ const seedUser = {
       name: "Đỗ Hữu Nghĩa",
       sex: "Nam",
       dob: new Date("1993-02-22T00:00:00.000Z"),
-      location: "Tổ 8, Khu phố 2, Phường Phú Cường, TP. Thủ Dầu Một",
+      birthLocation: "Tổ 8, Khu phố 2, Phường Phú Cường, TP. Thủ Dầu Một",
       phoneNumber: "0955667788",
     },
     {
@@ -202,14 +204,14 @@ const seedUser = {
       name: "Phan Thu Hà",
       sex: "Nữ",
       dob: new Date("1997-09-09T00:00:00.000Z"),
-      location: "Tổ 9, Khu phố 4, Phường Phú Hòa, TP. Thủ Dầu Một",
+      birthLocation: "Tổ 9, Khu phố 4, Phường Phú Hòa, TP. Thủ Dầu Một",
       phoneNumber: "0933002211",
     },
   ],
 };
 
 const initSeedUsers = async () => {
-  for (const [roleName, users] of Object.entries(seedUser)) {
+  for (const [roleName, users] of Object.entries(SEED_USERS_DATA)) {
     const role = await Role.findByName(roleName);
     if (!role) {
       console.warn(`[seed] Missing role "${roleName}". Skipping user seeds for this role.`);
