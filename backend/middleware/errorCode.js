@@ -73,7 +73,6 @@ export const ERROR_CODE = {
     statusCode: 400,
   },
 
-  //User không tồn tại
   USER_NOT_EXISTED: {
     code: 4000,
     message: "User not existed",
@@ -84,7 +83,6 @@ export const ERROR_CODE = {
     message: "User ID must be a mongoose.Types.ObjectId",
     statusCode: 400,
   },
-  //Email existed
   USER_EMAIL_EXISTED: {
     code: 4002,
     message: "Email already exists",
@@ -93,6 +91,44 @@ export const ERROR_CODE = {
   USER_NOT_FOUND: {
     code: 4003,
     message: "User not found",
+  USER_WRONG_PASSWORD: {
+    code: 4004,
+    message: "Incorrect password",
+    statusCode: 400,
+  },
+  USER_PASSWORD_REQUIRED: {
+    code: 4005,
+    message: "Password is required",
+    statusCode: 400,
+  },
+  USER_NEWPASSWORD_SAME_AS_OLD: {
+    code: 4007,
+    message: "New password must be different from old password",
+    statusCode: 400,
+  },
+  USER_OLD_NEW_PASSWORD_REQUIRED: {
+    code: 4008,
+    message: "Old password and new password are required",
+    statusCode: 400,
+  },
+  USER_CANNOT_DELETE_SELF: {
+    code: 4006,
+    message: "You cannot delete your own account",
+    statusCode: 400,
+  },
+  USER_USERCARDID_REQUIRED: {
+    code: 4009,
+    message: "userCardID is required",
+    statusCode: 400,
+  },
+  USER_USERCARDID_EXISTED: {
+    code: 4010,
+    message: "userCardID already exists",
+    statusCode: 400,
+  },
+  USER_NO_HOUSEHOLD: {
+    code: 4011,
+    message: "User does not belong to any household",
     statusCode: 404,
   },
   //Lỗi Authentication (JWT, login)
@@ -175,6 +211,9 @@ export const ERROR_CODE = {
   CANNOT_DELETE_OWN_ACCOUNT: {
     code: 8002,
     message: "You cannot delete your own account",
+  INVALID_PAYLOAD: {
+    code: 6001,
+    message: "Invalid request payload",
     statusCode: 400,
   },
 };

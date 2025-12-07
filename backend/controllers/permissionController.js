@@ -2,9 +2,11 @@ import { AppError } from "../middleware/AppError.js";
 import { ERROR_CODE } from "../middleware/errorCode.js";
 import mongoose from "mongoose";
 import Permission from "../models/Permission.js";
+import { AppError } from "../middleware/AppError.js";
+import { ERROR_CODE } from "../middleware/errorCode.js";
 
 // @desc    Create a new permission
-// @route   POST /permissions
+// @route   POST /api/permissions
 // @access  Private (Admin)
 export const createPermission = async (req, res) => {
   const { permission_name, description } = req.body;
@@ -30,7 +32,7 @@ export const createPermission = async (req, res) => {
 };
 
 // @desc    Get all permissions
-// @route   GET /permissions
+// @route   GET /api/permissions
 // @access  Private (Admin)
 export const getAllPermission = async (req, res) => {
   //sort by created time
@@ -42,14 +44,14 @@ export const getAllPermission = async (req, res) => {
 };
 
 // @desc    Get permission by ID
-// @route   GET /permissions/:id
+// @route   GET /api/permissions/:id
 // @access  Private (Admin)
 export const getPermission = async (req, res) => {
   const { id } = req.params;
   // ID must be a mongoose ID
   if (!mongoose.Types.ObjectId.isValid(id))
     // return res.status(400).json({ message: "Invalid permission ID" });
-    throw new AppError(ERROR_CODE.ROLE_ID_INVALID);
+    throw new AppError(ERROR_CODE.PERMISSION_ID_INVALID);
 
   const permission = await Permission.findById(id);
   if (!permission)
@@ -63,14 +65,14 @@ export const getPermission = async (req, res) => {
 };
 
 // @desc    Update a permission
-// @route   PUT /permissions/:id
+// @route   PUT /api/permissions/:id
 // @access  Private (Admin)
 export const updatePermission = async (req, res) => {
   const { id } = req.params;
   // ID must be a mongoose ID
   if (!mongoose.Types.ObjectId.isValid(id))
     // return res.status(400).json({ message: "Invalid permission ID" });
-    throw new AppError(ERROR_CODE.ROLE_ID_INVALID);
+    throw new AppError(ERROR_CODE.PERMISSION_ID_INVALID);
   const { permission_name, description } = req.body;
   //check input
   const permission = await Permission.findById(id);
@@ -100,14 +102,14 @@ export const updatePermission = async (req, res) => {
 };
 
 // @desc    Delete a permission
-// @route   DELETE /permissions/:id
+// @route   DELETE /api/permissions/:id
 // @access  Private (Admin)
 export const deletePermission = async (req, res) => {
   const { id } = req.params;
   // ID must be a mongoose ID
   if (!mongoose.Types.ObjectId.isValid(id))
     // return res.status(400).json({ message: "Invalid permission ID" });
-    throw new AppError(ERROR_CODE.ROLE_ID_INVALID);
+    throw new AppError(ERROR_CODE.PERMISSION_ID_INVALID);
 
   const permission = await Permission.findByIdAndDelete(id);
   if (!permission)

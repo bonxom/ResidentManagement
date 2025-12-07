@@ -4,7 +4,7 @@ import User from "../models/User.js";
 import generateToken from "../utils/generateToken.js";
 
 // @desc    Xác thực user & lấy token
-// @route   POST /auth/login
+// @route   POST /api/auth/login
 // @access  Public
 export const loginUser = async (req, res) => {
   console.time("LOGIN_FULL_REQUEST");
@@ -42,8 +42,21 @@ export const loginUser = async (req, res) => {
     console.timeEnd("BCRYPT_COMPARE");
 
     if (!isMatch) {
-      // return res.status(401).json({ message: "Email hoặc mật khẩu không đúng" });
-      throw new AppError(ERROR_CODE.INVALID_CREDENTIALS);
+      return res.status(401).json({ message: "Email/password not correct" });
+    }
+    
+    if (user.status === "PENDING") {
+        return res.status(403).json({ 
+            message: "Your account has not been verified",
+            code: "ACCOUNT_PENDING" // Mã lỗi để Frontend hiển thị giao diện 'Chờ duyệt'
+        });
+    }
+
+    if (user.status === "LOCKED") {
+        return res.status(403).json({ 
+            message: "Your account has been suspended",
+            code: "ACCOUNT_LOCKED"
+        });
     }
 
     // 4. Nếu mọi thứ OK, tạo và gửi token
@@ -53,7 +66,7 @@ export const loginUser = async (req, res) => {
     user.password = undefined;
     console.timeEnd("LOGIN_FULL_REQUEST");
     res.status(200).json({
-      message: "Đăng nhập thành công",
+      message: "Login successful",
       token,
       user, // Gửi thông tin user (đã bao gồm role)
     });
@@ -63,7 +76,7 @@ export const loginUser = async (req, res) => {
 };
 
 // @desc    Lấy thông tin user hiện tại (dựa trên token)
-// @route   GET /auth/me
+// @route   GET /api/auth/me
 // @access  Private
 export const getMe = async (req, res) => {
   // Middleware 'protect' (sẽ tạo ở bước 4) đã chạy

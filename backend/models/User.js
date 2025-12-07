@@ -6,14 +6,8 @@ const userSchema = new mongoose.Schema(
     email: {
       type: String,
       required: [true, "Email là bắt buộc"],
-      unique: true, // Đảm bảo email là duy nhất
+      unique: true, 
       lowercase: true,
-      trim: true,
-    },
-    userCardID: {
-      type: Number,
-      required: true, 
-      unique: true,
       trim: true,
     },
     password: {
@@ -21,6 +15,13 @@ const userSchema = new mongoose.Schema(
       required: [true, "Mật khẩu là bắt buộc"],
       select: false, // Tự động ẩn mật khẩu khi truy vấn User
     },
+    userCardID: {
+      type: Number,
+      required: true, 
+      unique: true,
+      trim: true,
+    },
+    
     name: {
       type: String,
       required: [true, "Tên là bắt buộc"],
@@ -32,11 +33,33 @@ const userSchema = new mongoose.Schema(
     dob: {
       type: Date,
     },
-    location: {
+    birthLocation: {
+      type: String,
+    },
+    ethnic: {
       type: String,
     },
     phoneNumber: {
       type: String,
+    },
+    job: {
+      type: String, 
+    },
+
+    household: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Household",
+      default: null, 
+    },
+    relationshipWithHead: {
+      type: String,
+      default: null,
+      trim: true,
+    },
+    status: {
+      type: String,
+      enum: ["PENDING", "VERIFIED", "LOCKED"], // PENDING: Chờ duyệt đăng ký
+      default: "PENDING", 
     },
     // Đây là phần liên kết với Role có sẵn của bạn
     role: {
@@ -44,14 +67,27 @@ const userSchema = new mongoose.Schema(
       ref: "Role", // Tên Model Role của bạn (phải khớp)
       required: true,
     },
+    // Link đến household (không bắt buộc)
+    household: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Household",
+      required: false,
+      default: null,
+    },
   },
   {
     timestamps: true, // Tự động thêm createdAt và updatedAt
   }
 );
 
+userSchema.virtual("isHeadOfHousehold").get(function () {
+  return this.relationshipWithHead?.toLowerCase() === "household owner";
+});
+
 // Middleware của Mongoose: Tự động HASH mật khẩu trước khi LƯU
 userSchema.pre("save", async function (next) {
+  // Cho phép bỏ qua hash nếu đã được hash sẵn (dùng khi duyệt đăng ký).
+  if (this.$locals?.skipHash) return next();
   // Chỉ hash nếu mật khẩu được thay đổi (hoặc là user mới)
   if (!this.isModified("password")) return next();
 

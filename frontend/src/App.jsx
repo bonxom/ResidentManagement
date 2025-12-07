@@ -9,6 +9,7 @@ import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
 import Dashboard from "./pages/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
+import NhanKhau from './pages/NhanKhau'
 import Quanlydancu from "./pages/Admin/Quanlydancu";
 import Trangchinh from "./pages/Admin/trangchinh";
 import DanhSachDangKyTaiKhoan from "./pages/Admin/DanhSachDangKyTaiKhoan";
@@ -47,20 +48,15 @@ function App() {
           <Route path="/signin" element={<SignIn />} />
           <Route path="/signup" element={<SignUp />} />
           {/* <Route path="/dashboard" element={<Dashboard />} /> */}
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/dashboard" element={<Dashboard />} />
+
           <Route path="/qldc" element={<Quanlydancu />} />
           <Route path="/tc" element={<Trangchinh />} />
           <Route path="/dktk" element={<DanhSachDangKyTaiKhoan />} />
           <Route path="/kbst" element={<DanhSachKhaiBaoSinhTu />} />
           <Route path="/thutien" element={<DanhSachThuTien />} />
           <Route path="/tamtruvang" element={<DanhSachTamTruVang />} />
+          <Route path="/nhankhau" element={<NhanKhau />} />
         </Routes>
       </Router>
     </ThemeProvider>
