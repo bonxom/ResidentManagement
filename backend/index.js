@@ -16,7 +16,11 @@ import householdRoutes from "./routes/householdRoutes.js";
 import { defaultInit } from "./config/initialize.js";
 import requestRoutes from "./routes/requestRoutes.js";
 
-const PORT = process.env.PORT;
+const rawPort = process.env.PORT;
+const PORT = rawPort ? Number(rawPort) : 3000;
+if (!Number.isInteger(PORT) || PORT <= 0 || PORT >= 65536) {
+  throw new Error("Invalid PORT environment variable");
+}
 
 console.log("Hello");
 

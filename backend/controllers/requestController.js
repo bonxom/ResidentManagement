@@ -7,6 +7,10 @@ import Transaction from "../models/Transaction.js"; // Giả sử sau này có b
 export const createUpdateRequest = async (req, res) => {
   try {
     const { newData } = req.body; // newData là object chứa các trường muốn sửa (vd: { job: "ABC", phoneNumber: "123" })
+
+    if (!newData || typeof newData !== "object" || Array.isArray(newData)) {
+      return res.status(400).json({ message: "Invalid payload" });
+    }
     
     // Validate: Không cho phép gửi yêu cầu sửa các trường nhạy cảm qua API này
     const forbiddenFields = ["password", "role", "household", "status", "userCardID"];

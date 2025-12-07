@@ -20,6 +20,10 @@ export const createHousehold = async (req, res) => {
       return res.status(404).json({ message: "Leader user not found" });
     }
 
+    if (leader.household) {
+      return res.status(400).json({ message: "Leader already belongs to another household" });
+    }
+
     const household = await Household.create({
       houseHoldID,
       address,
@@ -138,6 +142,19 @@ export const deleteHousehold = async (req, res) => {
     if (!household) {
       return res.status(404).json({ message: "Household not found" });
     }
+
+    const memberIds = [
+      household.leader,
+      ...(household.members || []),
+    ].filter(Boolean);
+
+    if (memberIds.length) {
+      await User.updateMany(
+        { _id: { $in: memberIds } },
+        { $set: { household: null, relationshipWithHead: null } }
+      );
+    }
+
     await household.deleteOne();
     res.status(200).json({ message: "Household deleted" });
   } catch (error) {
