@@ -1,3 +1,5 @@
+import { AppError } from "../middleware/AppError.js";
+import { ERROR_CODE } from "../middleware/errorCode.js";
 import Household from "../models/Household.js";
 import User from "../models/User.js";
 
@@ -8,16 +10,19 @@ export const createHousehold = async (req, res) => {
 
   try {
     if (!houseHoldID || !address || !leaderId) {
-      return res.status(400).json({ message: "Please provide household ID, address, and leader" });
+      // return res.status(400).json({ message: "Please provide household ID, address, and leader" });
+      throw new AppError(ERROR_CODE.HOUSEHOLD_INFO_INCOMPLETE);
     }
 
     if (await Household.findOne({ houseHoldID })) {
-      return res.status(400).json({ message: "Household ID already exists" });
+      // return res.status(400).json({ message: "Household ID already exists" });
+      throw new AppError(ERROR_CODE.HOUSEHOLD_ID_EXISTED);
     }
 
     const leader = await User.findById(leaderId);
     if (!leader) {
-      return res.status(404).json({ message: "Leader user not found" });
+      // return res.status(404).json({ message: "Leader user not found" });
+      throw new AppError(ERROR_CODE.USER_NOT_FOUND);
     }
 
     if (leader.household) {
@@ -61,7 +66,8 @@ export const getHouseholdById = async (req, res) => {
       .populate("leader", "name email phoneNumber userCardID")
 
     if (!household) {
-      return res.status(404).json({ message: "Household not found" });
+      // return res.status(404).json({ message: "Household not found" });
+      throw new AppError(ERROR_CODE.HOUSEHOLD_NOT_FOUND);
     }
     res.status(200).json(household);
   } catch (error) {
@@ -96,7 +102,8 @@ export const updateHousehold = async (req, res) => {
   try {
     const household = await Household.findById(req.params.id);
     if (!household) {
-      return res.status(404).json({ message: "Household not found" });
+      // return res.status(404).json({ message: "Household not found" });
+      throw new AppError(ERROR_CODE.HOUSEHOLD_NOT_FOUND);
     }
     const oldLeaderId = household.leader?.toString();
 
@@ -113,7 +120,9 @@ export const updateHousehold = async (req, res) => {
     // Xử lý logic đổi chủ hộ
     if (leaderId && leaderId !== household.leader.toString()) {
       const newLeader = await User.findById(leaderId);
-      if (!newLeader) return res.status(404).json({ message: "User not found" });
+      if (!newLeader) {
+        // return res.status(404).json({ message: "New leader not found" });
+        throw new AppError(ERROR_CODE.USER_NOT_FOUND);
 
       if (
         newLeader.household &&
@@ -166,7 +175,8 @@ export const deleteHousehold = async (req, res) => {
   try {
     const household = await Household.findById(req.params.id);
     if (!household) {
-      return res.status(404).json({ message: "Household not found" });
+      // return res.status(404).json({ message: "Household not found" });
+      throw new AppError(ERROR_CODE.HOUSEHOLD_NOT_FOUND);
     }
 
     const memberIds = [
@@ -197,12 +207,14 @@ export const addMember = async (req, res) => {
   try {
     const household = await Household.findById(householdId);
     if (!household) {
-      return res.status(404).json({ message: "Household not found" });
+      // return res.status(404).json({ message: "Household not found" });
+      throw new AppError(ERROR_CODE.HOUSEHOLD_NOT_FOUND);
     }
 
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      // return res.status(404).json({ message: "User not found" });
+      throw new AppError(ERROR_CODE.USER_NOT_FOUND);
     }
     if (user.household && user.household.toString() !== householdId) {
         return res.status(400).json({ message: "This user is already in another household" });
@@ -211,7 +223,10 @@ export const addMember = async (req, res) => {
       (member) => member?.toString() === userId
     );
     if (alreadyMember) {
-      return res.status(400).json({ message: "User is already a household member" });
+      // return res
+      //   .status(400)
+      //   .json({ message: "User is already a household member" });
+      throw new AppError(ERROR_CODE.USER_ALREADY_HOUSEHOLD_MEMBER);
     }
 
     household.members.push(userId);
@@ -234,7 +249,8 @@ export const removeMember = async (req, res) => {
   try {
     const household = await Household.findById(householdId);
     if (!household) {
-      return res.status(404).json({ message: "Household not found" });
+      // return res.status(404).json({ message: "Household not found" });
+      throw new AppError(ERROR_CODE.HOUSEHOLD_NOT_FOUND);
     }
 
     // --- LOGIC MỚI: XỬ LÝ CHỦ HỘ ---
