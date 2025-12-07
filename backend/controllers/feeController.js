@@ -170,41 +170,138 @@ export const getMyHouseholdFees = async (req, res) => {
       return res.status(400).json({ message: "Bạn chưa thuộc hộ khẩu nào." });
     }
 
-    // 1. Lấy tất cả khoản thu đang ACTIVE
+    // 1. Lấy thông tin Hộ khẩu để biết số lượng thành viên
+    // (Cần thiết để tính phí theo đầu người)
+    const household = await Household.findById(user.household);
+    if (!household) {
+        return res.status(404).json({ message: "Không tìm thấy thông tin hộ khẩu." });
+    }
+    const memberCount = household.members.length;
+
+    // 2. Lấy tất cả khoản thu đang ACTIVE
     const activeFees = await Fee.find({ status: "ACTIVE" });
     
-    // 2. Lấy các giao dịch nhà này đã đóng
+    // 3. Lấy các giao dịch nhà này đã đóng
     const myTransactions = await Transaction.find({ household: user.household });
 
-    // 3. Tính toán từng khoản
+    // 4. Tính toán từng khoản
+    const result = activeFees.map(fee => {
+      // Tổng tiền đã nộp cho khoản này
+      const paidTrans = myTransactions.filter(t => t.fee.toString() === fee._id.toString());
+      const paidAmount = paidTrans.reduce((sum, t) => sum + t.amount, 0);
+      
+      let required = 0;
+      let status = "UNPAID"; // Mặc định là chưa đóng
+
+      if (fee.type === "MANDATORY") {
+        // --- LOGIC TÍNH TOÁN ĐÃ HOÀN THIỆN ---
+        // Công thức: Đơn giá * 12 tháng * Số nhân khẩu
+        const months = 12; 
+        required = fee.unitPrice * months * memberCount;
+        
+        // Xác định trạng thái
+        if (paidAmount === 0) {
+            status = "UNPAID";
+        } else if (paidAmount < required) {
+            status = "PARTIAL"; // Đóng thiếu
+        } else {
+            status = "COMPLETED"; // Đóng đủ
+        }
+
+      } else {
+        // Với phí tự nguyện
+        required = 0;
+        status = paidAmount > 0 ? "CONTRIBUTED" : "NO_CONTRIBUTION";
+      }
+
+      // Tính số tiền còn nợ (không âm)
+      const remaining = required > paidAmount ? required - paidAmount : 0;
+
+      return {
+        feeId: fee._id,
+        name: fee.name,
+        type: fee.type,
+        description: fee.description,
+        unitPrice: fee.unitPrice,
+        memberCount: memberCount, // Trả về để frontend hiển thị giải trình tính phí
+        requiredAmount: required,
+        paidAmount: paidAmount,
+        remainingAmount: remaining,
+        status: status,
+        lastPaymentDate: paidTrans.length > 0 ? paidTrans[0].createdAt : null
+      };
+    });
+
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Xem công nợ của một hộ cụ thể (Dành cho Kế toán/Tổ trưởng tra cứu)
+// @route   GET /api/fees/household/:householdId
+export const getHouseholdFeesByAdmin = async (req, res) => {
+  const { householdId } = req.params;
+
+  try {
+    // 1. Kiểm tra hộ khẩu tồn tại không
+    const household = await Household.findById(householdId);
+    if (!household) {
+      return res.status(404).json({ message: "Hộ khẩu không tồn tại" });
+    }
+    const memberCount = household.members.length;
+
+    // 2. Lấy tất cả khoản thu đang ACTIVE
+    const activeFees = await Fee.find({ status: "ACTIVE" });
+    
+    // 3. Lấy các giao dịch hộ này đã đóng
+    const myTransactions = await Transaction.find({ household: householdId });
+
+    // 4. Tính toán từng khoản
     const result = activeFees.map(fee => {
       const paidTrans = myTransactions.filter(t => t.fee.toString() === fee._id.toString());
       const paidAmount = paidTrans.reduce((sum, t) => sum + t.amount, 0);
       
       let required = 0;
-      let status = "COMPLETED";
+      let status = "UNPAID";
 
       if (fee.type === "MANDATORY") {
-        // Giả sử lấy số thành viên hiện tại của hộ user đang ở
-        // (Cần populate household trong req.user hoặc query lại)
-        // Để đơn giản, giả sử frontend hiển thị unitPrice, user tự nhân
-        required = fee.unitPrice; // Hiển thị đơn giá/người
+        const months = 12; 
+        required = fee.unitPrice * months * memberCount;
         
-        // Logic so sánh: Ở đây chỉ hiển thị số tiền đã đóng.
-        // Frontend sẽ hiển thị: "Đơn giá 6k/người - Đã đóng: 300k"
+        if (paidAmount === 0) status = "UNPAID";
+        else if (paidAmount < required) status = "PARTIAL";
+        else status = "COMPLETED";
+      } else {
+        required = 0;
+        status = paidAmount > 0 ? "CONTRIBUTED" : "NO_CONTRIBUTION";
       }
+
+      const remaining = required > paidAmount ? required - paidAmount : 0;
 
       return {
         feeId: fee._id,
         name: fee.name,
         type: fee.type,
         unitPrice: fee.unitPrice,
+        memberCount: memberCount,
+        requiredAmount: required,
         paidAmount: paidAmount,
-        lastPaymentDate: paidTrans.length > 0 ? paidTrans[0].createdAt : null
+        remainingAmount: remaining,
+        status: status,
       };
     });
 
-    res.status(200).json(result);
+    res.status(200).json({
+        household: {
+            id: household._id,
+            name: household.houseHoldID,
+            address: household.address,
+            leader: household.leader // Có thể populate thêm tên chủ hộ nếu cần
+        },
+        fees: result
+    });
+
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
