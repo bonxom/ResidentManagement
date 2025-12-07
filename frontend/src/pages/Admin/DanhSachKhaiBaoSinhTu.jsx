@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Sidebar from "../../components/Sidebar";
+import MainLayout from "../../layout/MainLayout";
 
 export default function DanhSachKhaiBaoSinhTu() {
   // Dữ liệu mẫu (giữ nguyên)//goi API sau
@@ -89,10 +89,8 @@ export default function DanhSachKhaiBaoSinhTu() {
   };
 
   return (
-    <div style={{ display: "flex" }}>
-      <Sidebar />
-
-      <div style={{ flex: 1, padding: "20px" }}>
+    <MainLayout>
+      <div style={{ padding: "20px" }}>
         {/* Header */}
         <div
           style={{
@@ -240,7 +238,7 @@ export default function DanhSachKhaiBaoSinhTu() {
           ))}
         </div>
       </div>
-    </div>
+    </MainLayout>
   );
 }
 

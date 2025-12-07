@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Sidebar from "../../components/Sidebar";
+import MainLayout from "../../layout/MainLayout";
 
 export default function DanhSachThuTien() {
   // Dữ liệu mẫu
@@ -68,10 +68,8 @@ export default function DanhSachThuTien() {
   };
 
   return (
-    <div style={{ display: "flex" }}>
-      <Sidebar />
-
-      <div style={{ flex: 1, padding: "20px" }}>
+    <MainLayout>
+      <div style={{ padding: "20px" }}>
         {/* Header */}
         <div
           style={{
@@ -222,7 +220,7 @@ export default function DanhSachThuTien() {
           ))}
         </div>
       </div>
-    </div>
+    </MainLayout>
   );
 }
 
