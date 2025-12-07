@@ -15,7 +15,6 @@ import {
   moveMember,
 } from "../controllers/householdController.js";
 
-import { calculateHouseholdFee } from "../controllers/feeController.js";
 import { protect, authorizePermission, authorize } from "../middleware/authMiddleware.js";
 
 
@@ -34,12 +33,6 @@ router.delete("/:householdId/members/:memberId", protect, authorizePermission("E
 router.post("/split", protect, authorizePermission("EDIT HOUSEHOLD"), splitHousehold);
 router.post("/move", protect, authorizePermission("EDIT HOUSEHOLD"), moveMember);
 
-router.post(
-  "/:id/calculate-fee",
-  protect,
-  authorizePermission("CALCULATE FEE"),
-  calculateHouseholdFee
-);
 router.get("/:householdId/resident-histories", protect, authorize("HAMLET LEADER"), getResidentHistory);
 router.post("/:householdId/temporary-residents", protect, authorize("HAMLET LEADER"), addTemporaryResident);
 router.put("/:householdId/temporary-residents/end", protect, authorize("HAMLET LEADER"), endOfTemporaryLiving);

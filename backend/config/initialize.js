@@ -136,6 +136,7 @@ const SEED_USERS_DATA = {
       dob: new Date("2002-09-09T00:00:00.000Z"),
       birthLocation: "Tổ 2, Khu phố 4, Phường Chánh Nghĩa, TP. Thủ Dầu Một",
       phoneNumber: "0966332211",
+      status: "VERIFIED",
     },
     {
       email: "member2@resident.test",
@@ -146,6 +147,7 @@ const SEED_USERS_DATA = {
       dob: new Date("1998-07-21T00:00:00.000Z"),
       birthLocation: "Tổ 1, Khu phố 2, Phường Phú Lợi, TP. Thủ Dầu Một",
       phoneNumber: "0905123456",
+      status: "VERIFIED",
     },
     {
       email: "member3@resident.test",
@@ -156,6 +158,7 @@ const SEED_USERS_DATA = {
       dob: new Date("1996-01-30T00:00:00.000Z"),
       birthLocation: "Tổ 3, Khu phố 3, Phường Tân Đông Hiệp, TP. Dĩ An",
       phoneNumber: "0977889900",
+      status: "VERIFIED",
     },
     {
       email: "member4@resident.test",
@@ -166,6 +169,7 @@ const SEED_USERS_DATA = {
       dob: new Date("2001-03-12T00:00:00.000Z"),
       birthLocation: "Tổ 5, Khu phố 6, Phường An Phú, TP. Thuận An",
       phoneNumber: "0923344556",
+      status: "VERIFIED",
     },
     {
       email: "member5@resident.test",
@@ -176,6 +180,7 @@ const SEED_USERS_DATA = {
       dob: new Date("1994-10-05T00:00:00.000Z"),
       birthLocation: "Tổ 7, Khu phố 1, Phường Tân Bình, TP. Dĩ An",
       phoneNumber: "0911778899",
+      status: "VERIFIED",
     },
     {
       email: "member6@resident.test",
@@ -186,6 +191,7 @@ const SEED_USERS_DATA = {
       dob: new Date("1999-05-18T00:00:00.000Z"),
       birthLocation: "Tổ 2, Khu phố 7, Phường Bình An, TP. Dĩ An",
       phoneNumber: "0988001122",
+      status: "VERIFIED",
     },
     {
       email: "member7@resident.test",
@@ -196,6 +202,7 @@ const SEED_USERS_DATA = {
       dob: new Date("1993-02-22T00:00:00.000Z"),
       birthLocation: "Tổ 8, Khu phố 2, Phường Phú Cường, TP. Thủ Dầu Một",
       phoneNumber: "0955667788",
+      status: "VERIFIED",
     },
     {
       email: "member8@resident.test",
@@ -206,6 +213,7 @@ const SEED_USERS_DATA = {
       dob: new Date("1997-09-09T00:00:00.000Z"),
       birthLocation: "Tổ 9, Khu phố 4, Phường Phú Hòa, TP. Thủ Dầu Một",
       phoneNumber: "0933002211",
+      status: "VERIFIED",
     },
   ],
 };
