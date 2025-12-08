@@ -17,6 +17,7 @@ import DanhSachDangKyTaiKhoan from "./pages/Admin/DanhSachDangKyTaiKhoan";
 import DanhSachKhaiBaoSinhTu from "./pages/Admin/DanhSachKhaiBaoSinhTu";
 import DanhSachThuTien from "./pages/Admin/DanhSachThuTien";
 import DanhSachTamTruVang from "./pages/Admin/DanhSachTamTruVang";
+import LandingPage from "./pages/public/LandingPage";
 const theme = createTheme({
   palette: {
     mode: "light",
@@ -45,7 +46,8 @@ function App() {
       <CssBaseline />
       <Router>
         <Routes>
-          <Route path="/" element={<Navigate to="/signin" replace />} />
+          <Route path="/home" element={<LandingPage />} />
+          <Route path="/" element={<Navigate to="/home" replace />} />
           <Route path="/signin" element={<SignIn />} />
           <Route path="/signup" element={<SignUp />} />
           {/* <Route path="/dashboard" element={<Dashboard />} /> */}
