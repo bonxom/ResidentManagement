@@ -120,3 +120,50 @@ export const householdAPI = {
     return response.data
   },
 }
+
+
+// ==============MONEY API===============
+
+export const feeAPI = {
+  // Tạo fee
+  createFee: async (data) => {
+    const res = await api.post("/fees", data);
+    return res.data;
+  },
+
+  // Lấy tất cả fee
+  getAllFees: async () => {
+    const res = await api.get("/fees");
+    return res.data;
+  },
+
+  // Thống kê
+  getFeeStatistics: async (feeId) => {
+    const res = await api.get(`/fees/${feeId}/statistics`);
+    return res.data;
+  },
+
+  // Cập nhật fee
+  updateFee: async (feeId, data) => {
+    const res = await api.put(`/fees/${feeId}`, data);
+    return res.data;
+  },
+
+  // Xóa fee
+  deleteFee: async (feeId) => {
+    const res = await api.delete(`/fees/${feeId}`);
+    return res.data;
+  },
+
+  // Leader lấy fee hộ gia đình
+  getMyHouseholdFees: async () => {
+    const res = await api.get("/fees/my-household");
+    return res.data;
+  },
+
+  // Admin lấy fee của một hộ
+  getHouseholdFeesByAdmin: async (householdId) => {
+    const res = await api.get(`/fees/household/${householdId}`);
+    return res.data;
+  },
+};

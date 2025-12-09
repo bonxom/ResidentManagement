@@ -123,7 +123,7 @@ export const updateHousehold = async (req, res) => {
       if (!newLeader) {
         // return res.status(404).json({ message: "New leader not found" });
         throw new AppError(ERROR_CODE.USER_NOT_FOUND);
-
+      }
       if (
         newLeader.household &&
         newLeader.household.toString() !== household._id.toString()

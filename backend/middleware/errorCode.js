@@ -66,7 +66,7 @@ export const ERROR_CODE = {
     statusCode: 400,
   },
 
-  //Lỗi liên quan đến User
+  // USER
   USER_NAME_REQUIRED: {
     code: 4003,
     message: "User name is required",
@@ -78,78 +78,92 @@ export const ERROR_CODE = {
     message: "User not existed",
     statusCode: 404,
   },
+
   USER_ID_INVALID: {
     code: 4001,
     message: "User ID must be a mongoose.Types.ObjectId",
     statusCode: 400,
   },
+
   USER_EMAIL_EXISTED: {
     code: 4002,
     message: "Email already exists",
     statusCode: 400,
   },
+
   USER_NOT_FOUND: {
     code: 4003,
     message: "User not found",
+    statusCode: 404,
+  },
+
   USER_WRONG_PASSWORD: {
     code: 4004,
     message: "Incorrect password",
     statusCode: 400,
   },
+
   USER_PASSWORD_REQUIRED: {
     code: 4005,
     message: "Password is required",
     statusCode: 400,
   },
+
   USER_NEWPASSWORD_SAME_AS_OLD: {
     code: 4007,
     message: "New password must be different from old password",
     statusCode: 400,
   },
+
   USER_OLD_NEW_PASSWORD_REQUIRED: {
     code: 4008,
     message: "Old password and new password are required",
     statusCode: 400,
   },
+
   USER_CANNOT_DELETE_SELF: {
     code: 4006,
     message: "You cannot delete your own account",
     statusCode: 400,
   },
+
   USER_USERCARDID_REQUIRED: {
     code: 4009,
     message: "userCardID is required",
     statusCode: 400,
   },
+
   USER_USERCARDID_EXISTED: {
     code: 4010,
     message: "userCardID already exists",
     statusCode: 400,
   },
+
   USER_NO_HOUSEHOLD: {
     code: 4011,
     message: "User does not belong to any household",
     statusCode: 404,
   },
-  //Lỗi Authentication (JWT, login)
 
+  // AUTHENTICATION
   TOKEN_MISSING: {
     code: 5000,
     message: "Authorization token is missing",
     statusCode: 401,
   },
+
   TOKEN_INVALID: {
     code: 5001,
     message: "Token is invalid",
     statusCode: 401,
   },
+
   TOKEN_EXPIRED: {
     code: 5002,
     message: "Token has expired",
     statusCode: 401,
   },
 
-  // Xác thực thất bại
   INVALID_CREDENTIALS: {
     code: 5003,
     message: "Email or password is incorrect",
@@ -167,11 +181,13 @@ export const ERROR_CODE = {
     message: "Missing required fields",
     statusCode: 400,
   },
+
   EMAIL_PASSWORD_REQUIRED: {
     code: 6001,
     message: "Email and password are required",
     statusCode: 400,
   },
+
   // HOUSEHOLD MODULE
   HOUSEHOLD_INFO_INCOMPLETE: {
     code: 7001,
@@ -208,9 +224,13 @@ export const ERROR_CODE = {
     message: "User card ID already exists",
     statusCode: 400,
   },
+
   CANNOT_DELETE_OWN_ACCOUNT: {
     code: 8002,
     message: "You cannot delete your own account",
+    statusCode: 400,
+  },
+
   INVALID_PAYLOAD: {
     code: 6001,
     message: "Invalid request payload",
