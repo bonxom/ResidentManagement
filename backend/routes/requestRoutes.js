@@ -12,8 +12,7 @@ const router = express.Router();
 
 // --- KHU VỰC DÀNH CHO CƯ DÂN & NGƯỜI DÙNG ---
 router.post("/update-info", protect, createUpdateRequest);
-router.post("/payment", protect, createPaymentRequest);
-
+router.post("/payment", protect, createPaymentRequest); // Route mới cho nộp tiền
 // --- KHU VỰC DÀNH RIÊNG CHO TỔ TRƯỞNG ---
 
 // Xem danh sách: Yêu cầu quyền READ REQUESTS LIST (đã define trong initialize.js)
