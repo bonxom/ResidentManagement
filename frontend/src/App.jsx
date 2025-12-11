@@ -5,8 +5,8 @@ import {
   Navigate,
 } from "react-router-dom";
 import { ThemeProvider, createTheme, CssBaseline } from "@mui/material";
-import SignIn from "./pages/SignIn";
-import SignUp from "./pages/SignUp";
+import SignIn from "./pages/public/SignIn";
+import SignUp from "./pages/public/SignUp";
 import Dashboard from "./pages/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NhanKhau from './pages/NhanKhau'
@@ -19,6 +19,7 @@ import DanhSachThuTien from "./pages/Admin/DanhSachThuTien";
 import DanhSachTamTruVang from "./pages/Admin/DanhSachTamTruVang";
 import FeeManagement from "./pages/fee";
 import FeeHouseholdPage from "./pages/FeeHouseholdPage";
+import LandingPage from "./pages/public/LandingPage";
 const theme = createTheme({
   palette: {
     mode: "light",
@@ -47,7 +48,8 @@ function App() {
       <CssBaseline />
       <Router>
         <Routes>
-          <Route path="/" element={<Navigate to="/signin" replace />} />
+          <Route path="/home" element={<LandingPage />} />
+          <Route path="/" element={<Navigate to="/home" replace />} />
           <Route path="/signin" element={<SignIn />} />
           <Route path="/signup" element={<SignUp />} />
           {/* <Route path="/dashboard" element={<Dashboard />} /> */}

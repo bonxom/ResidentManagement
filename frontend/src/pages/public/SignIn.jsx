@@ -5,9 +5,10 @@ import {
   Link, Alert, InputAdornment
 } from '@mui/material'
 import {Lock, Users, Mail } from 'lucide-react'
-import useAuthStore from '../store/authStore'
-import { signInSchema } from '../utils/validation'
-import '../pages/background.css' 
+import useAuthStore from '../../store/authStore'
+import { signInSchema } from '../../utils/validation'
+import '../background.css'
+import './style/SignIn.css' 
 
 function SignIn() {
   const navigate = useNavigate()
@@ -61,18 +62,10 @@ function SignIn() {
   return (
 
     <Container maxWidth="sm">
-      <Box
-        sx={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          py: 4,
-        }}
-      >
-        <Card sx={{ width: '100%', boxShadow: 3 }}>
-          <CardContent sx={{ p: 4 }}>
-            <Box sx={{ textAlign: 'center', mb: 3 }}>
+      <Box className="signin-container">
+        <Card className="signin-card">
+          <CardContent className="signin-card-content">
+            <Box className="signin-header">
               <Users size={48} color="#1976d2" style={{ marginBottom: '16px' }} />
               <Typography variant="h4" fontWeight="bold" gutterBottom>
                 Đăng nhập hệ thống
@@ -83,7 +76,7 @@ function SignIn() {
             </Box>
 
             {authError && (
-              <Alert severity="error" sx={{ mb: 2 }} onClose={() => {}}>
+              <Alert severity="error" className="signin-alert" onClose={() => {}}>
                 {authError}
               </Alert>
             )}
@@ -136,12 +129,12 @@ function SignIn() {
                 variant="contained"
                 size="large"
                 disabled={isLoading}
-                sx={{ mt: 3, mb: 2, py: 1.5 }}
+                className="signin-button"
               >
                 {isLoading ? 'Đang đăng nhập...' : 'Đăng Nhập'}
               </Button>
 
-              <Typography variant="body2" align="center">
+              <Typography variant="body2" className="signin-footer">
                 Chưa có tài khoản?{' '}
                 <Link component={RouterLink} to="/signup" fontWeight="bold">
                   Đăng ký ngay

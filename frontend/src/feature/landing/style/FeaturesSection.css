@@ -1,0 +1,132 @@
+/* .features-section {
+  padding: 100px 0;
+  background: linear-gradient(
+    225deg,
+    #ffffff 0%,
+    #eff6ff 45%,
+    #2563eb 100%
+  );
+} */
+
+.features-section {
+  padding: 50px 0 80px;
+  min-height: 90vh;
+  display: flex;
+  background: linear-gradient(to bottom right, #ffffff 0%, #eff6ff 50%, #b6c6f6 100%);
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Animated Background Decorations */
+.features-section::before,
+.features-section::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.2;
+  animation: pulse-soft 4s ease-in-out infinite;
+  z-index: 0;
+} 
+
+.features-section::before {
+  top: 5rem;
+  left: 2.5rem;
+  width: 18rem;
+  height: 18rem;
+  background: radial-gradient(circle, #2c73ca 0%, rgba(44, 115, 202, 0.5) 50%, transparent 100%);
+}
+
+.features-section::after {
+  top: 10rem;
+  right: 5rem;
+  width: 24rem;
+  height: 24rem;
+  background: radial-gradient(circle, #afc5ec 0%, rgba(175, 197, 236, 0.5) 50%, transparent 100%);
+  animation-delay: 1s;
+}
+
+.section-badge {
+  color: #1976d2;
+  font-weight: 600;
+  font-size: 0.875rem;
+  letter-spacing: 1px;
+  margin-bottom: 1rem;
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background-color: rgba(25, 118, 210, 0.1);
+  border-radius: 20px;
+}
+
+.section-title {
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 1rem;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.section-subtitle {
+  color: #666;
+  margin-top: 0.5rem;
+  font-weight: 400;
+  text-align: center;    /* căn giữa text */
+}
+
+
+.feature-card {
+  height: 100%;
+  border-radius: 16px;
+  transition: all 0.3s ease;
+  border: 1px solid #e0e0e0;
+  background: #ffffff;
+}
+
+.feature-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+  border-color: transparent;
+}
+
+.feature-card-content {
+  padding: 2.5rem 2rem;
+  text-align: center;
+}
+
+.feature-icon {
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.feature-title {
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+}
+
+.feature-description {
+  color: #666;
+  line-height: 1.7;
+  font-size: 0.95rem;
+}
+
+@media (max-width: 900px) {
+  .features-section {
+    padding: 60px 0;
+  }
+  
+  .section-header {
+    margin-bottom: 3rem;
+  }
+  
+  .section-title {
+    font-size: 2rem;
+  }
+}
