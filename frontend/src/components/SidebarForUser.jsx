@@ -6,7 +6,7 @@ export const drawerWidth = 304;
 
 export function SidebarForUser({ user }) {
   const navigate = useNavigate();
-  const appTitle = user?.ten ? `Xin chào, ${user.ten}` : "MY APP";
+  const appTitle = user?.ten ? `Xin chào, ${user.ten}` : "USER";
 
   return (
     <Box

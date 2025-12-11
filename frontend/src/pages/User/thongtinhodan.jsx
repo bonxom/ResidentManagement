@@ -131,7 +131,7 @@ function ResidentsTable() {
                         color: "#1E54D4",
                         "&:hover": { textDecoration: "underline" },
                       }}
-                      onClick={() => navigate(`/detailuserinfo`)}
+                      onClick={() => navigate(`/ThongTinChiTiet`)}
                     >
                       Xem chi tiết
                     </Button>
@@ -156,7 +156,7 @@ function ResidentsTable() {
 }
 
 // ===== PAGE CHÍNH =====
-export default function UserInfo() {
+export default function ThongTinHoDan() {
   const [openAddProfileModal, setOpenAddProfileModal] = useState(false);
   const [userInfo, setUserInfo] = useState({});
 

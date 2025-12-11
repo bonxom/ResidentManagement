@@ -22,41 +22,41 @@ import MainLayout from "../../layout/MainLayout";
 import { useNavigate } from "react-router-dom";
 import AddProfileModal from "../../feature/profile/AddProfile";
 
-// ===== DỮ LIỆU ẢO: DANH SÁCH HỘ DÂN =====
-const households = [
+// ===== DỮ LIỆU ẢO (3 dòng để test) =====
+const residents = [
   {
     id: 1,
-    householdCode: "HK001",
-    headName: "Nguyễn Văn A",
-    createdAt: "01/01/2024",
-    membersCount: 4,
+    cccd: "012345678901",
+    fullName: "Nguyễn Văn A",
+    relation: "Chủ hộ",
+    dob: "12/03/1980",
   },
   {
     id: 2,
-    householdCode: "HK002",
-    headName: "Trần Thị B",
-    createdAt: "15/02/2024",
-    membersCount: 3,
+    cccd: "012345678902",
+    fullName: "Trần Thị B",
+    relation: "Vợ",
+    dob: "20/11/1985",
   },
   {
     id: 3,
-    householdCode: "HK003",
-    headName: "Nguyễn Văn C",
-    createdAt: "20/03/2024",
-    membersCount: 5,
+    cccd: "012345678903",
+    fullName: "Nguyễn Văn C",
+    relation: "Con",
+    dob: "05/04/2010",
   },
 ];
 
-// ===== COMPONENT BẢNG HỘ DÂN =====
+// ===== COMPONENT BẢNG =====
 function ResidentsTable() {
   const ROWS_PER_PAGE = 10;
   const [selected, setSelected] = useState([]);
   const [page, setPage] = useState(1);
   const navigate = useNavigate();
 
-  const pageCount = Math.ceil(households.length / ROWS_PER_PAGE) || 1;
+  const pageCount = Math.ceil(residents.length / ROWS_PER_PAGE) || 1;
   const start = (page - 1) * ROWS_PER_PAGE;
-  const visibleRows = households.slice(start, start + ROWS_PER_PAGE);
+  const visibleRows = residents.slice(start, start + ROWS_PER_PAGE);
 
   const handleSelectRow = (id) => {
     setSelected((prev) =>
@@ -67,9 +67,10 @@ function ResidentsTable() {
   const handleSelectAll = (e) => {
     if (e.target.checked) {
       const idsOnPage = visibleRows.map((r) => r.id);
-      setSelected(idsOnPage);
+      setSelected((prev) => Array.from(new Set([...prev, ...idsOnPage])));
     } else {
-      setSelected([]);
+      const idsOnPage = visibleRows.map((r) => r.id);
+      setSelected((prev) => prev.filter((id) => !idsOnPage.includes(id)));
     }
   };
 
@@ -89,24 +90,19 @@ function ResidentsTable() {
               <TableCell padding="checkbox">
                 <Checkbox
                   checked={isAllSelectedOnPage}
-                  indeterminate={
-                    selected.length > 0 && selected.length < visibleRows.length
-                  }
                   onChange={handleSelectAll}
                 />
               </TableCell>
-              <TableCell>Mã hộ dân</TableCell>
-              <TableCell>Chủ hộ</TableCell>
-              <TableCell>Ngày khởi tạo</TableCell>
-              <TableCell>Số thành viên</TableCell>
+              <TableCell>Số CCCD</TableCell>
+              <TableCell>Họ và tên</TableCell>
+              <TableCell>Quan hệ với chủ hộ</TableCell>
+              <TableCell>Ngày tháng năm sinh</TableCell>
               <TableCell align="center">Xem chi tiết</TableCell>
             </TableRow>
           </TableHead>
-
           <TableBody>
             {visibleRows.map((row) => {
               const checked = selected.includes(row.id);
-
               return (
                 <TableRow
                   key={row.id}
@@ -114,19 +110,18 @@ function ResidentsTable() {
                   selected={checked}
                   sx={{ cursor: "pointer" }}
                 >
-                  {/* CHECKBOX TỪNG DÒNG */}
                   <TableCell padding="checkbox">
                     <Checkbox
                       checked={checked}
                       onChange={() => handleSelectRow(row.id)}
                     />
                   </TableCell>
+                  <TableCell>{row.cccd}</TableCell>
+                  <TableCell>{row.fullName}</TableCell>
+                  <TableCell>{row.relation}</TableCell>
+                  <TableCell>{row.dob}</TableCell>
 
-                  <TableCell>{row.householdCode}</TableCell>
-                  <TableCell>{row.headName}</TableCell>
-                  <TableCell>{row.createdAt}</TableCell>
-                  <TableCell>{row.membersCount}</TableCell>
-
+                  {/* NÚT XEM CHI TIẾT */}
                   <TableCell align="center">
                     <Button
                       variant="text"
@@ -136,7 +131,7 @@ function ResidentsTable() {
                         color: "#1E54D4",
                         "&:hover": { textDecoration: "underline" },
                       }}
-                      onClick={() => navigate(`/ThongTinHoDanAdmin`)}
+                      onClick={() => navigate(`/ThongTinChiTietAdmin`)}
                     >
                       Xem chi tiết
                     </Button>
@@ -161,7 +156,7 @@ function ResidentsTable() {
 }
 
 // ===== PAGE CHÍNH =====
-export default function Quanlydancu() {
+export default function ThongTinHoDanAdmin() {
   const [openAddProfileModal, setOpenAddProfileModal] = useState(false);
   const [userInfo, setUserInfo] = useState({});
 
@@ -172,7 +167,7 @@ export default function Quanlydancu() {
     setOpenAddProfileModal(false);
   };
 
-  // Bấm nút "Thêm thành viên" -> mở form trống
+  // Bấm nút "Yêu cầu thêm thành viên" -> mở form trống
   const handleOpenAddMember = () => {
     setUserInfo({});
     setOpenAddProfileModal(true);
@@ -191,18 +186,20 @@ export default function Quanlydancu() {
           }}
         >
           <Typography sx={{ fontSize: "26px", fontWeight: "600" }}>
-            Thông tin hộ dân
+            Thông tin thành viên hộ dân
           </Typography>
           <Box
             sx={{
               display: "flex",
+              justifyContent: "space-between",
               alignItems: "center",
+              mb: 3,
               gap: 3,
             }}
           >
             <Button
               variant="contained"
-              onClick={handleOpenAddMember}
+              onClick={handleOpenAddMember} // ✅ GẮN NÚT Ở ĐÂY
               sx={{
                 backgroundColor: "#2D66F5",
                 borderRadius: "8px",
@@ -214,12 +211,12 @@ export default function Quanlydancu() {
                 "&:hover": { backgroundColor: "#1E54D4" },
               }}
             >
-              Xóa hộ dân
+              Xóa thành viên
             </Button>
 
             <Button
               variant="contained"
-              onClick={handleOpenAddMember}
+              onClick={handleOpenAddMember} // ✅ GẮN NÚT Ở ĐÂY
               sx={{
                 backgroundColor: "#2D66F5",
                 borderRadius: "8px",
@@ -231,11 +228,10 @@ export default function Quanlydancu() {
                 "&:hover": { backgroundColor: "#1E54D4" },
               }}
             >
-              Thêm hộ dân
+              Thêm thành viên
             </Button>
           </Box>
         </Box>
-
         {/* SEARCH BOX */}
         <Box
           sx={{
@@ -254,7 +250,7 @@ export default function Quanlydancu() {
             <Typography sx={{ fontSize: "13px", mb: 1 }}>Tìm kiếm</Typography>
             <TextField
               fullWidth
-              placeholder="Nhập mã hộ dân, tên chủ hộ..."
+              placeholder="Nhập từ khóa..."
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">

@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 export const drawerWidth = 304;
 
 export function Sidebar({ user }) {
-  const appTitle = user?.ten ? `Xin chào, ${user.ten}` : "MY APP";
+  const appTitle = user?.ten ? `Xin chào, ${user.ten}` : "ADMIN";
 
   return (
       <Box
@@ -46,7 +46,6 @@ export function Sidebar({ user }) {
       <SectionTitle text="Menu" />
       <MenuItem icon={<Home size={18} />} label="Dashboard" to="/tc"/>
       <MenuItem icon={<Users size={18} />} label="Quản lý hộ khẩu" to="/qldc" />
-      <MenuItem icon={<User size={18} />} label="Quản lý nhân khẩu" />
 
       {/* ACTION */}
       <SectionTitle text="Action" />

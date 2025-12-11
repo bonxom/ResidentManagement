@@ -19,12 +19,14 @@ import DanhSachDangKyTaiKhoan from "./pages/Admin/DanhSachDangKyTaiKhoan";
 import DanhSachKhaiBaoSinhTu from "./pages/Admin/DanhSachKhaiBaoSinhTu";
 import DanhSachThuTien from "./pages/Admin/DanhSachThuTien";
 import DanhSachTamTruVang from "./pages/Admin/DanhSachTamTruVang";
+import ThongTinChiTietAdmin from "./pages/Admin/ThongTinChiTietAdmin";
+import ThongTinHoDanAdmin from "./pages/Admin/ThongTinHoDanAdmin";
 
 // import user
-import UserInfo from "./pages/User/thongtinhodan";
-import DetailProfile from "./pages/User/thongtinchitiet";
+import ThongTinHoDan from "./pages/User/thongtinhodan";
+import ThongTinChiTiet from "./pages/User/thongtinchitiet";
 import MainUser from "./pages/User/trangchinhuser";
-import Feeuser from "./pages/User/khoannop";
+import KhoanNop from "./pages/User/khoannop";
 
 const theme = createTheme({
   palette: {
@@ -69,12 +71,14 @@ function App() {
           <Route path="/tamtruvang" element={<DanhSachTamTruVang />} />
           <Route path="/nhankhau" element={<NhanKhau />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/ThongTinChiTietadmin" element={<ThongTinChiTietAdmin />} />
+          <Route path="/ThongTinHoDanadmin" element={<ThongTinHoDanAdmin />} />
 
           
-          <Route path="/userinfo" element={<UserInfo />} />
-          <Route path="/detailuserinfo" element={<DetailProfile />} />
+          <Route path="/ThongTinHoDan" element={<ThongTinHoDan />} />
+          <Route path="/ThongTinChiTiet" element={<ThongTinChiTiet />} />
           <Route path="/MainUser" element={<MainUser />} />
-          <Route path="/feeuser" element={<Feeuser />} />
+          <Route path="/feeuser" element={<KhoanNop />} />
 
 
         </Routes>

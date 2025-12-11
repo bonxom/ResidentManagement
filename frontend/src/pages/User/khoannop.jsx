@@ -133,7 +133,7 @@ function PaymentsTable() {
 }
 
 // ===== PAGE =====
-export default function UserInfo() {
+export default function KhoanNop() {
   return (
     <MainLayoutForUser>
       <Box sx={{ padding: "24px 32px" }}>
