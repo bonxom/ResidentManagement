@@ -1,0 +1,412 @@
+import { useState } from "react";
+import MainLayout from "../../layout/MainLayout";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Box,
+  Typography,
+  Grid,
+} from "@mui/material";
+
+export default function DanhSachThuTien() {
+  // Dữ liệu mẫu
+  const fullData = [
+    {
+      event: "Tết Trung Thu",
+      houseHoldID: "HH001",
+      chuHo: "Nguyễn Văn Chủ",
+      soTien: 500000,
+      status: "Phê duyệt",
+      eventDate: "15/09/2024",
+      eventLocation: "Sân vận động",
+      organizer: "Ban quản lý",
+      description: "Sự kiện kỷ niệm Tết Trung Thu",
+    },
+    {
+      event: "Tết Trung Thu",
+      houseHoldID: "HH002",
+      chuHo: "Nguyễn Văn Hộ",
+      soTien: 500000,
+      status: "",
+      eventDate: "15/09/2024",
+      eventLocation: "Sân vận động",
+      organizer: "Ban quản lý",
+      description: "Sự kiện kỷ niệm Tết Trung Thu",
+    },
+    {
+      event: "Lễ Quốc Khánh",
+      houseHoldID: "HH003",
+      chuHo: "Nguyễn Văn Hộ",
+      soTien: 300000,
+      status: "Không phê duyệt",
+      eventDate: "02/09/2024",
+      eventLocation: "Trưng tâm cộng đồng",
+      organizer: "Ban quản lý",
+      description: "Lễ kỷ niệm ngày Quốc khánh",
+    },
+    {
+      event: "Lễ Quốc Khánh",
+      houseHoldID: "HH001",
+      chuHo: "Nguyễn Văn Chủ",
+      soTien: 300000,
+      status: "",
+      eventDate: "02/09/2024",
+      eventLocation: "Trưng tâm cộng đồng",
+      organizer: "Ban quản lý",
+      description: "Lễ kỷ niệm ngày Quốc khánh",
+    },
+  ];
+
+  const [data, setData] = useState(fullData);
+  const [searchText, setSearchText] = useState("");
+  const [filterRole, setFilterRole] = useState("Tất cả");
+  const [openModal, setOpenModal] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [selectedIndex, setSelectedIndex] = useState(null);
+
+  // Lọc chỉ người chưa đỗng tiền
+  const handleFilterChuaDuyet = () => {
+    setData((prev) => prev.filter((item) => item.status === ""));
+  };
+
+  // Tìm kiếm
+  const handleSearch = () => {
+    let filtered = fullData;
+
+    if (searchText.trim() !== "") {
+      filtered = filtered.filter(
+        (item) =>
+          item.houseHoldID.toLowerCase().includes(searchText.toLowerCase()) ||
+          item.chuHo.toLowerCase().includes(searchText.toLowerCase()) ||
+          item.event.toLowerCase().includes(searchText.toLowerCase())
+      );
+    }
+
+    setData(filtered);
+  };
+
+  // Cập nhật trạng thái
+  const updateStatus = (index, newStatus) => {
+    const newData = [...data];
+    newData[index].status = newStatus;
+    setData(newData);
+  };
+
+  // Mở modal khi click vào '...'
+  const handleOpenModal = (item, index) => {
+    setSelectedItem(item);
+    setSelectedIndex(index);
+    setOpenModal(true);
+  };
+
+  // Đóng modal
+  const handleCloseModal = () => {
+    setOpenModal(false);
+    setSelectedItem(null);
+    setSelectedIndex(null);
+  };
+
+  // Cập nhật trạng thái từ modal
+  const handleStatusChange = (newStatus) => {
+    if (selectedIndex !== null) {
+      updateStatus(selectedIndex, newStatus);
+    }
+    handleCloseModal();
+  };
+
+  return (
+    <MainLayout>
+      <div style={{ padding: "20px" }}>
+        {/* Header */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <h1 style={{ margin: 0 }}>Danh sách thu tiền hoạt động xã hội</h1>
+
+          <button
+            onClick={handleFilterChuaDuyet}
+            style={{
+              background: "#2962ff",
+              color: "white",
+              fontSize: "18px",
+              padding: "10px 20px",
+              borderRadius: "8px",
+              border: "none",
+              cursor: "pointer",
+            }}
+          >
+            Tạo mới
+          </button>
+        </div>
+
+        {/* Khung tìm kiếm */}
+        <div
+          style={{
+            marginTop: "20px",
+            background: "#f1f3f6",
+            padding: "20px",
+            borderRadius: "12px",
+            display: "flex",
+            gap: "20px",
+            alignItems: "center",
+          }}
+        >
+          <div style={{ flex: 1 }}>
+            <p style={{ fontWeight: "bold", marginBottom: 5 }}>
+              Tìm kiếm (Mã hộ / Tên chủ hộ / Sự kiện)
+            </p>
+            <input
+              type="text"
+              placeholder="🔍 Nhập nội dung..."
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "12px",
+                borderRadius: "8px",
+                border: "1px solid #ccc",
+              }}
+            />
+          </div>
+
+          <button
+            onClick={handleSearch}
+            style={{
+              height: "45px",
+              padding: "0 20px",
+              background: "#2962ff",
+              color: "white",
+              borderRadius: "8px",
+              border: "none",
+              alignSelf: "flex-end",
+              cursor: "pointer",
+            }}
+          >
+            Tìm kiếm
+          </button>
+        </div>
+
+        {/* Bảng danh sách */}
+        <TableContainer
+          component={Paper}
+          style={{
+            marginTop: "30px",
+            borderRadius: "12px",
+          }}
+        >
+          <Table>
+            <TableHead sx={{ backgroundColor: "#f5f5f5" }}>
+              <TableRow>
+                <TableCell sx={{ fontWeight: "bold", padding: "16px" }}>
+                  Tên sự kiện
+                </TableCell>
+                <TableCell sx={{ fontWeight: "bold", padding: "16px" }}>
+                  Mã hộ gia đình
+                </TableCell>
+                <TableCell sx={{ fontWeight: "bold", padding: "16px" }}>
+                  Tên chủ hộ
+                </TableCell>
+                <TableCell sx={{ fontWeight: "bold", padding: "16px" }}>
+                  Số tiền quyên góp
+                </TableCell>
+                <TableCell sx={{ fontWeight: "bold", padding: "16px" }}>
+                  Trạng thái thanh toán
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {data.map((item, index) => (
+                <TableRow
+                  key={index}
+                  sx={{ borderBottom: "1px solid #e0e0e0" }}
+                >
+                  <TableCell sx={{ padding: "16px" }}>{item.event}</TableCell>
+                  <TableCell sx={{ padding: "16px" }}>
+                    {item.houseHoldID}
+                  </TableCell>
+                  <TableCell sx={{ padding: "16px" }}>{item.chuHo}</TableCell>
+                  <TableCell sx={{ padding: "16px" }}>
+                    {item.soTien.toLocaleString()} đ
+                  </TableCell>
+                  <TableCell sx={{ padding: "16px" }}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        gap: "12px",
+                        alignItems: "center",
+                      }}
+                    >
+                      {/* Dấu ✓ - Đã thanh toán */}
+                      <button
+                        onClick={() => updateStatus(index, "Phê duyệt")}
+                        style={{
+                          background:
+                            item.status === "Phê duyệt" ? "#4caf50" : "#e0e0e0",
+                          color: item.status === "Phê duyệt" ? "white" : "#666",
+                          border: "none",
+                          width: "36px",
+                          height: "36px",
+                          borderRadius: "50%",
+                          fontSize: "18px",
+                          fontWeight: "bold",
+                          cursor: "pointer",
+                          transition: "all 0.3s",
+                        }}
+                        title="Phê duyệt"
+                      >
+                        ✓
+                      </button>
+
+                      {/* Dấu ✗ - Không phê duyệt */}
+                      <button
+                        onClick={() => updateStatus(index, "Không phê duyệt")}
+                        style={{
+                          background:
+                            item.status === "Không phê duyệt"
+                              ? "#f44336"
+                              : "#e0e0e0",
+                          color:
+                            item.status === "Không phê duyệt"
+                              ? "white"
+                              : "#666",
+                          border: "none",
+                          width: "36px",
+                          height: "36px",
+                          borderRadius: "50%",
+                          fontSize: "18px",
+                          fontWeight: "bold",
+                          cursor: "pointer",
+                          transition: "all 0.3s",
+                        }}
+                        title="Không phê duyệt"
+                      >
+                        ✗
+                      </button>
+
+                      {/* Dấu ... - Mở modal */}
+                      <button
+                        onClick={() => handleOpenModal(item, index)}
+                        style={{
+                          background:
+                            item.status === "" ? "#2196f3" : "#e0e0e0",
+                          color: item.status === "" ? "white" : "#666",
+                          border: "none",
+                          width: "36px",
+                          height: "36px",
+                          borderRadius: "50%",
+                          fontSize: "18px",
+                          fontWeight: "bold",
+                          cursor: "pointer",
+                          transition: "all 0.3s",
+                        }}
+                        title="Xem chi tiết"
+                      >
+                        ...
+                      </button>
+                    </Box>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+
+        {/* Modal hiển thị thông tin sự kiện */}
+        <Dialog
+          open={openModal}
+          onClose={handleCloseModal}
+          maxWidth="sm"
+          fullWidth
+        >
+          <DialogTitle>Thông tin sự kiện - {selectedItem?.event}</DialogTitle>
+          <DialogContent>
+            <Box sx={{ mt: 2 }}>
+              <Grid container spacing={2}>
+                <Grid item xs={12}>
+                  <Typography variant="subtitle2" fontWeight="bold">
+                    Tên sự kiện:
+                  </Typography>
+                  <Typography>{selectedItem?.event}</Typography>
+                </Grid>
+                <Grid item xs={12}>
+                  <Typography variant="subtitle2" fontWeight="bold">
+                    Mã hộ gia đình:
+                  </Typography>
+                  <Typography>{selectedItem?.houseHoldID}</Typography>
+                </Grid>
+                <Grid item xs={12}>
+                  <Typography variant="subtitle2" fontWeight="bold">
+                    Tên chủ hộ:
+                  </Typography>
+                  <Typography>{selectedItem?.chuHo}</Typography>
+                </Grid>
+                <Grid item xs={12}>
+                  <Typography variant="subtitle2" fontWeight="bold">
+                    Số tiền quyên góp:
+                  </Typography>
+                  <Typography>
+                    {selectedItem?.soTien?.toLocaleString()} đ
+                  </Typography>
+                </Grid>
+                <Grid item xs={12}>
+                  <Typography variant="subtitle2" fontWeight="bold">
+                    Ngày tổ chức:
+                  </Typography>
+                  <Typography>{selectedItem?.eventDate}</Typography>
+                </Grid>
+                <Grid item xs={12}>
+                  <Typography variant="subtitle2" fontWeight="bold">
+                    Địa điểm tổ chức:
+                  </Typography>
+                  <Typography>{selectedItem?.eventLocation}</Typography>
+                </Grid>
+                <Grid item xs={12}>
+                  <Typography variant="subtitle2" fontWeight="bold">
+                    Đơn vị tổ chức:
+                  </Typography>
+                  <Typography>{selectedItem?.organizer}</Typography>
+                </Grid>
+                <Grid item xs={12}>
+                  <Typography variant="subtitle2" fontWeight="bold">
+                    Mô tả:
+                  </Typography>
+                  <Typography>{selectedItem?.description}</Typography>
+                </Grid>
+              </Grid>
+            </Box>
+          </DialogContent>
+          <DialogActions sx={{ justifyContent: "flex-end", gap: 1, p: 2 }}>
+            <Button
+              variant="contained"
+              color="success"
+              onClick={() => handleStatusChange("Phê duyệt")}
+            >
+              Phê duyệt
+            </Button>
+            <Button
+              variant="contained"
+              color="error"
+              onClick={() => handleStatusChange("Không phê duyệt")}
+            >
+              Không phê duyệt
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </div>
+    </MainLayout>
+  );
+}

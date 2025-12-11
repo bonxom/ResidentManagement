@@ -35,7 +35,7 @@ export const createRole = async (req, res) => {
     message: "Created role",
     role: populatedRole
   });
-}
+};
 
 // @desc    Get all roles
 // @route   GET /api/roles
@@ -46,9 +46,9 @@ export const getAllRoles = async (req, res) => {
     .sort({ createdAt: -1 });
   res.status(200).json({
     message: "Request success",
-    roles
+    roles,
   });
-}
+};
 
 // @desc    Get role by ID
 // @route   GET /api/roles/:id
@@ -66,9 +66,9 @@ export const getRole = async (req, res) => {
 
   res.status(200).json({
     message: "Request success",
-    role
+    role,
   });
-}
+};
 
 // @desc    Update an existing role
 // @route   PUT /api/roles/:id
@@ -77,7 +77,7 @@ export const updateRole = async (req, res) => {
   const { id } = req.params;
   // ID must be a mongoose ID
   if (!mongoose.Types.ObjectId.isValid(id)) {
-    throw new AppError(ERROR_CODE.ROLE_ID_INVALID)
+    throw new AppError(ERROR_CODE.ROLE_ID_INVALID);
   }
   // check input
   const { role_name, permissions } = req.body;
@@ -110,7 +110,7 @@ export const updateRole = async (req, res) => {
     message: "Updated role",
     role: populatedRole
   });
-}
+};
 
 // @desc    Delete a role
 // @route   DELETE /api/roles/:id
@@ -118,10 +118,16 @@ export const updateRole = async (req, res) => {
 export const deleteRole = async (req, res) => {
   const { id } = req.params;
   // ID must be a mongoose ID
-  if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({ message: "Invalid role ID" });
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    // return res.status(400).json({ message: "Invalid role ID" });
+    throw new AppError(ERROR_CODE.ROLE_ID_INVALID);
+  }
 
   const role = await Role.findByIdAndDelete(id);
-  if (!role) return res.status(404).json({ message: "Role not found" });
+  if (!role) {
+    // return res.status(404).json({ message: "Role not found" });
+    throw new AppError(ERROR_CODE.ROLE_NOT_EXISTED);
+  }
   // console.log(role.role_name);
   res.status(200).json({
     message: "Deleted role"

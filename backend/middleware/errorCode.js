@@ -174,6 +174,7 @@ export const ERROR_CODE = {
     message: "Email or password is incorrect",
     statusCode: 401,
   },
+
   PASSWORD_REQUIRED: {
     code: 5004,
     message: "Password is required",
@@ -186,6 +187,50 @@ export const ERROR_CODE = {
     message: "Missing required fields",
     statusCode: 400,
   },
+  EMAIL_PASSWORD_REQUIRED: {
+    code: 6001,
+    message: "Email and password are required",
+    statusCode: 400,
+  },
+  // HOUSEHOLD MODULE
+  HOUSEHOLD_INFO_INCOMPLETE: {
+    code: 7001,
+    message: "Household ID, address, and leader ID are required",
+    statusCode: 400,
+  },
+
+  HOUSEHOLD_ID_EXISTED: {
+    code: 7002,
+    message: "Household ID already exists",
+    statusCode: 400,
+  },
+
+  HOUSEHOLD_NOT_FOUND: {
+    code: 7003,
+    message: "Household not found",
+    statusCode: 404,
+  },
+
+  USER_ALREADY_HOUSEHOLD_MEMBER: {
+    code: 7004,
+    message: "User is already a member of this household",
+    statusCode: 400,
+  },
+
+  CANNOT_REMOVE_HOUSEHOLD_LEADER: {
+    code: 7005,
+    message: "Cannot remove household leader. Assign a new leader first",
+    statusCode: 400,
+  },
+
+  USER_CARD_ID_EXISTED: {
+    code: 8001,
+    message: "User card ID already exists",
+    statusCode: 400,
+  },
+  CANNOT_DELETE_OWN_ACCOUNT: {
+    code: 8002,
+    message: "You cannot delete your own account",
   INVALID_PAYLOAD: {
     code: 6001,
     message: "Invalid request payload",
