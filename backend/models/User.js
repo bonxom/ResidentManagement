@@ -46,11 +46,6 @@ const userSchema = new mongoose.Schema(
       type: String, 
     },
 
-    household: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Household",
-      default: null, 
-    },
     relationshipWithHead: {
       type: String,
       default: null,
@@ -58,7 +53,7 @@ const userSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["PENDING", "VERIFIED", "LOCKED"], // PENDING: Chờ duyệt đăng ký
+      enum: ["PENDING", "VERIFIED", "LOCKED", "DECEASED"], // PENDING: Chờ duyệt đăng ký
       default: "PENDING", 
     },
     // Đây là phần liên kết với Role có sẵn của bạn

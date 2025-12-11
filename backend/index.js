@@ -17,6 +17,7 @@ import requestRoutes from "./routes/requestRoutes.js";
 import feeRoutes from "./routes/feeRoutes.js";
 import statsRoutes from "./routes/statsRoutes.js";
 import transactionRoutes from "./routes/transactionRoutes.js";
+
 const rawPort = process.env.PORT;
 const PORT = rawPort ? Number(rawPort) : 3000;
 if (!Number.isInteger(PORT) || PORT <= 0 || PORT >= 65536) {
