@@ -5,8 +5,8 @@ import {
   Navigate,
 } from "react-router-dom";
 import { ThemeProvider, createTheme, CssBaseline } from "@mui/material";
-import SignIn from "./pages/SignIn";
-import SignUp from "./pages/SignUp";
+import SignIn from "./pages/public/SignIn";
+import SignUp from "./pages/public/SignUp";
 import Dashboard from "./pages/Dashboard";
 //import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -28,6 +28,7 @@ import ThongTinChiTiet from "./pages/User/thongtinchitiet";
 import MainUser from "./pages/User/trangchinhuser";
 import KhoanNop from "./pages/User/khoannop";
 
+import LandingPage from "./pages/public/LandingPage";
 const theme = createTheme({
   palette: {
     mode: "light",
@@ -56,7 +57,8 @@ function App() {
       <CssBaseline />
       <Router>
         <Routes>
-          <Route path="/" element={<Navigate to="/signin" replace />} />
+          <Route path="/home" element={<LandingPage />} />
+          <Route path="/" element={<Navigate to="/home" replace />} />
           <Route path="/signin" element={<SignIn />} />
           <Route path="/signup" element={<SignUp />} />
           {/* <Route path="/dashboard" element={<Dashboard />} /> */}

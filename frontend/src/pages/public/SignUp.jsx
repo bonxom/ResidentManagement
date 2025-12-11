@@ -13,8 +13,9 @@ import {
   InputAdornment,
 } from "@mui/material";
 import { IdCard, Phone, Mail, User, MapPin, Lock, Users } from "lucide-react";
-import { userAPI } from "../services/apiService";
-import { signUpSchema } from "../utils/validation";
+import { userAPI } from "../../services/apiService";
+import { signUpSchema } from "../../utils/validation";
+import "./style/SignUp.css";
 
 function SignUp() {
   const navigate = useNavigate();
@@ -86,20 +87,12 @@ function SignUp() {
 
   return (
     <Container maxWidth="sm">
-      <Box
-        sx={{
-          minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          py: 4,
-        }}
-      >
-        <Card sx={{ width: "100%", boxShadow: 3 }}>
-          <CardContent sx={{ p: 4 }}>
-            <Box sx={{ textAlign: "center", mb: 3 }}>
-              <Users size={48} color="#1976d2" style={{ marginBottom: "16px" }} />
-              <Typography variant="h4" component="h1" gutterBottom fontWeight="bold">
+      <Box className="signup-container">
+        <Card className="signup-card">
+          <CardContent className="signup-card-content">
+            <Box className="signup-header">
+              <Users size={48} color="#1976d2" className="signup-icon" />
+              <Typography variant="h4" component="h1" gutterBottom className="signup-title">
                 Đăng ký tài khoản
               </Typography>
               <Typography variant="body2" color="text.secondary">
@@ -108,7 +101,7 @@ function SignUp() {
             </Box>
 
             {backendError && (
-              <Alert severity="error" sx={{ mb: 2 }}>
+              <Alert severity="error" className="signup-alert">
                 {backendError}
               </Alert>
             )}
@@ -209,7 +202,7 @@ function SignUp() {
                 rows={2}
                 InputProps={{
                   startAdornment: (
-                    <InputAdornment position="start" sx={{ alignSelf: "flex-start", mt: 2 }}>
+                    <InputAdornment position="start" className="signup-location-adornment">
                       <MapPin size={20} />
                     </InputAdornment>
                   ),
@@ -275,12 +268,12 @@ function SignUp() {
                 variant="contained"
                 size="large"
                 disabled={isLoading}
-                sx={{ mt: 3, mb: 2, py: 1.5 }}
+                className="signup-button"
               >
                 {isLoading ? "Đang gửi yêu cầu..." : "Gửi yêu cầu đăng ký"}
               </Button>
 
-              <Typography variant="body2" align="center">
+              <Typography variant="body2" className="signup-footer">
                 Đã có tài khoản?{" "}
                 <Link component={RouterLink} to="/signin" fontWeight="bold">
                   Đăng nhập
