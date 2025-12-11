@@ -8,9 +8,6 @@ import {
   deleteHousehold,
   addMember,
   removeMember,
-  getResidentHistory,
-  addTemporaryResident,
-  endOfTemporaryLiving,
   splitHousehold,
   moveMember,
 } from "../controllers/householdController.js";

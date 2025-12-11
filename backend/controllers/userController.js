@@ -215,12 +215,17 @@ export const deleteUser = async (req, res) => {
 // @desc    Thay đổi mật khẩu User
 // @route   PATCH /users/:id/password
 // @access  Private (User/Admin)
-export const changePassword = async (req, res) => {
+export const changePassword = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { oldPassword, newPassword } = req.body;
+    const isSelfChange = req.user?._id?.toString() === id;
 
-    if (!oldPassword || !newPassword) {
+    if (!newPassword) {
+      throw new AppError(ERROR_CODE.USER_PASSWORD_REQUIRED);
+    }
+
+    if (isSelfChange && !oldPassword) {
       throw new AppError(ERROR_CODE.USER_OLD_NEW_PASSWORD_REQUIRED);
     }
 
@@ -228,25 +233,32 @@ export const changePassword = async (req, res) => {
     if (!user) {
       throw new AppError(ERROR_CODE.USER_NOT_EXISTED);
     }
-    
-    const isMatch = await user.comparePassword(oldPassword);
-    if (!isMatch) {
-      throw new AppError(ERROR_CODE.USER_WRONG_PASSWORD);
+
+    if (isSelfChange) {
+      const isMatch = await user.comparePassword(oldPassword);
+      if (!isMatch) {
+        throw new AppError(ERROR_CODE.USER_WRONG_PASSWORD);
+      }
+      if (oldPassword === newPassword) {
+        throw new AppError(ERROR_CODE.USER_NEWPASSWORD_SAME_AS_OLD);
+      }
     }
 
     user.password = newPassword;
-    await user.save( { validateModifiedOnly: true });
+    await user.save({ validateModifiedOnly: true });
 
-    res.status(200).json({ message: "Password changed successfully" });
+    res.status(200).json({
+      message: isSelfChange ? "Password changed successfully" : "Password reset successfully",
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    next(error);
   }
 };
 
 // @desc    Lấy hộ của user hiện tại
 // @route   GET /users/me/household
 // @access  Private
-export const getMyHousehold = async (req, res) => {
+export const getMyHousehold = async (req, res, next) => {
   try {
     const userId = req.user._id;
     
@@ -265,6 +277,6 @@ export const getMyHousehold = async (req, res) => {
 
     res.status(200).json(household);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    next(error);
   }
 };

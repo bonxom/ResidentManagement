@@ -2,6 +2,10 @@ import express from "express";
 import {
   createUpdateRequest,
   createPaymentRequest,
+  createTemporaryResidenceRequest,
+  createTemporaryAbsenceRequest,  
+  createBirthRequest,             
+  createDeathRequest,             
   getAllRequests,
   reviewRequest,
 } from "../controllers/requestController.js";

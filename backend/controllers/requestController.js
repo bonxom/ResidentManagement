@@ -2,6 +2,9 @@ import Request from "../models/Request.js";
 import User from "../models/User.js";
 import Fee from "../models/Fee.js";
 import Transaction from "../models/Transaction.js";
+import ResidentHistory from "../models/ResidentHistory.js";
+import Role from "../models/Role.js";
+import Household from "../models/Household.js";
 
 // @desc    Gửi yêu cầu cập nhật thông tin (Dành cho Người dân)
 // @route   POST /api/requests/update-info
@@ -49,6 +52,11 @@ export const createPaymentRequest = async (req, res) => {
         return res.status(400).json({ message: "Vui lòng chọn khoản thu và nhập số tiền" });
     }
 
+    const parsedAmount = Number(amount);
+    if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+        return res.status(400).json({ message: "Số tiền không hợp lệ" });
+    }
+
     if (!user.household) {
         return res.status(400).json({ message: "Bạn chưa thuộc hộ khẩu nào để nộp phí" });
     }
@@ -67,7 +75,7 @@ export const createPaymentRequest = async (req, res) => {
       requestData: {
           feeId,
           householdId: user.household, // Lưu snapshot hộ khẩu lúc nộp
-          amount: Number(amount),
+          amount: parsedAmount,
           note: note || "Nộp tiền Online",
           proofImage: proofImage || "" // URL ảnh chuyển khoản (nếu có)
       }
@@ -78,6 +86,8 @@ export const createPaymentRequest = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+
 // @desc    Lấy danh sách yêu cầu (Dành cho Tổ trưởng)
 // @route   GET /api/requests
 export const getAllRequests = async (req, res) => {
@@ -114,35 +124,64 @@ export const reviewRequest = async (req, res) => {
     if (request.status !== "PENDING") {
         return res.status(400).json({ message: "This request has been processed" });
     }
+    const data = request.requestData || {};
 
     if (status === "APPROVED") {
       switch (request.type) {
-        case "REGISTER":
-          await User.findByIdAndUpdate(request.requester, { status: "VERIFIED" });
+        case "REGISTER": {
+          const requesterUser = await User.findById(request.requester);
+          if (!requesterUser) {
+            return res.status(404).json({ message: "Requester account not found" });
+          }
+          requesterUser.status = "VERIFIED";
+          await requesterUser.save();
           break;
+        }
 
         // 2. Duyệt Cập nhật thông tin
         case "UPDATE_INFO":
           // Lấy data từ request đắp vào User
-          await User.findByIdAndUpdate(request.requester, { 
-             $set: request.requestData 
-          });
+          await User.findByIdAndUpdate(
+            request.requester,
+            { 
+              $set: data 
+            },
+            { runValidators: true }
+          );
           break;
 
         // --- LOGIC MỚI: DUYỆT THANH TOÁN ---
         case "PAYMENT":
           {
-            const { feeId, householdId, amount, note } = request.requestData || {};
+            const { feeId, householdId, note } = data;
+            const amount = Number(data.amount);
+            if (!feeId || !householdId || !Number.isFinite(amount) || amount <= 0) {
+              return res.status(400).json({ message: "Payment request is missing required data" });
+            }
+            const fee = await Fee.findById(feeId);
+            if (!fee) return res.status(404).json({ message: "Fee not found" });
+            if (fee.status === "COMPLETED") {
+              return res.status(400).json({ message: "This fee collection has been closed" });
+            }
+            const household = await Household.findById(householdId);
+            if (!household) {
+              return res.status(404).json({ message: "Household not found" });
+            }
+            const isMember = household.leader?.toString() === request.requester.toString()
+              || household.members?.some((member) => member?.toString() === request.requester.toString());
+            if (!isMember) {
+              return res.status(400).json({ message: "Requester does not belong to this household" });
+            }
             const txNotes = note ? `${note} (Approved online)` : "Approved online";
             await Transaction.create({
               fee: feeId,
               household: householdId,
               amount,
-              notes: txNotes,
+              payer: request.requester,
+              note: txNotes,
             });
           }
           break;
-          
         default:
           break;
       }
@@ -152,7 +191,7 @@ export const reviewRequest = async (req, res) => {
     request.leaderComment = leaderComment || "";
     await request.save();
 
-    res.status(200).json({ message: ` ${status} successful`, request });
+    res.status(200).json({ message: `${status} successful`, request });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

@@ -12,7 +12,7 @@ const requestSchema = new mongoose.Schema(
       type: String,
       enum: ["REGISTER", "UPDATE_INFO", "PAYMENT"], // Có thể mở rộng thêm sau này
       required: true,
-    },
+    }, 
     status: {
       type: String,
       enum: ["PENDING", "APPROVED", "REJECTED"],
