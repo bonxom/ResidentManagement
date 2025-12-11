@@ -4,8 +4,6 @@ import mongoose from "mongoose";
 import User from "../models/User.js";
 import Role from "../models/Role.js"; // Giả sử bạn có model Role
 import Household from "../models/Household.js";
-import { AppError } from "../middleware/AppError.js";
-import { ERROR_CODE } from "../middleware/errorCode.js";
 import Request from "../models/Request.js";
 
 // @desc    Tạo một User mới (Admin/Tổ trưởng tạo trực tiếp)
@@ -197,7 +195,8 @@ export const updateUser = async (req, res) => {
 // @desc    Xóa User
 // @route   DELETE /api/users/:id
 export const deleteUser = async (req, res) => {
-  const { id } = req.params;
+  try {
+    const { id } = req.params;
   if (!mongoose.Types.ObjectId.isValid(id))
     // return res.status(400).json({ message: "Invalid user ID" });
     throw new AppError(ERROR_CODE.USER_ID_INVALID);
@@ -233,10 +232,10 @@ export const deleteUser = async (req, res) => {
     await user.deleteOne();
     return res.status(200).json({ message: "Delete sucessful" });
 
-  } catch (error) {
+  } catch(error) {
     res.status(500).json({ message: error.message });
-  }
-};
+  }}
+;
 
 // @desc    Thay đổi mật khẩu User
 // @route   PATCH /users/:id/password

@@ -97,11 +97,13 @@ export const ERROR_CODE = {
     message: "User not existed",
     statusCode: 404,
   },
+
   USER_ID_INVALID: {
     code: 4001,
     message: "User ID must be a mongoose.Types.ObjectId",
     statusCode: 400,
   },
+
   USER_EMAIL_EXISTED: {
     code: 4002,
     message: "Email already exists",
@@ -117,6 +119,7 @@ export const ERROR_CODE = {
     message: "Incorrect password",
     statusCode: 400,
   },
+
   USER_PASSWORD_REQUIRED: {
     code: 4005,
     message: "Password is required",
@@ -132,6 +135,7 @@ export const ERROR_CODE = {
     message: "New password must be different from old password",
     statusCode: 400,
   },
+
   USER_OLD_NEW_PASSWORD_REQUIRED: {
     code: 4008,
     message: "Old password and new password are required",
@@ -142,11 +146,13 @@ export const ERROR_CODE = {
     message: "userCardID is required",
     statusCode: 400,
   },
+
   USER_USERCARDID_EXISTED: {
     code: 4010,
     message: "userCardID already exists",
     statusCode: 400,
   },
+
   USER_NO_HOUSEHOLD: {
     code: 4011,
     message: "User does not belong to any household",
@@ -159,11 +165,13 @@ export const ERROR_CODE = {
     message: "Authorization token is missing",
     statusCode: 401,
   },
+
   TOKEN_INVALID: {
     code: 5001,
     message: "Token is invalid",
     statusCode: 401,
   },
+
   TOKEN_EXPIRED: {
     code: 5002,
     message: "Token has expired",
@@ -187,11 +195,13 @@ export const ERROR_CODE = {
     message: "Missing required fields",
     statusCode: 400,
   },
+
   EMAIL_PASSWORD_REQUIRED: {
     code: 6001,
     message: "Email and password are required",
     statusCode: 400,
   },
+
   // HOUSEHOLD MODULE
   HOUSEHOLD_INFO_INCOMPLETE: {
     code: 7001,
@@ -228,9 +238,13 @@ export const ERROR_CODE = {
     message: "User card ID already exists",
     statusCode: 400,
   },
+
   CANNOT_DELETE_OWN_ACCOUNT: {
     code: 8002,
     message: "You cannot delete your own account",
+    statusCode: 400,
+  },
+
   INVALID_PAYLOAD: {
     code: 6001,
     message: "Invalid request payload",

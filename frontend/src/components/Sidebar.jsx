@@ -1,5 +1,5 @@
 import { Box, Typography } from "@mui/material";
-import { Home, Users, User, FileText, PlusCircle, History, CheckCircle, Repeat, ChevronDown } from "lucide-react";
+import { Home, Users, User, FileText, PlusCircle, History, CheckCircle, Repeat, ChevronDown, UserCircle } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -59,9 +59,8 @@ export function Sidebar({ user }) {
 
       {/* MENU */}
       <SectionTitle text="Menu" />
-      <MenuItem icon={<Home size={18} />} label="Dashboard" />
-      <MenuItem icon={<Users size={18} />} label="Quản lý hộ khẩu" />
-      <MenuItem icon={<User size={18} />} label="Quản lý nhân khẩu" />
+      <MenuItem icon={<Home size={18} />} label="Dashboard" to="/tc"/>
+      <MenuItem icon={<Users size={18} />} label="Quản lý hộ khẩu" to="/qldc" />
 
       {/* ACTION */}
       <SectionTitle text="Action" />
@@ -109,10 +108,12 @@ function SectionTitle({ text }) {
     </Typography>
   );
 }
+function MenuItem({ icon, label, to }) {
+  const navigate = useNavigate();
 
-function MenuItem({ icon, label }) {
   return (
     <Box
+      onClick={() => navigate(to)}
       sx={{
         display: "flex",
         alignItems: "center",
