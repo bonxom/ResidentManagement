@@ -7,18 +7,24 @@ export function Sidebar({ user }) {
   const appTitle = user?.ten ? `Xin chào, ${user.ten}` : "MY APP";
 
   return (
-    <Box
-      sx={{
-        width: `${drawerWidth}px`,
-        height: "100vh",
-        backgroundColor: "#1F2335",
-        padding: "24px 20px",
-        color: "#D4DBE5",
-        display: "flex",
-        flexDirection: "column",
-        gap: "18px",
-      }}
-    >
+      <Box
+        sx={{
+          width: `${drawerWidth}px`,
+          height: "100vh",
+          backgroundColor: "#1F2335",
+          padding: "24px 20px",
+          color: "#D4DBE5",
+          display: "flex",
+          flexDirection: "column",
+          gap: "18px",
+          position: "fixed",
+          left: 0,
+          top: 0,
+          overflowY: "auto",
+          zIndex: 1000,
+        }}
+      >
+
 
       {/* Title */}
       <Typography
