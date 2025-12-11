@@ -2,50 +2,46 @@ import mongoose from "mongoose";
 
 const residentHistorySchema = new mongoose.Schema(
   {
-    //tạm trú
+    houseHoldId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Household",
+      required: true,
+    },
+    // ... giữ nguyên temporaryResidents
     temporaryResidents: [
       {
-        userCardID: {
-          type: Number,
-          required: [true, "Mã căn cước công dân là bắt buộc"],
-        },
-        name: {
-          type: String,
-          required: [true, "Tên người tạm trú là bắt buộc"],
-          trim: true,
-        },
-        dob: {
-          type: Date,
-        },
-        startDate: {
-          type: Date,
-          required: [true, "Thời gian bắt đầu cư trú là bắt buộc"],
-          default: Date.now,
-        },
-        endDate: {
-          type: Date,
-          default: null,
-        },
-      },
+        name: String,
+        userCardID: String,
+        dob: Date,
+        job: String,
+        reason: String,
+        startDate: Date,
+        endDate: Date,
+      }
     ],
-    //tạm vắng
+    // ... giữ nguyên temporaryAbsent
     temporaryAbsent: [
       {
-        user: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "User",
-          required: true,
-        },
-        startDate: {
-          type: Date,
-          required: [true, "Thời gian bắt đầu tạm vắng là bắt buộc"],
-          default: Date.now,
-        },
-        endDate: {
-          type: Date,
-          default: null,
-        },
+        user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        startDate: Date,
+        endDate: Date,
+        reason: String,
+        temporaryAddress: String,
       }
+    ],
+    
+    // --- [MỚI] THÊM MẢNG NÀY ĐỂ LƯU TRẺ SƠ SINH ---
+    births: [
+        {
+            name: String,
+            sex: String,
+            dob: Date,
+            birthLocation: String,
+            birthCertificateNumber: String, // Số giấy khai sinh
+            relationshipWithHead: String,
+            ethnic: String,
+            createdAt: { type: Date, default: Date.now } // Ngày thêm vào
+        }
     ]
   },
   { timestamps: true }

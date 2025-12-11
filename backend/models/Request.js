@@ -10,9 +10,17 @@ const requestSchema = new mongoose.Schema(
     },
     type: { 
       type: String,
-      enum: ["REGISTER", "UPDATE_INFO", "PAYMENT"], // Có thể mở rộng thêm sau này
+      enum: [
+        "REGISTER",             // Đăng ký tài khoản
+        "UPDATE_INFO",          // Sửa thông tin
+        "PAYMENT",              // Nộp tiền online
+        "TEMPORARY_RESIDENCE",  // Đăng ký tạm trú
+        "TEMPORARY_ABSENT",     // Báo tạm vắng
+        "BIRTH_REPORT",         // Khai sinh
+        "DEATH_REPORT"          // Khai tử
+      ], // Có thể mở rộng thêm sau này
       required: true,
-    },
+    }, 
     status: {
       type: String,
       enum: ["PENDING", "APPROVED", "REJECTED"],

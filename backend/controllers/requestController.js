@@ -2,6 +2,9 @@ import Request from "../models/Request.js";
 import User from "../models/User.js";
 import Fee from "../models/Fee.js";
 import Transaction from "../models/Transaction.js";
+import ResidentHistory from "../models/ResidentHistory.js";
+import Role from "../models/Role.js";
+import Household from "../models/Household.js";
 
 // @desc    Gửi yêu cầu cập nhật thông tin (Dành cho Người dân)
 // @route   POST /api/requests/update-info
@@ -49,6 +52,11 @@ export const createPaymentRequest = async (req, res) => {
         return res.status(400).json({ message: "Vui lòng chọn khoản thu và nhập số tiền" });
     }
 
+    const parsedAmount = Number(amount);
+    if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+        return res.status(400).json({ message: "Số tiền không hợp lệ" });
+    }
+
     if (!user.household) {
         return res.status(400).json({ message: "Bạn chưa thuộc hộ khẩu nào để nộp phí" });
     }
@@ -67,12 +75,122 @@ export const createPaymentRequest = async (req, res) => {
       requestData: {
           feeId,
           householdId: user.household, // Lưu snapshot hộ khẩu lúc nộp
-          amount: Number(amount),
+          amount: parsedAmount,
           note: note || "Nộp tiền Online",
           proofImage: proofImage || "" // URL ảnh chuyển khoản (nếu có)
       }
     });
 
+    res.status(201).json(request);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// 3. Đăng ký Tạm Trú (Người nơi khác đến)
+export const createTemporaryResidenceRequest = async (req, res) => {
+  try {
+    const { name, userCardID, dob, job, reason, startDate, endDate } = req.body;
+    const user = req.user;
+
+    if (!user.household) return res.status(400).json({ message: "Bạn chưa có hộ khẩu." });
+    if (!name || !userCardID || !startDate) return res.status(400).json({ message: "Thiếu thông tin người tạm trú." });
+
+    const request = await Request.create({
+      requester: user._id,
+      type: "TEMPORARY_RESIDENCE",
+      requestData: {
+        householdId: user.household,
+        name, userCardID, dob, job, reason, startDate, endDate
+      }
+    });
+    res.status(201).json(request);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// 4. Báo Tạm Vắng (Người trong nhà đi vắng)
+export const createTemporaryAbsenceRequest = async (req, res) => {
+  try {
+    const { userId, fromDate, toDate, reason, temporaryAddress } = req.body;
+    const requester = req.user;
+
+    if (!requester.household) return res.status(400).json({ message: "Bạn chưa có hộ khẩu." });
+    
+    // Kiểm tra thành viên có thuộc hộ không
+    const absentUser = await User.findById(userId);
+    if (!absentUser || absentUser.household?.toString() !== requester.household.toString()) {
+        return res.status(400).json({ message: "Thành viên này không thuộc hộ của bạn" });
+    }
+
+    const request = await Request.create({
+      requester: requester._id,
+      type: "TEMPORARY_ABSENT",
+      requestData: {
+        householdId: requester.household,
+        absentUserId: userId,
+        fromDate, toDate, reason, temporaryAddress
+      }
+    });
+    res.status(201).json(request);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// 5. Khai Sinh (Bé mới sinh)
+export const createBirthRequest = async (req, res) => {
+  try {
+    const { name, dob, sex, birthLocation, ethnic, relationshipWithHead, birthCertificateNumber } = req.body;
+    const user = req.user;
+
+    if (!user.household) return res.status(400).json({ message: "Bạn chưa có hộ khẩu." });
+    if (!birthCertificateNumber) return res.status(400).json({ message: "Cần số giấy khai sinh." });
+
+    // Check xem số khai sinh đã tồn tại chưa (tránh trùng lặp)
+    const exist = await User.findOne({ userCardID: birthCertificateNumber });
+    if(exist) return res.status(400).json({ message: "Số giấy khai sinh này đã tồn tại trong hệ thống." });
+
+    const request = await Request.create({
+      requester: user._id,
+      type: "BIRTH_REPORT",
+      requestData: {
+        householdId: user.household,
+        name, dob, sex, birthLocation, ethnic, relationshipWithHead,
+        userCardID: birthCertificateNumber // Dùng số khai sinh làm ID tạm
+      }
+    });
+    res.status(201).json(request);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// 6. Khai Tử (Người mất)
+export const createDeathRequest = async (req, res) => {
+  try {
+    const { userId, dateOfDeath, reason, deathCertificateUrl } = req.body;
+    const requester = req.user;
+
+    if (!requester.household) return res.status(400).json({ message: "Bạn chưa có hộ khẩu." });
+
+    const deceasedUser = await User.findById(userId);
+    if (!deceasedUser) return res.status(404).json({ message: "Không tìm thấy thành viên này" });
+    
+    if (deceasedUser.household?.toString() !== requester.household.toString()) {
+        return res.status(400).json({ message: "Người này không thuộc hộ của bạn" });
+    }
+
+    const request = await Request.create({
+      requester: requester._id,
+      type: "DEATH_REPORT",
+      requestData: {
+        householdId: requester.household,
+        deceasedUserId: userId,
+        dateOfDeath, reason, deathCertificateUrl
+      }
+    });
     res.status(201).json(request);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -114,35 +232,142 @@ export const reviewRequest = async (req, res) => {
     if (request.status !== "PENDING") {
         return res.status(400).json({ message: "This request has been processed" });
     }
+    const data = request.requestData || {};
 
     if (status === "APPROVED") {
       switch (request.type) {
-        case "REGISTER":
-          await User.findByIdAndUpdate(request.requester, { status: "VERIFIED" });
+        case "REGISTER": {
+          const requesterUser = await User.findById(request.requester);
+          if (!requesterUser) {
+            return res.status(404).json({ message: "Requester account not found" });
+          }
+          requesterUser.status = "VERIFIED";
+          await requesterUser.save();
           break;
+        }
 
         // 2. Duyệt Cập nhật thông tin
         case "UPDATE_INFO":
           // Lấy data từ request đắp vào User
-          await User.findByIdAndUpdate(request.requester, { 
-             $set: request.requestData 
-          });
+          await User.findByIdAndUpdate(
+            request.requester,
+            { 
+              $set: data 
+            },
+            { runValidators: true }
+          );
           break;
 
         // --- LOGIC MỚI: DUYỆT THANH TOÁN ---
         case "PAYMENT":
           {
-            const { feeId, householdId, amount, note } = request.requestData || {};
+            const { feeId, householdId, note } = data;
+            const amount = Number(data.amount);
+            if (!feeId || !householdId || !Number.isFinite(amount) || amount <= 0) {
+              return res.status(400).json({ message: "Payment request is missing required data" });
+            }
+            const fee = await Fee.findById(feeId);
+            if (!fee) return res.status(404).json({ message: "Fee not found" });
+            if (fee.status === "COMPLETED") {
+              return res.status(400).json({ message: "This fee collection has been closed" });
+            }
+            const household = await Household.findById(householdId);
+            if (!household) {
+              return res.status(404).json({ message: "Household not found" });
+            }
+            const isMember = household.leader?.toString() === request.requester.toString()
+              || household.members?.some((member) => member?.toString() === request.requester.toString());
+            if (!isMember) {
+              return res.status(400).json({ message: "Requester does not belong to this household" });
+            }
             const txNotes = note ? `${note} (Approved online)` : "Approved online";
             await Transaction.create({
               fee: feeId,
               household: householdId,
               amount,
-              notes: txNotes,
+              payer: request.requester,
+              note: txNotes,
             });
           }
           break;
-          
+        // [New] Xử lý TẠM TRÚ
+        case "TEMPORARY_RESIDENCE":
+            let hist1 = await ResidentHistory.findOne({ houseHoldId: data.householdId });
+            if (!hist1) hist1 = await ResidentHistory.create({ houseHoldId: data.householdId });
+            
+            hist1.temporaryResidents.push({
+                name: data.name,
+                userCardID: data.userCardID,
+                dob: data.dob,
+                job: data.job,
+                reason: data.reason,
+                startDate: data.startDate,
+                endDate: data.endDate
+            });
+            await hist1.save();
+            break;
+
+        // [New] Xử lý TẠM VẮNG
+        case "TEMPORARY_ABSENT":
+            let hist2 = await ResidentHistory.findOne({ houseHoldId: data.householdId });
+            if (!hist2) hist2 = await ResidentHistory.create({ houseHoldId: data.householdId });
+
+            hist2.temporaryAbsent.push({
+                user: data.absentUserId,
+                startDate: data.fromDate,
+                endDate: data.toDate,
+                reason: data.reason,
+                temporaryAddress: data.temporaryAddress
+            });
+            await hist2.save();
+            break;
+
+        // [New] Xử lý KHAI SINH
+        case "BIRTH_REPORT":
+            // Cách cũ: Tạo User -> Lỗi vì thiếu Email
+            // Cách mới: Lưu vào ResidentHistory
+            
+            // 1. Tìm hoặc tạo lịch sử cư trú cho hộ này
+            let histBirth = await ResidentHistory.findOne({ houseHoldId: data.householdId });
+            if (!histBirth) {
+                histBirth = await ResidentHistory.create({ houseHoldId: data.householdId });
+            }
+
+            // 2. Thêm thông tin bé vào mảng births
+            histBirth.births.push({
+                name: data.name,
+                dob: data.dob,
+                sex: data.sex,
+                birthLocation: data.birthLocation,
+                ethnic: data.ethnic,
+                // Trong createBirthRequest ta lưu số khai sinh vào userCardID, giờ lấy ra dùng
+                birthCertificateNumber: data.userCardID, 
+                relationshipWithHead: data.relationshipWithHead
+            });
+
+            await histBirth.save();
+            
+            // Lưu ý: Không add vào Household.members nên sẽ không tăng phí vệ sinh
+            break;
+
+        // [New] Xử lý KHAI TỬ
+        case "DEATH_REPORT":
+            const household = await Household.findById(data.householdId);
+            // Nếu người mất là chủ hộ -> Chặn
+            if (household.leader.toString() === data.deceasedUserId) {
+                return res.status(400).json({ message: "Không thể duyệt báo tử cho Chủ hộ. Hãy yêu cầu đổi chủ hộ trước." });
+            }
+            // Update User thành DECEASED, Rời hộ
+            await User.findByIdAndUpdate(data.deceasedUserId, {
+                status: "DECEASED",
+                household: null,
+                relationshipWithHead: null
+            });
+            // Rút tên khỏi Household
+            await Household.findByIdAndUpdate(data.householdId, {
+                $pull: { members: data.deceasedUserId }
+            });
+            break;
         default:
           break;
       }
@@ -152,7 +377,7 @@ export const reviewRequest = async (req, res) => {
     request.leaderComment = leaderComment || "";
     await request.save();
 
-    res.status(200).json({ message: ` ${status} successful`, request });
+    res.status(200).json({ message: `${status} successful`, request });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
