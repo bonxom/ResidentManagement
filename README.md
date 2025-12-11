@@ -16,3 +16,9 @@ Introduction to SE project
 
 21/11/2025
 * Tạo giao diện front-end của admin
+
+
+12/11/2025
+
+Update page qldc - Admin
+Update page hộ dân và fee - User
