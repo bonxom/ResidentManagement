@@ -1,5 +1,5 @@
 import { useState } from "react";
-import MainLayout from "../../layout/MainLayout";
+import MainLayout from "../../../layout/MainLayout";
 import {
   Table,
   TableBody,
@@ -8,15 +8,9 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
   Box,
-  Typography,
-  Grid,
 } from "@mui/material";
+import ThuTienForm from "../../../feature/admin/Form/ThuTienForm";
 
 export default function DanhSachThuTien() {
   // Dữ liệu mẫu
@@ -149,7 +143,7 @@ export default function DanhSachThuTien() {
               cursor: "pointer",
             }}
           >
-            Tạo mới
+            Xác nhận phê duyệt
           </button>
         </div>
 
@@ -246,72 +240,103 @@ export default function DanhSachThuTien() {
                     <Box
                       sx={{
                         display: "flex",
-                        gap: "12px",
+                        gap: "8px",
                         alignItems: "center",
                       }}
                     >
-                      {/* Dấu ✓ - Đã thanh toán */}
+                      {/* Nút Phê duyệt */}
                       <button
                         onClick={() => updateStatus(index, "Phê duyệt")}
                         style={{
-                          background:
-                            item.status === "Phê duyệt" ? "#4caf50" : "#e0e0e0",
-                          color: item.status === "Phê duyệt" ? "white" : "#666",
+                          padding: "8px",
+                          color: "#10b981",
+                          backgroundColor: item.status === "Phê duyệt" ? "#a9f5c0" : "transparent",
                           border: "none",
+                          borderRadius: "50%",
                           width: "36px",
                           height: "36px",
-                          borderRadius: "50%",
-                          fontSize: "18px",
-                          fontWeight: "bold",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
                           cursor: "pointer",
-                          transition: "all 0.3s",
+                          transition: "background-color 0.2s",
+                        }}
+                        onMouseEnter={(e) => {
+                          if (item.status !== "Phê duyệt") {
+                            e.currentTarget.style.backgroundColor = "#f0fdf4";
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (item.status !== "Phê duyệt") {
+                            e.currentTarget.style.backgroundColor = "transparent";
+                          }
                         }}
                         title="Phê duyệt"
                       >
-                        ✓
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
                       </button>
 
-                      {/* Dấu ✗ - Không phê duyệt */}
+                      {/* Nút Từ chối */}
                       <button
                         onClick={() => updateStatus(index, "Không phê duyệt")}
                         style={{
-                          background:
-                            item.status === "Không phê duyệt"
-                              ? "#f44336"
-                              : "#e0e0e0",
-                          color:
-                            item.status === "Không phê duyệt"
-                              ? "white"
-                              : "#666",
+                          padding: "8px",
+                          color: "#f97316",
+                          backgroundColor: item.status === "Không phê duyệt" ? "#ffcb8a" : "transparent",
                           border: "none",
+                          borderRadius: "50%",
                           width: "36px",
                           height: "36px",
-                          borderRadius: "50%",
-                          fontSize: "18px",
-                          fontWeight: "bold",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
                           cursor: "pointer",
-                          transition: "all 0.3s",
+                          transition: "background-color 0.2s",
                         }}
-                        title="Không phê duyệt"
+                        onMouseEnter={(e) => {
+                          if (item.status !== "Không phê duyệt") {
+                            e.currentTarget.style.backgroundColor = "#fff7ed";
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (item.status !== "Không phê duyệt") {
+                            e.currentTarget.style.backgroundColor = "transparent";
+                          }
+                        }}
+                        title="Từ chối"
                       >
-                        ✗
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                          <line x1="18" y1="6" x2="6" y2="18"></line>
+                          <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
                       </button>
 
                       {/* Dấu ... - Mở modal */}
                       <button
                         onClick={() => handleOpenModal(item, index)}
                         style={{
-                          background:
-                            item.status === "" ? "#2196f3" : "#e0e0e0",
-                          color: item.status === "" ? "white" : "#666",
+                          padding: "8px",
+                          color: "#3b82f6",
+                          backgroundColor: "#eff6ff",
                           border: "none",
+                          borderRadius: "50%",
                           width: "36px",
                           height: "36px",
-                          borderRadius: "50%",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          cursor: "pointer",
+                          transition: "background-color 0.2s",
                           fontSize: "18px",
                           fontWeight: "bold",
-                          cursor: "pointer",
-                          transition: "all 0.3s",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = "#dbeafe";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = "#eff6ff";
                         }}
                         title="Xem chi tiết"
                       >
@@ -326,86 +351,13 @@ export default function DanhSachThuTien() {
         </TableContainer>
 
         {/* Modal hiển thị thông tin sự kiện */}
-        <Dialog
+        <ThuTienForm
           open={openModal}
           onClose={handleCloseModal}
-          maxWidth="sm"
-          fullWidth
-        >
-          <DialogTitle>Thông tin sự kiện - {selectedItem?.event}</DialogTitle>
-          <DialogContent>
-            <Box sx={{ mt: 2 }}>
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
-                  <Typography variant="subtitle2" fontWeight="bold">
-                    Tên sự kiện:
-                  </Typography>
-                  <Typography>{selectedItem?.event}</Typography>
-                </Grid>
-                <Grid item xs={12}>
-                  <Typography variant="subtitle2" fontWeight="bold">
-                    Mã hộ gia đình:
-                  </Typography>
-                  <Typography>{selectedItem?.houseHoldID}</Typography>
-                </Grid>
-                <Grid item xs={12}>
-                  <Typography variant="subtitle2" fontWeight="bold">
-                    Tên chủ hộ:
-                  </Typography>
-                  <Typography>{selectedItem?.chuHo}</Typography>
-                </Grid>
-                <Grid item xs={12}>
-                  <Typography variant="subtitle2" fontWeight="bold">
-                    Số tiền quyên góp:
-                  </Typography>
-                  <Typography>
-                    {selectedItem?.soTien?.toLocaleString()} đ
-                  </Typography>
-                </Grid>
-                <Grid item xs={12}>
-                  <Typography variant="subtitle2" fontWeight="bold">
-                    Ngày tổ chức:
-                  </Typography>
-                  <Typography>{selectedItem?.eventDate}</Typography>
-                </Grid>
-                <Grid item xs={12}>
-                  <Typography variant="subtitle2" fontWeight="bold">
-                    Địa điểm tổ chức:
-                  </Typography>
-                  <Typography>{selectedItem?.eventLocation}</Typography>
-                </Grid>
-                <Grid item xs={12}>
-                  <Typography variant="subtitle2" fontWeight="bold">
-                    Đơn vị tổ chức:
-                  </Typography>
-                  <Typography>{selectedItem?.organizer}</Typography>
-                </Grid>
-                <Grid item xs={12}>
-                  <Typography variant="subtitle2" fontWeight="bold">
-                    Mô tả:
-                  </Typography>
-                  <Typography>{selectedItem?.description}</Typography>
-                </Grid>
-              </Grid>
-            </Box>
-          </DialogContent>
-          <DialogActions sx={{ justifyContent: "flex-end", gap: 1, p: 2 }}>
-            <Button
-              variant="contained"
-              color="success"
-              onClick={() => handleStatusChange("Phê duyệt")}
-            >
-              Phê duyệt
-            </Button>
-            <Button
-              variant="contained"
-              color="error"
-              onClick={() => handleStatusChange("Không phê duyệt")}
-            >
-              Không phê duyệt
-            </Button>
-          </DialogActions>
-        </Dialog>
+          item={selectedItem}
+          onApprove={() => handleStatusChange("Phê duyệt")}
+          onReject={() => handleStatusChange("Không phê duyệt")}
+        />
       </div>
     </MainLayout>
   );

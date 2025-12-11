@@ -1,77 +1,105 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Box, IconButton, Menu as MuiMenu, MenuItem } from "@mui/material";
+import { Box, IconButton, Typography } from "@mui/material";
 import { Bell, User, Settings } from "lucide-react";
+import useAuthStore from "../store/authStore";
 
 export default function Topbar() {
-  const [anchorEl, setAnchorEl] = useState(null);
   const navigate = useNavigate();
-
-  const handleOpenUserMenu = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleCloseUserMenu = () => {
-    setAnchorEl(null);
-  };
+  const { user } = useAuthStore();
 
   return (
     <Box
       sx={{
         width: "100%",
-        height: "60px",
-        backgroundColor: "white",
+        height: "70px",
+        background: "linear-gradient(to right, #ffffff 0%, #eff6ff 50%, #dbeafe 100%)",
         display: "flex",
         alignItems: "center",
-        justifyContent: "flex-end",   // căn phải
-        px: 3,
-        borderBottom: "1px solid #e0e0e0",
+        justifyContent: "space-between",
+        px: 4,
+        borderBottom: "none",
+        boxShadow: "0 2px 10px rgba(0, 0, 0, 0.08)",
         position: "sticky",
         top: 0,
         zIndex: 10,
       }}
     >
+      {/* Left: Welcome message */}
+      <Box>
+        <Typography
+          sx={{
+            fontSize: "1.25rem",
+            fontWeight: 600,
+            color: "#1a1a1a",
+            letterSpacing: "0.3px",
+          }}
+        >
+          {user?.ten ? `Xin chào, ${user.ten}` : "8xRES"}
+        </Typography>
+      </Box>
+
       {/* Right: icons */}
       <Box
         sx={{
           display: "flex",
           alignItems: "center",
-          gap: 3,
+          gap: 2,
         }}
       >
-        <Bell size={20} color="#555" style={{ cursor: "pointer" }} />
-
-        {/* USER ICON + MENU */}
-        <IconButton onClick={handleOpenUserMenu}>
-          <User size={20} color="#555" />
-        </IconButton>
-
-        <MuiMenu
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
-          onClose={handleCloseUserMenu}
-          PaperProps={{
-            elevation: 3,
-            sx: {
-              mt: 1,
-              minWidth: 150,
-              borderRadius: 2,
+        {/* Notification Icon */}
+        <IconButton
+          sx={{
+            color: "#4b5563",
+            backgroundColor: "rgba(255, 255, 255, 0.8)",
+            borderRadius: "12px",
+            padding: "10px",
+            transition: "all 0.3s ease",
+            "&:hover": {
+              backgroundColor: "rgba(37, 99, 235, 0.1)",
+              color: "#2563eb",
+              transform: "translateY(-2px)",
             },
           }}
         >
+          <Bell size={20} />
+        </IconButton>
 
-          <MenuItem
-            onClick={() => {
-              handleCloseUserMenu();
-              navigate("/signin");
-            }}
-            sx={{ color: "red" }}
-          >
-            Đăng xuất
-          </MenuItem>
-        </MuiMenu>
+        {/* Settings Icon */}
+        <IconButton
+          sx={{
+            color: "#4b5563",
+            backgroundColor: "rgba(255, 255, 255, 0.8)",
+            borderRadius: "12px",
+            padding: "10px",
+            transition: "all 0.3s ease",
+            "&:hover": {
+              backgroundColor: "rgba(37, 99, 235, 0.1)",
+              color: "#2563eb",
+              transform: "translateY(-2px)",
+            },
+          }}
+        >
+          <Settings size={20} />
+        </IconButton>
 
-        <Settings size={20} color="#555" style={{ cursor: "pointer" }} />
+        {/* USER ICON */}
+        <IconButton
+          onClick={() => navigate("/profile")}
+          sx={{
+            color: "#4b5563",
+            backgroundColor: "rgba(255, 255, 255, 0.8)",
+            borderRadius: "12px",
+            padding: "10px",
+            transition: "all 0.3s ease",
+            "&:hover": {
+              backgroundColor: "rgba(37, 99, 235, 0.1)",
+              color: "#2563eb",
+              transform: "translateY(-2px)",
+            },
+          }}
+        >
+          <User size={20} />
+        </IconButton>
       </Box>
     </Box>
   );

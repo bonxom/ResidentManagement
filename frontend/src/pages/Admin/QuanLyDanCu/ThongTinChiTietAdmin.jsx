@@ -1,10 +1,10 @@
 import { Box, Typography, Avatar, Button, Grid } from "@mui/material";
 import { useState } from "react";
 
-import MainLayout from "../../layout/MainLayout";
-import ProfileInfoField from "../../feature/profile/ProfileInfoField";
-import EditRequestModal from "../../feature/profile/EditRequestModal";
-import useAuthStore from "../../store/authStore";
+import MainLayout from "../../../layout/MainLayout";
+import ProfileInfoField from "../../../feature/profile/ProfileInfoField";
+import EditProfileModal from "../../../feature/admin/EditProfileModal";
+import useAuthStore from "../../../store/authStore";
 
 export default function ThongTinChiTietAdmin() {
     const { user } = useAuthStore();
@@ -25,9 +25,9 @@ export default function ThongTinChiTietAdmin() {
     };
 
     const handleEditRequest = (formData) => {
-        console.log("Yêu cầu chỉnh sửa:", formData);
-        // TODO: Gửi yêu cầu chỉnh sửa đến backend
-        alert("Yêu cầu chỉnh sửa đã được gửi!");
+        console.log("Lưu thông tin chỉnh sửa:", formData);
+        // TODO: Gửi request cập nhật thông tin đến backend
+        alert("Thông tin đã được cập nhật!");
     };
 
     return (
@@ -67,22 +67,47 @@ export default function ThongTinChiTietAdmin() {
                         </Box>
                     </Box>
 
-                    <Button
-                        variant="contained"
-                        onClick={() => setOpenEditModal(true)}
-                        sx={{
-                            backgroundColor: "#2D66F5",
-                            borderRadius: "8px",
-                            textTransform: "none",
-                            px: 3,
-                            py: 1,
-                            fontSize: "14px",
-                            fontWeight: "500",
-                            "&:hover": { backgroundColor: "#1E54D4" }
-                        }}
-                    >
-                        Yêu cầu chỉnh sửa
-                    </Button>
+                    <Box sx={{ display: "flex", gap: 2 }}>
+
+                        <Button
+                            variant="contained"
+                            onClick={() => setOpenEditModal(true)}
+                            sx={{
+                                backgroundColor: "#2D66F5",
+                                borderRadius: "8px",
+                                textTransform: "none",
+                                px: 3,
+                                py: 1,
+                                fontSize: "14px",
+                                fontWeight: "500",
+                                "&:hover": { backgroundColor: "#1E54D4" }
+                            }}
+                        >
+                            Chỉnh sửa
+                        </Button>
+                        <Button
+                            variant="contained"
+                            onClick={() => {
+                                if (window.confirm("Bạn có chắc chắn muốn xóa người dùng này?")) {
+                                    console.log("Xóa người dùng:", userInfo);
+                                    // TODO: Implement delete logic
+                                    alert("Đã xóa người dùng!");
+                                }
+                            }}
+                            sx={{
+                                backgroundColor: "#ef4444",
+                                borderRadius: "8px",
+                                textTransform: "none",
+                                px: 3,                                      
+                                py: 1,                                                                                                                                                                      
+                                fontSize: "14px",
+                                fontWeight: "500",
+                                "&:hover": { backgroundColor: "#dc2626" }
+                            }}
+                        >
+                            Xóa
+                        </Button>
+                    </Box>
                 </Box>
 
                 {/* Thông tin cá nhân */}
@@ -123,8 +148,8 @@ export default function ThongTinChiTietAdmin() {
                     </Grid>
                 </Grid>
 
-                {/* Modal yêu cầu chỉnh sửa */}
-                <EditRequestModal
+                {/* Modal chỉnh sửa */}
+                <EditProfileModal
                     open={openEditModal}
                     onClose={() => setOpenEditModal(false)}
                     currentData={userInfo}

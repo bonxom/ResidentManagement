@@ -1,15 +1,28 @@
-import { Box, Typography } from "@mui/material";
-import { Home, Users, User, FileText, PlusCircle, History, CheckCircle, Repeat, ChevronDown, UserCircle } from "lucide-react";
-import { useState } from "react";
+import { Box, Typography, IconButton } from "@mui/material";
+import { Home, Users, User, FileText, PlusCircle, History, CheckCircle, Repeat, ChevronDown, UserCircle, Menu, X, Wallet } from "lucide-react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import LogoutButton from "../feature/admin/LogoutButton";
 
-export const drawerWidth = 304;
+export const drawerWidthExpanded = 304;
+export const drawerWidthCollapsed = 80;
+export const drawerWidth = drawerWidthExpanded; // For backward compatibility
 
-export function Sidebar({ user }) {
-  const appTitle = user?.ten ? `Xin chào, ${user.ten}` : "MY APP";
+export function Sidebar({ user, onWidthChange }) {
+  const appTitle = user?.ten ? `Xin chào, ${user.ten}` : "DÂN CƯ SỐ";
   const [expandedMenu, setExpandedMenu] = useState(null);
   const [hideTimeout, setHideTimeout] = useState(null);
+  const [isExpanded, setIsExpanded] = useState(false);
   const navigate = useNavigate();
+  
+  const currentDrawerWidth = isExpanded ? drawerWidthExpanded : drawerWidthCollapsed;
+
+  // Notify parent of width changes
+  React.useEffect(() => {
+    if (onWidthChange) {
+      onWidthChange(currentDrawerWidth);
+    }
+  }, [currentDrawerWidth, onWidthChange]);
 
   const handleMouseLeave = () => {
     const timeout = setTimeout(() => {
@@ -24,70 +37,95 @@ export function Sidebar({ user }) {
   };
 
   return (
-      <Box
-        sx={{
-          width: `${drawerWidth}px`,
-          height: "100vh",
-          backgroundColor: "#1F2335",
-          padding: "24px 20px",
-          color: "#D4DBE5",
-          display: "flex",
-          flexDirection: "column",
-          gap: "18px",
-          position: "fixed",
-          left: 0,
-          top: 0,
-          overflowY: "auto",
-          zIndex: 1000,
-        }}
-      >
+    <Box
+      sx={{
+        width: `${currentDrawerWidth}px`,
+        height: "100vh",
+        backgroundColor: "#1F2335",
+        padding: isExpanded ? "24px 20px" : "24px 12px",
+        color: "#D4DBE5",
+        display: "flex",
+        flexDirection: "column",
+        gap: "18px",
+        position: "fixed",
+        left: 0,
+        top: 0,
+        overflowY: "auto",
+        overflowX: "hidden",
+        zIndex: 1000,
+        transition: "width 0.3s ease, padding 0.3s ease",
+      }}
+    >
 
+      {/* Toggle Button */}
+      <Box sx={{ display: "flex", justifyContent: isExpanded ? "flex-end" : "center", mb: 2 }}>
+        <IconButton
+          onClick={() => setIsExpanded(!isExpanded)}
+          sx={{
+            color: "white",
+            "&:hover": { backgroundColor: "#2A2E42" }
+          }}
+        >
+          {isExpanded ? <X size={20} /> : <Menu size={20} />}
+        </IconButton>
+      </Box>
 
       {/* Title */}
-      <Typography
-        sx={{
-          fontSize: "30px",
-          fontWeight: 700,
-          color: "white",
-          textAlign: "center",
-          mb: 4,
-          mt: 4,
-        }}
-      >
-        {appTitle}
-      </Typography>
+      {isExpanded && (
+        <Typography
+          sx={{
+            fontSize: "30px",
+            fontWeight: 700,
+            color: "white",
+            textAlign: "center",
+            mb: 4,
+            mt: 2,
+          }}
+        >
+          {appTitle}
+        </Typography>
+      )}
 
       {/* MENU */}
-      <SectionTitle text="Menu" />
-      <MenuItem icon={<Home size={18} />} label="Dashboard" to="/tc"/>
-      <MenuItem icon={<Users size={18} />} label="Quản lý hộ khẩu" to="/qldc" />
+      {isExpanded && <SectionTitle text="Menu" />}
+      <MenuItem icon={<Home size={18} />} label="Dashboard" to="/tc" isExpanded={isExpanded} />
+      <MenuItem icon={<Users size={18} />} label="Quản lý hộ khẩu" to="/qldc" isExpanded={isExpanded} />
 
       {/* ACTION */}
-      <SectionTitle text="Action" />
-      <MenuItemWithSubmenu 
-        icon={<FileText size={18} />} 
-        label="Danh sách cần phê duyệt"
-        isExpanded={expandedMenu === "approval"}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-        submenu={[
-          { label: "Danh sách đăng kí tài khoản", path: "/dktk" },
-          { label: "Danh sách khai báo sinh tử", path: "/kbst" },
-          { label: "Danh sách thu tiền", path: "/thutien" },
-          { label: "Danh sách tạm trú tạm vắng", path: "/tamtruvang" },
-        ]}
-        onSubmenuClick={(path) => {
-          navigate(path);
-          setExpandedMenu(null);
-        }}
-      />
-      <MenuItem icon={<PlusCircle size={18} />} label="Thêm thông tin cư dân" />
+      {isExpanded && <SectionTitle text="Action" />}
+      <MenuItem icon={<Wallet size={18} />} label="Thu phí" to="/fee" isExpanded={isExpanded} />
+      {isExpanded ? (
+        <MenuItemWithSubmenu 
+          icon={<FileText size={18} />} 
+          label="Danh sách cần phê duyệt"
+          isExpanded={expandedMenu === "approval"}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+          submenu={[
+            { label: "Danh sách đăng kí tài khoản", path: "/dktk" },
+            { label: "Danh sách khai báo sinh tử", path: "/kbst" },
+            { label: "Danh sách thu tiền", path: "/thutien" },
+            { label: "Danh sách tạm trú tạm vắng", path: "/tamtruvang" },
+          ]}
+          onSubmenuClick={(path) => {
+            navigate(path);
+            setExpandedMenu(null);
+          }}
+          isSidebarExpanded={isExpanded}
+        />
+      ) : (
+        <MenuItem icon={<FileText size={18} />} label="Phê duyệt" to="/dktk" isExpanded={isExpanded} />
+      )}
+      <MenuItem icon={<PlusCircle size={18} />} label="Thêm thông tin cư dân" isExpanded={isExpanded} />
 
       {/* HISTORY */}
-      <SectionTitle text="History" />
-      <MenuItem icon={<History size={18} />} label="Lịch sử giao dịch" />
-      <MenuItem icon={<CheckCircle size={18} />} label="Lịch sử phê duyệt" />
-      <MenuItem icon={<Repeat size={18} />} label="Lịch sử thay đổi" />
+      {isExpanded && <SectionTitle text="History" />}
+      <MenuItem icon={<History size={18} />} label="Lịch sử giao dịch" isExpanded={isExpanded} />
+      <MenuItem icon={<CheckCircle size={18} />} label="Lịch sử phê duyệt" isExpanded={isExpanded} />
+      <MenuItem icon={<Repeat size={18} />} label="Lịch sử thay đổi" isExpanded={isExpanded} />
+
+      {/* Logout Button */}
+      <LogoutButton isExpanded={isExpanded} />
 
     </Box>
   );
@@ -108,32 +146,36 @@ function SectionTitle({ text }) {
     </Typography>
   );
 }
-function MenuItem({ icon, label, to }) {
+
+function MenuItem({ icon, label, to, isExpanded }) {
   const navigate = useNavigate();
 
   return (
     <Box
-      onClick={() => navigate(to)}
+      onClick={() => to && navigate(to)}
       sx={{
         display: "flex",
         alignItems: "center",
+        justifyContent: isExpanded ? "flex-start" : "center",
         gap: "10px",
         padding: "10px",
         cursor: "pointer",
         transition: "0.2s",
+        borderRadius: "8px",
         "&:hover": {
           color: "white",
           backgroundColor: "#2A2E42",
         },
       }}
+      title={!isExpanded ? label : ""}
     >
       {icon}
-      <Typography sx={{ fontSize: "14px" }}>{label}</Typography>
+      {isExpanded && <Typography sx={{ fontSize: "14px" }}>{label}</Typography>}
     </Box>
   );
 }
 
-function MenuItemWithSubmenu({ icon, label, isExpanded, onMouseEnter, onMouseLeave, submenu, onSubmenuClick }) {
+function MenuItemWithSubmenu({ icon, label, isExpanded, onMouseEnter, onMouseLeave, submenu, onSubmenuClick, isSidebarExpanded }) {
   return (
     <Box
       onMouseEnter={onMouseEnter}
@@ -150,6 +192,7 @@ function MenuItemWithSubmenu({ icon, label, isExpanded, onMouseEnter, onMouseLea
           padding: "10px",
           cursor: "pointer",
           transition: "0.2s",
+          borderRadius: "8px",
           "&:hover": {
             color: "white",
             backgroundColor: "#2A2E42",

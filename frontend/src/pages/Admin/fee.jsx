@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import useAuthStore from "../store/authStore";
-import { feeAPI } from "../services/apiService";
-import { Sidebar, drawerWidth } from "../components/Sidebar";
+import useAuthStore from "../../store/authStore";
+import { feeAPI } from "../../services/apiService";
+import MainLayout from "../../layout/MainLayout";
 
 import {
   Box,
@@ -28,7 +28,7 @@ import {
   Snackbar,
 } from "@mui/material";
 
-import CloseIcon from "@mui/icons-material/Close";
+// import CloseIcon from "@mui/icons-material/Close";
 
 function FeeManagement() {
   const navigate = useNavigate();
@@ -74,14 +74,9 @@ function FeeManagement() {
     { value: "COMPLETED", label: "Đã hoàn thành" },
   ];
 
-
   useEffect(() => {
-    if (!user) {
-      navigate("/signin");
-      return;
-    }
     fetchFees();
-  }, [user, navigate]);
+  }, []);
 
   const showSuccess = (message) => {
     setSnackbar({ open: true, message, severity: "success" });
@@ -329,15 +324,9 @@ function FeeManagement() {
     );
   };
 
-  if (!user) {
-    return null;
-  }
-
   return (
-    <Box sx={{ display: "flex" }}>
-      <Sidebar user={user} navigate={navigate} onLogout={handleLogout} />
-
-      <Box sx={{ flexGrow: 1, p: 4, ml: `${drawerWidth}px` }}>
+    <MainLayout>
+      <Box sx={{ p: 4 }}>
         <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
           <Typography variant="h4" fontWeight={600}>
             Quản lý khoản thu
@@ -387,13 +376,16 @@ function FeeManagement() {
             <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
               <DialogTitle>
                 {isEdit ? "Cập nhật khoản thu" : "Tạo khoản thu mới"}
-                <IconButton
+                <Button
                   aria-label="close"
                   onClick={handleClose}
                   sx={{ position: "absolute", right: 8, top: 8 }}
                 >
-                  <CloseIcon />
-                </IconButton>
+                  {/* <CloseIcon /> */}
+                  <Typography variant="body2" component="span">
+                    ×
+                  </Typography>
+                </Button>
               </DialogTitle>
 
               <DialogContent>
@@ -803,7 +795,7 @@ function FeeManagement() {
           </Alert>
         </Snackbar>
       </Box>
-    </Box>
+    </MainLayout>
   );
 }
 

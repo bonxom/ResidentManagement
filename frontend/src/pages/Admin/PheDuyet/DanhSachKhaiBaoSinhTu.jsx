@@ -1,6 +1,7 @@
 import { useState } from "react";
-import MainLayout from "../../layout/MainLayout";
+import MainLayout from "../../../layout/MainLayout";
 import {
+  Box,
   Table,
   TableBody,
   TableCell,
@@ -8,18 +9,11 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  Box,
-  Typography,
-  Grid,
 } from "@mui/material";
+import KhaiBaoSinhTuForm from "../../../feature/admin/Form/KhaiBaoSinhTuForm";
 
-export default function DanhSachTamTruVang() {
-  // Dữ liệu mẫu (giữ nguyên)
+export default function DanhSachKhaiBaoSinhTu() {
+  // Dữ liệu mẫu (giữ nguyên)//goi API sau
   const fullData = [
     {
       role: "Dân cư",
@@ -27,10 +21,10 @@ export default function DanhSachTamTruVang() {
       houseHoldID: "HH001",
       chuHo: "Nguyễn Văn Chủ",
       status: "",
-      classification: "Tạm trú",
-      dateOfBirth: "15/05/1990",
+      classification: "Sinh",
+      dateOfBirth: "01/01/2024",
       gender: "Nam",
-      personalId: "001234567890",
+      personalId: "", // Dưới 14 tuổi
       address: "123 Đường ABC, Phường XYZ, Quận 1, TP.HCM",
     },
     {
@@ -38,10 +32,10 @@ export default function DanhSachTamTruVang() {
       name: "Nguyễn Văn B",
       houseHoldID: "HH002",
       chuHo: "Nguyễn Văn Hộ",
-      status: "Phê duyệt",
-      classification: "Tạm vắng",
-      dateOfBirth: "20/03/1985",
-      gender: "Nam",
+      status: "Mới sinh",
+      classification: "Sinh",
+      dateOfBirth: "15/05/1960",
+      gender: "Nữ",
       personalId: "001234567891",
       address: "456 Đường DEF, Phường ABC, Quận 2, TP.HCM",
     },
@@ -50,23 +44,71 @@ export default function DanhSachTamTruVang() {
       name: "Nguyễn Văn C",
       houseHoldID: "HH003",
       chuHo: "Nguyễn Văn Hộ",
-      status: "Không phê duyệt",
-      classification: "Tạm trú",
-      dateOfBirth: "10/07/1992",
-      gender: "Nữ",
-      personalId: "001234567892",
+      status: "",
+      classification: "Tử",
+      dateOfBirth: "20/03/2023",
+      gender: "Nam",
+      personalId: "", // Dưới 14 tuổi
       address: "789 Đường GHI, Phường DEF, Quận 3, TP.HCM",
     },
     {
       role: "Dân cư",
       name: "Nguyễn Văn D",
-      houseHoldID: "HH004",
-      chuHo: "Nguyễn Văn Công",
+      houseHoldID: "HH001",
+      chuHo: "Nguyễn Văn Chủ",
       status: "",
-      classification: "Tạm vắng",
-      dateOfBirth: "25/12/1988",
+      classification: "Tử",
+      dateOfBirth: "10/12/1950",
       gender: "Nam",
       personalId: "001234567893",
+      address: "123 Đường ABC, Phường XYZ, Quận 1, TP.HCM",
+    },
+    {
+      role: "Dân cư",
+      name: "Nguyễn Văn A",
+      houseHoldID: "HH002",
+      chuHo: "Nguyễn Văn Hộ",
+      status: "",
+      classification: "Sinh",
+      dateOfBirth: "05/06/2024",
+      gender: "Nữ",
+      personalId: "", // Dưới 14 tuổi
+      address: "456 Đường DEF, Phường ABC, Quận 2, TP.HCM",
+    },
+    {
+      role: "Dân cư",
+      name: "Nguyễn Văn B",
+      houseHoldID: "HH003",
+      chuHo: "Nguyễn Văn Hộ",
+      status: "",
+      classification: "Tử",
+      dateOfBirth: "22/08/1965",
+      gender: "Nam",
+      personalId: "001234567895",
+      address: "789 Đường GHI, Phường DEF, Quận 3, TP.HCM",
+    },
+    {
+      role: "Kế toán",
+      name: "Nguyễn Văn C",
+      houseHoldID: "HH001",
+      chuHo: "Nguyễn Văn Chủ",
+      status: "",
+      classification: "Sinh",
+      dateOfBirth: "30/11/2023",
+      gender: "Nữ",
+      personalId: "", // Dưới 14 tuổi
+      address: "123 Đường ABC, Phường XYZ, Quận 1, TP.HCM",
+    },
+    {
+      role: "Dân cư",
+      name: "Nguyễn Văn D",
+      chuHo: "Nguyễn Văn Hộ",
+      houseHoldID: "HH004",
+      status: "",
+      classification: "Tử",
+      dateOfBirth: "18/07/1955",
+      gender: "Nam",
+      personalId: "001234567897",
       address: "999 Đường JKL, Phường GHI, Quận 4, TP.HCM",
     },
   ];
@@ -79,9 +121,11 @@ export default function DanhSachTamTruVang() {
   const [selectedPerson, setSelectedPerson] = useState(null);
   const [selectedIndex, setSelectedIndex] = useState(null);
 
-  // Lọc chỉ người chưa phê duyệt
+  // Lọc chỉ người Chưa duyệt hoặc Mới sinh
   const handleFilterChuaDuyet = () => {
-    setData((prev) => prev.filter((item) => item.status === ""));
+    setData((prev) =>
+      prev.filter((item) => item.status === "" || item.status === "Mới sinh")
+    );
   };
 
   // Tìm kiếm dựa trên data gốc
@@ -89,9 +133,10 @@ export default function DanhSachTamTruVang() {
     let filtered = fullData;
 
     if (searchText.trim() !== "") {
-      filtered = filtered.filter((item) =>
-        item.name.toLowerCase().includes(searchText.toLowerCase()) ||
-        item.chuHo.toLowerCase().includes(searchText.toLowerCase())
+      filtered = filtered.filter(
+        (item) =>
+          item.name.toLowerCase().includes(searchText.toLowerCase()) ||
+          item.chuHo.toLowerCase().includes(searchText.toLowerCase())
       );
     }
 
@@ -109,7 +154,7 @@ export default function DanhSachTamTruVang() {
     setData(newData);
   };
 
-  // Mở modal khi click vào '...'
+  // Mở modal khi click vào trạng thái
   const handleOpenModal = (item, index) => {
     setSelectedPerson(item);
     setSelectedIndex(index);
@@ -126,7 +171,9 @@ export default function DanhSachTamTruVang() {
   // Cập nhật trạng thái từ modal
   const handleStatusChange = (newStatus) => {
     if (selectedIndex !== null) {
-      updateStatus(selectedIndex, newStatus);
+      const newData = [...data];
+      newData[selectedIndex].status = newStatus;
+      setData(newData);
     }
     handleCloseModal();
   };
@@ -142,7 +189,7 @@ export default function DanhSachTamTruVang() {
             alignItems: "center",
           }}
         >
-          <h1 style={{ margin: 0 }}>Danh sách tạm trú tạm vắng</h1>
+          <h1 style={{ margin: 0 }}>Danh sách khai báo sinh tử</h1>
 
           <button
             onClick={handleFilterChuaDuyet}
@@ -156,7 +203,7 @@ export default function DanhSachTamTruVang() {
               cursor: "pointer",
             }}
           >
-            Tạo mới
+            Xác nhận phê duyệt
           </button>
         </div>
 
@@ -252,7 +299,7 @@ export default function DanhSachTamTruVang() {
                   Phân loại
                 </TableCell>
                 <TableCell sx={{ fontWeight: "bold", padding: "16px" }}>
-                  Trạng thái
+                  Trạng thái sinh tử
                 </TableCell>
               </TableRow>
             </TableHead>
@@ -269,72 +316,125 @@ export default function DanhSachTamTruVang() {
                   </TableCell>
                   <TableCell sx={{ padding: "16px" }}>{item.chuHo}</TableCell>
                   <TableCell sx={{ padding: "16px" }}>
-                    <span style={{
-                      background: item.classification === "Tạm trú" ? "#e3f2fd" : "#fff3e0",
-                      color: item.classification === "Tạm trú" ? "#1565c0" : "#e65100",
-                      padding: "6px 12px",
-                      borderRadius: "4px",
-                      fontWeight: "bold",
-                    }}>
+                    <span
+                      style={{
+                        background:
+                          item.classification === "Sinh"
+                            ? "#e8f5e9"
+                            : "#ffebee",
+                        color:
+                          item.classification === "Sinh"
+                            ? "#2e7d32"
+                            : "#c62828",
+                        padding: "6px 12px",
+                        borderRadius: "4px",
+                        fontWeight: "bold",
+                      }}
+                    >
                       {item.classification}
                     </span>
                   </TableCell>
                   <TableCell sx={{ padding: "16px" }}>
-                    <Box sx={{ display: "flex", gap: "12px", alignItems: "center" }}>
-                      {/* Dấu ✓ - Phê duyệt */}
+                    <Box
+                      sx={{
+                        display: "flex",
+                        gap: "8px",
+                        alignItems: "center",
+                      }}
+                    >
+                      {/* Nút Phê duyệt */}
                       <button
                         onClick={() => updateStatus(index, "Phê duyệt")}
                         style={{
-                          background: item.status === "Phê duyệt" ? "#4caf50" : "#e0e0e0",
-                          color: item.status === "Phê duyệt" ? "white" : "#666",
+                          padding: "8px",
+                          color: "#10b981",
+                          backgroundColor: item.status === "Phê duyệt" ? "#a9f5c0" : "transparent",
                           border: "none",
+                          borderRadius: "50%",
                           width: "36px",
                           height: "36px",
-                          borderRadius: "50%",
-                          fontSize: "18px",
-                          fontWeight: "bold",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
                           cursor: "pointer",
-                          transition: "all 0.3s",
+                          transition: "background-color 0.2s",
+                        }}
+                        onMouseEnter={(e) => {
+                          if (item.status !== "Phê duyệt") {
+                            e.currentTarget.style.backgroundColor = "#f0fdf4";
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (item.status !== "Phê duyệt") {
+                            e.currentTarget.style.backgroundColor = "transparent";
+                          }
                         }}
                         title="Phê duyệt"
                       >
-                        ✓
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
                       </button>
 
-                      {/* Dấu ✗ - Không phê duyệt */}
+                      {/* Nút Từ chối */}
                       <button
                         onClick={() => updateStatus(index, "Không phê duyệt")}
                         style={{
-                          background: item.status === "Không phê duyệt" ? "#f44336" : "#e0e0e0",
-                          color: item.status === "Không phê duyệt" ? "white" : "#666",
+                          padding: "8px",
+                          color: "#f97316",
+                          backgroundColor: item.status === "Không phê duyệt" ? "#ffcb8a" : "transparent",
                           border: "none",
+                          borderRadius: "50%",
                           width: "36px",
                           height: "36px",
-                          borderRadius: "50%",
-                          fontSize: "18px",
-                          fontWeight: "bold",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
                           cursor: "pointer",
-                          transition: "all 0.3s",
+                          transition: "background-color 0.2s",
                         }}
-                        title="Không phê duyệt"
+                        onMouseEnter={(e) => {
+                          if (item.status !== "Không phê duyệt") {
+                            e.currentTarget.style.backgroundColor = "#fff7ed";
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (item.status !== "Không phê duyệt") {
+                            e.currentTarget.style.backgroundColor = "transparent";
+                          }
+                        }}
+                        title="Từ chối"
                       >
-                        ✗
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                          <line x1="18" y1="6" x2="6" y2="18"></line>
+                          <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
                       </button>
 
                       {/* Dấu ... - Mở modal */}
                       <button
                         onClick={() => handleOpenModal(item, index)}
                         style={{
-                          background: item.status === "" ? "#2196f3" : "#e0e0e0",
-                          color: item.status === "" ? "white" : "#666",
+                          padding: "8px",
+                          color: "#3b82f6",
+                          backgroundColor: "#eff6ff",
                           border: "none",
+                          borderRadius: "50%",
                           width: "36px",
                           height: "36px",
-                          borderRadius: "50%",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          cursor: "pointer",
+                          transition: "background-color 0.2s",
                           fontSize: "18px",
                           fontWeight: "bold",
-                          cursor: "pointer",
-                          transition: "all 0.3s",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = "#dbeafe";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = "#eff6ff";
                         }}
                         title="Xem chi tiết"
                       >
@@ -349,85 +449,13 @@ export default function DanhSachTamTruVang() {
         </TableContainer>
 
         {/* Modal hiển thị thông tin cá nhân */}
-        <Dialog open={openModal} onClose={handleCloseModal} maxWidth="sm" fullWidth>
-          <DialogTitle>Thông tin tạm trú/vắng - {selectedPerson?.name}</DialogTitle>
-          <DialogContent>
-            <Box sx={{ mt: 2 }}>
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
-                  <Typography variant="subtitle2" fontWeight="bold">
-                    Họ và tên:
-                  </Typography>
-                  <Typography>{selectedPerson?.name}</Typography>
-                </Grid>
-                <Grid item xs={12}>
-                  <Typography variant="subtitle2" fontWeight="bold">
-                    Mã hộ gia đình:
-                  </Typography>
-                  <Typography>{selectedPerson?.houseHoldID}</Typography>
-                </Grid>
-                <Grid item xs={12}>
-                  <Typography variant="subtitle2" fontWeight="bold">
-                    Tên chủ hộ:
-                  </Typography>
-                  <Typography>{selectedPerson?.chuHo}</Typography>
-                </Grid>
-                <Grid item xs={12}>
-                  <Typography variant="subtitle2" fontWeight="bold">
-                    Ngày sinh:
-                  </Typography>
-                  <Typography>{selectedPerson?.dateOfBirth}</Typography>
-                </Grid>
-                <Grid item xs={12}>
-                  <Typography variant="subtitle2" fontWeight="bold">
-                    Giới tính:
-                  </Typography>
-                  <Typography>{selectedPerson?.gender}</Typography>
-                </Grid>
-                <Grid item xs={12}>
-                  <Typography variant="subtitle2" fontWeight="bold">
-                    Số định danh cá nhân:
-                  </Typography>
-                  <Typography>{selectedPerson?.personalId}</Typography>
-                </Grid>
-                <Grid item xs={12}>
-                  <Typography variant="subtitle2" fontWeight="bold">
-                    Địa chỉ:
-                  </Typography>
-                  <Typography>{selectedPerson?.address}</Typography>
-                </Grid>
-                <Grid item xs={12}>
-                  <Typography variant="subtitle2" fontWeight="bold">
-                    Phân loại:
-                  </Typography>
-                  <Typography>{selectedPerson?.classification}</Typography>
-                </Grid>
-                <Grid item xs={12}>
-                  <Typography variant="subtitle2" fontWeight="bold">
-                    Vai trò:
-                  </Typography>
-                  <Typography>{selectedPerson?.role}</Typography>
-                </Grid>
-              </Grid>
-            </Box>
-          </DialogContent>
-          <DialogActions sx={{ justifyContent: "flex-end", gap: 1, p: 2 }}>
-            <Button
-              variant="contained"
-              color="success"
-              onClick={() => handleStatusChange("Phê duyệt")}
-            >
-              Phê duyệt
-            </Button>
-            <Button
-              variant="contained"
-              color="error"
-              onClick={() => handleStatusChange("Không phê duyệt")}
-            >
-              Không phê duyệt
-            </Button>
-          </DialogActions>
-        </Dialog>
+        <KhaiBaoSinhTuForm
+          open={openModal}
+          onClose={handleCloseModal}
+          person={selectedPerson}
+          onApprove={() => handleStatusChange("Phê duyệt")}
+          onReject={() => handleStatusChange("Không phê duyệt")}
+        />
       </div>
     </MainLayout>
   );

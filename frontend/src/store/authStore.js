@@ -104,8 +104,9 @@ const useAuthStore = create((set, get) => ({
   // Load user (Giữ nguyên, nhưng nên được gọi ở file index/main)
   loadUserFromStorage: () => {
     const user = getInitialUser();
-    if (user) {
-      set({ user });
+    const token = getInitialToken();
+    if (user && token) {
+      set({ user, token, isLoggedIn: true });
     }
   },
 

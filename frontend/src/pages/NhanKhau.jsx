@@ -50,11 +50,6 @@ function NhanKhau() {
     { _id: "3", role_name: "Thành viên" }
   ];
 
-  if (!user) {
-    navigate("/signin");
-    return null;
-  }
-
   const handleLogout = () => {
     signOut();
     navigate("/signin");

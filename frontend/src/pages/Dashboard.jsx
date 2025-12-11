@@ -8,11 +8,6 @@ function Dashboard() {
   const navigate = useNavigate();
   const { user, signOut } = useAuthStore();
 
-  if (!user) {
-    navigate('/signin');
-    return null;
-  }
-
   const handleLogout = () => {
     signOut();
     navigate('/signin');

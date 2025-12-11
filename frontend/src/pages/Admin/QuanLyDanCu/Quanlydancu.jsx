@@ -7,6 +7,7 @@ import {
   InputAdornment,
   Select,
   MenuItem,
+  Menu,
   Table,
   TableBody,
   TableCell,
@@ -18,9 +19,9 @@ import {
   Pagination,
 } from "@mui/material";
 import { Search, Filter, ChevronDown } from "lucide-react";
-import MainLayout from "../../layout/MainLayout";
+import MainLayout from "../../../layout/MainLayout";
 import { useNavigate } from "react-router-dom";
-import AddProfileModal from "../../feature/profile/AddProfile";
+import AddProfileModal from "../../../feature/profile/AddProfile";
 
 // ===== DỮ LIỆU ẢO: DANH SÁCH HỘ DÂN =====
 const households = [
@@ -48,11 +49,37 @@ const households = [
 ];
 
 // ===== COMPONENT BẢNG HỘ DÂN =====
-function ResidentsTable() {
+function ResidentsTable({ selected, setSelected }) {
   const ROWS_PER_PAGE = 10;
-  const [selected, setSelected] = useState([]);
   const [page, setPage] = useState(1);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [selectedRow, setSelectedRow] = useState(null);
   const navigate = useNavigate();
+
+  const handleMenuOpen = (event, row) => {
+    setAnchorEl(event.currentTarget);
+    setSelectedRow(row);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setSelectedRow(null);
+  };
+
+  const handleViewDetail = () => {
+    if (selectedRow) {
+      navigate(`/ThongTinHoDanAdmin`);
+    }
+    handleMenuClose();
+  };
+
+  const handleDelete = () => {
+    if (selectedRow) {
+      console.log('Xóa hộ dân:', selectedRow);
+      // TODO: Implement delete logic
+    }
+    handleMenuClose();
+  };
 
   const pageCount = Math.ceil(households.length / ROWS_PER_PAGE) || 1;
   const start = (page - 1) * ROWS_PER_PAGE;
@@ -99,7 +126,7 @@ function ResidentsTable() {
               <TableCell>Chủ hộ</TableCell>
               <TableCell>Ngày khởi tạo</TableCell>
               <TableCell>Số thành viên</TableCell>
-              <TableCell align="center">Xem chi tiết</TableCell>
+              <TableCell>Thao tác</TableCell>
             </TableRow>
           </TableHead>
 
@@ -127,18 +154,25 @@ function ResidentsTable() {
                   <TableCell>{row.createdAt}</TableCell>
                   <TableCell>{row.membersCount}</TableCell>
 
-                  <TableCell align="center">
+                  <TableCell>
                     <Button
-                      variant="text"
+                      onClick={(e) => handleMenuOpen(e, row)}
                       sx={{
-                        textTransform: "none",
-                        fontSize: "14px",
-                        color: "#1E54D4",
-                        "&:hover": { textDecoration: "underline" },
+                        minWidth: 36,
+                        width: 36,
+                        height: 36,
+                        borderRadius: '50%',
+                        padding: 0,
+                        backgroundColor: '#eff6ff',
+                        color: '#3b82f6',
+                        fontSize: '20px',
+                        fontWeight: 'bold',
+                        '&:hover': {
+                          backgroundColor: '#dbeafe',
+                        },
                       }}
-                      onClick={() => navigate(`/ThongTinHoDanAdmin`)}
                     >
-                      Xem chi tiết
+                      ⋯
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -147,6 +181,57 @@ function ResidentsTable() {
           </TableBody>
         </Table>
       </TableContainer>
+
+      {/* Menu dropdown cho 3-dot button */}
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleMenuClose}
+        PaperProps={{
+          elevation: 3,
+          sx: {
+            mt: 1.5,
+            minWidth: 160,
+            borderRadius: 2,
+            overflow: "hidden",
+            boxShadow: "0 8px 24px rgba(0, 0, 0, 0.15)",
+          },
+        }}
+      >
+        <MenuItem
+          onClick={handleViewDetail}
+          sx={{
+            py: 1.5,
+            px: 2.5,
+            fontSize: "14px",
+            fontWeight: 500,
+            transition: "all 0.2s ease",
+            "&:hover": {
+              backgroundColor: "#f0f9ff",
+              color: "#2563eb",
+            },
+          }}
+        >
+          Xem chi tiết
+        </MenuItem>
+        <MenuItem
+          onClick={handleDelete}
+          sx={{
+            py: 1.5,
+            px: 2.5,
+            fontSize: "14px",
+            fontWeight: 500,
+            color: "#6b7280",
+            transition: "all 0.2s ease",
+            "&:hover": {
+              backgroundColor: "#fef2f2",
+              color: "#ef4444",
+            },
+          }}
+        >
+          Xóa
+        </MenuItem>
+      </Menu>
 
       <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
         <Pagination
@@ -164,6 +249,7 @@ function ResidentsTable() {
 export default function Quanlydancu() {
   const [openAddProfileModal, setOpenAddProfileModal] = useState(false);
   const [userInfo, setUserInfo] = useState({});
+  const [selected, setSelected] = useState([]);
 
   const handleAddRequest = (formData) => {
     console.log("Yêu cầu thêm thành viên:", formData);
@@ -203,15 +289,22 @@ export default function Quanlydancu() {
             <Button
               variant="contained"
               onClick={handleOpenAddMember}
+              disabled={selected.length === 0}
               sx={{
-                backgroundColor: "#2D66F5",
+                backgroundColor: selected.length === 0 ? "#fca5a5" : "#ef4444",
                 borderRadius: "8px",
                 textTransform: "none",
                 px: 3,
                 py: 1,
                 fontSize: "14px",
                 fontWeight: "500",
-                "&:hover": { backgroundColor: "#1E54D4" },
+                "&:hover": { 
+                  backgroundColor: selected.length === 0 ? "#fca5a5" : "#c84848ff" 
+                },
+                "&.Mui-disabled": {
+                  backgroundColor: "#fca5a5",
+                  color: "rgba(255, 255, 255, 0.7)",
+                },
               }}
             >
               Xóa hộ dân
@@ -351,7 +444,7 @@ export default function Quanlydancu() {
             p: 2,
           }}
         >
-          <ResidentsTable />
+          <ResidentsTable selected={selected} setSelected={setSelected} />
         </Box>
       </Box>
 

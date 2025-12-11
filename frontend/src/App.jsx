@@ -12,17 +12,17 @@ import Dashboard from "./pages/Dashboard";
 
 //import admin
 import NhanKhau from './pages/NhanKhau'
-import Quanlydancu from "./pages/Admin/Quanlydancu";
+import Quanlydancu from "./pages/Admin/QuanLyDanCu/Quanlydancu";
 import Trangchinh from "./pages/Admin/trangchinh";
 import Profile from './pages/Profile';
-import DanhSachDangKyTaiKhoan from "./pages/Admin/DanhSachDangKyTaiKhoan";
-import DanhSachKhaiBaoSinhTu from "./pages/Admin/DanhSachKhaiBaoSinhTu";
-import DanhSachThuTien from "./pages/Admin/DanhSachThuTien";
-import DanhSachTamTruVang from "./pages/Admin/DanhSachTamTruVang";
-import FeeManagement from "./pages/fee";
+import DanhSachDangKyTaiKhoan from "./pages/Admin/PheDuyet/DanhSachDangKyTaiKhoan";
+import DanhSachKhaiBaoSinhTu from "./pages/Admin/PheDuyet/DanhSachKhaiBaoSinhTu";
+import DanhSachThuTien from "./pages/Admin/PheDuyet/DanhSachThuTien";
+import DanhSachTamTruVang from "./pages/Admin/PheDuyet/DanhSachTamTruVang";
+import FeeManagement from "./pages/Admin/fee";
 import FeeHouseholdPage from "./pages/FeeHouseholdPage";
-import ThongTinChiTietAdmin from "./pages/Admin/ThongTinChiTietAdmin";
-import ThongTinHoDanAdmin from "./pages/Admin/ThongTinHoDanAdmin";
+import ThongTinChiTietAdmin from "./pages/Admin/QuanLyDanCu/ThongTinChiTietAdmin";
+import ThongTinHoDanAdmin from "./pages/Admin/QuanLyDanCu/ThongTinHoDanAdmin";
 
 // import user
 import ThongTinHoDan from "./pages/User/thongtinhodan";

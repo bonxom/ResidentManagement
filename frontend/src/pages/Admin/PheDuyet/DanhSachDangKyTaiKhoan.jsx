@@ -1,5 +1,5 @@
 import { useState } from "react";
-import MainLayout from "../../layout/MainLayout";
+import MainLayout from "../../../layout/MainLayout";
 import {
   Table,
   TableBody,
@@ -8,15 +8,9 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
   Box,
-  Typography,
-  Grid,
 } from "@mui/material";
+import DangKyTaiKhoanForm from "../../../feature/admin/Form/DangKyTaiKhoanForm";
 
 export default function DanhSachDangKyTaiKhoan() {
   // Dữ liệu mẫu (giữ nguyên)
@@ -153,7 +147,7 @@ export default function DanhSachDangKyTaiKhoan() {
               cursor: "pointer",
             }}
           >
-            Tạo mới
+            Xác nhận phê duyệt
           </button>
         </div>
 
@@ -260,75 +254,103 @@ export default function DanhSachDangKyTaiKhoan() {
                     <Box
                       sx={{
                         display: "flex",
-                        gap: "12px",
+                        gap: "8px",
                         alignItems: "center",
                       }}
                     >
-                      {/* Dấu ✓ - Đã phê duyệt */}
+                      {/* Nút Phê duyệt */}
                       <button
                         onClick={() => updateStatus(index, "Đã phê duyệt")}
                         style={{
-                          background:
-                            item.status === "Đã phê duyệt"
-                              ? "#4caf50"
-                              : "#e0e0e0",
-                          color:
-                            item.status === "Đã phê duyệt" ? "white" : "#666",
+                          padding: "8px",
+                          color: "#10b981",
+                          backgroundColor: item.status === "Đã phê duyệt" ? "#a9f5c0" : "transparent",
                           border: "none",
+                          borderRadius: "50%",
                           width: "36px",
                           height: "36px",
-                          borderRadius: "50%",
-                          fontSize: "18px",
-                          fontWeight: "bold",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
                           cursor: "pointer",
-                          transition: "all 0.3s",
+                          transition: "background-color 0.2s",
                         }}
-                        title="Đã phê duyệt"
+                        onMouseEnter={(e) => {
+                          if (item.status !== "Đã phê duyệt") {
+                            e.currentTarget.style.backgroundColor = "#f0fdf4";
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (item.status !== "Đã phê duyệt") {
+                            e.currentTarget.style.backgroundColor = "transparent";
+                          }
+                        }}
+                        title="Phê duyệt"
                       >
-                        ✓
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
                       </button>
 
-                      {/* Dấu ✗ - Không phê duyệt */}
+                      {/* Nút Từ chối */}
                       <button
                         onClick={() => updateStatus(index, "Không phê duyệt")}
                         style={{
-                          background:
-                            item.status === "Không phê duyệt"
-                              ? "#f44336"
-                              : "#e0e0e0",
-                          color:
-                            item.status === "Không phê duyệt"
-                              ? "white"
-                              : "#666",
+                          padding: "8px",
+                          color: "#f97316",
+                          backgroundColor: item.status === "Không phê duyệt" ? "#ffcb8a" : "transparent",
                           border: "none",
+                          borderRadius: "50%",
                           width: "36px",
                           height: "36px",
-                          borderRadius: "50%",
-                          fontSize: "18px",
-                          fontWeight: "bold",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
                           cursor: "pointer",
-                          transition: "all 0.3s",
+                          transition: "background-color 0.2s",
                         }}
-                        title="Không phê duyệt"
+                        onMouseEnter={(e) => {
+                          if (item.status !== "Không phê duyệt") {
+                            e.currentTarget.style.backgroundColor = "#fff7ed";
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (item.status !== "Không phê duyệt") {
+                            e.currentTarget.style.backgroundColor = "transparent";
+                          }
+                        }}
+                        title="Từ chối"
                       >
-                        ✗
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                          <line x1="18" y1="6" x2="6" y2="18"></line>
+                          <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
                       </button>
 
                       {/* Dấu ... - Mở modal */}
                       <button
                         onClick={() => handleOpenModal(item, index)}
                         style={{
-                          background:
-                            item.status === "" ? "#2196f3" : "#e0e0e0",
-                          color: item.status === "" ? "white" : "#666",
+                          padding: "8px",
+                          color: "#3b82f6",
+                          backgroundColor: "#eff6ff",
                           border: "none",
+                          borderRadius: "50%",
                           width: "36px",
                           height: "36px",
-                          borderRadius: "50%",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          cursor: "pointer",
+                          transition: "background-color 0.2s",
                           fontSize: "18px",
                           fontWeight: "bold",
-                          cursor: "pointer",
-                          transition: "all 0.3s",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = "#dbeafe";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = "#eff6ff";
                         }}
                         title="Xem chi tiết"
                       >
@@ -343,84 +365,13 @@ export default function DanhSachDangKyTaiKhoan() {
         </TableContainer>
 
         {/* Modal hiển thị thông tin cá nhân */}
-        <Dialog
+        <DangKyTaiKhoanForm
           open={openModal}
           onClose={handleCloseModal}
-          maxWidth="sm"
-          fullWidth
-        >
-          <DialogTitle>Thông tin đăng ký - {selectedPerson?.name}</DialogTitle>
-          <DialogContent>
-            <Box sx={{ mt: 2 }}>
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
-                  <Typography variant="subtitle2" fontWeight="bold">
-                    Họ và tên:
-                  </Typography>
-                  <Typography>{selectedPerson?.name}</Typography>
-                </Grid>
-                <Grid item xs={12}>
-                  <Typography variant="subtitle2" fontWeight="bold">
-                    Mã hộ gia đình:
-                  </Typography>
-                  <Typography>{selectedPerson?.houseHoldID}</Typography>
-                </Grid>
-                <Grid item xs={12}>
-                  <Typography variant="subtitle2" fontWeight="bold">
-                    Tên chủ hộ:
-                  </Typography>
-                  <Typography>{selectedPerson?.chuHo}</Typography>
-                </Grid>
-                <Grid item xs={12}>
-                  <Typography variant="subtitle2" fontWeight="bold">
-                    Ngày sinh:
-                  </Typography>
-                  <Typography>{selectedPerson?.dateOfBirth}</Typography>
-                </Grid>
-                <Grid item xs={12}>
-                  <Typography variant="subtitle2" fontWeight="bold">
-                    Giới tính:
-                  </Typography>
-                  <Typography>{selectedPerson?.gender}</Typography>
-                </Grid>
-                <Grid item xs={12}>
-                  <Typography variant="subtitle2" fontWeight="bold">
-                    Số định danh cá nhân:
-                  </Typography>
-                  <Typography>{selectedPerson?.personalId}</Typography>
-                </Grid>
-                <Grid item xs={12}>
-                  <Typography variant="subtitle2" fontWeight="bold">
-                    Địa chỉ:
-                  </Typography>
-                  <Typography>{selectedPerson?.address}</Typography>
-                </Grid>
-                <Grid item xs={12}>
-                  <Typography variant="subtitle2" fontWeight="bold">
-                    Vai trò:
-                  </Typography>
-                  <Typography>{selectedPerson?.role}</Typography>
-                </Grid>
-              </Grid>
-            </Box>
-          </DialogContent>
-          <DialogActions sx={{ justifyContent: "flex-end", gap: 1, p: 2 }}>
-            <Button
-              variant="contained"
-              color="success"
-              onClick={() => handleStatusChange("Đã phê duyệt")}
-            >
-              Đã phê duyệt
-            </Button>
-            <Button
-              variant="contained"
-              color="error"
-              onClick={() => handleStatusChange("Không phê duyệt")}
-            >
-              Không phê duyệt
-            </Button>
-          </DialogActions>
-        </Dialog>
+          person={selectedPerson}
+          onApprove={() => handleStatusChange("Đã phê duyệt")}
+          onReject={() => handleStatusChange("Không phê duyệt")}
+        />
       </div>
     </MainLayout>
   );

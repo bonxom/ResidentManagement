@@ -24,10 +24,6 @@ function FeeHouseholdPage() {
   };
 
   useEffect(() => {
-    if (!user) {
-      navigate("/signin");
-      return;
-    }
     fetchMyFees();
   }, []);
 

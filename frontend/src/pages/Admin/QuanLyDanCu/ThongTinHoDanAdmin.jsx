@@ -7,6 +7,7 @@ import {
   InputAdornment,
   Select,
   MenuItem,
+  Menu,
   Table,
   TableBody,
   TableCell,
@@ -18,9 +19,9 @@ import {
   Pagination,
 } from "@mui/material";
 import { Search, Filter, ChevronDown } from "lucide-react";
-import MainLayout from "../../layout/MainLayout";
+import MainLayout from "../../../layout/MainLayout";
 import { useNavigate } from "react-router-dom";
-import AddProfileModal from "../../feature/profile/AddProfile";
+import AddProfileModal from "../../../feature/profile/AddProfile";
 
 // ===== DỮ LIỆU ẢO (3 dòng để test) =====
 const residents = [
@@ -48,10 +49,11 @@ const residents = [
 ];
 
 // ===== COMPONENT BẢNG =====
-function ResidentsTable() {
+function ResidentsTable({ selected, setSelected }) {
   const ROWS_PER_PAGE = 10;
-  const [selected, setSelected] = useState([]);
   const [page, setPage] = useState(1);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [selectedRow, setSelectedRow] = useState(null);
   const navigate = useNavigate();
 
   const pageCount = Math.ceil(residents.length / ROWS_PER_PAGE) || 1;
@@ -72,6 +74,28 @@ function ResidentsTable() {
       const idsOnPage = visibleRows.map((r) => r.id);
       setSelected((prev) => prev.filter((id) => !idsOnPage.includes(id)));
     }
+  };
+
+  const handleMenuOpen = (event, row) => {
+    setAnchorEl(event.currentTarget);
+    setSelectedRow(row);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setSelectedRow(null);
+  };
+
+  const handleViewDetail = () => {
+    navigate(`/ThongTinChiTietAdmin`);
+    handleMenuClose();
+  };
+
+  const handleDelete = () => {
+    console.log("Xóa:", selectedRow);
+    // TODO: Xử lý xóa
+    alert(`Xóa thành viên: ${selectedRow?.fullName}`);
+    handleMenuClose();
   };
 
   const isAllSelectedOnPage =
@@ -97,7 +121,7 @@ function ResidentsTable() {
               <TableCell>Họ và tên</TableCell>
               <TableCell>Quan hệ với chủ hộ</TableCell>
               <TableCell>Ngày tháng năm sinh</TableCell>
-              <TableCell align="center">Xem chi tiết</TableCell>
+              <TableCell>Thao tác</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -121,20 +145,36 @@ function ResidentsTable() {
                   <TableCell>{row.relation}</TableCell>
                   <TableCell>{row.dob}</TableCell>
 
-                  {/* NÚT XEM CHI TIẾT */}
-                  <TableCell align="center">
-                    <Button
-                      variant="text"
-                      sx={{
-                        textTransform: "none",
-                        fontSize: "14px",
-                        color: "#1E54D4",
-                        "&:hover": { textDecoration: "underline" },
+                  {/* NÚT 3 CHẤM */}
+                  <TableCell>
+                    <button
+                      onClick={(e) => handleMenuOpen(e, row)}
+                      style={{
+                        padding: "8px",
+                        color: "#3b82f6",
+                        backgroundColor: "#eff6ff",
+                        border: "none",
+                        borderRadius: "50%",
+                        width: "36px",
+                        height: "36px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        cursor: "pointer",
+                        transition: "background-color 0.2s",
+                        fontSize: "18px",
+                        fontWeight: "bold",
                       }}
-                      onClick={() => navigate(`/ThongTinChiTietAdmin`)}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = "#dbeafe";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = "#eff6ff";
+                      }}
+                      title="Thao tác"
                     >
-                      Xem chi tiết
-                    </Button>
+                      ...
+                    </button>
                   </TableCell>
                 </TableRow>
               );
@@ -142,6 +182,57 @@ function ResidentsTable() {
           </TableBody>
         </Table>
       </TableContainer>
+
+      {/* MENU 3 CHẤM */}
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleMenuClose}
+        PaperProps={{
+          elevation: 3,
+          sx: {
+            mt: 1.5,
+            minWidth: 160,
+            borderRadius: 2,
+            overflow: "hidden",
+            boxShadow: "0 8px 24px rgba(0, 0, 0, 0.15)",
+          },
+        }}
+      >
+        <MenuItem
+          onClick={handleViewDetail}
+          sx={{
+            py: 1.5,
+            px: 2.5,
+            fontSize: "14px",
+            fontWeight: 500,
+            transition: "all 0.2s ease",
+            "&:hover": {
+              backgroundColor: "#f0f9ff",
+              color: "#2563eb",
+            },
+          }}
+        >
+          Xem chi tiết
+        </MenuItem>
+        <MenuItem
+          onClick={handleDelete}
+          sx={{
+            py: 1.5,
+            px: 2.5,
+            fontSize: "14px",
+            fontWeight: 500,
+            color: "#6b7280",
+            transition: "all 0.2s ease",
+            "&:hover": {
+              backgroundColor: "#fef2f2",
+              color: "#ef4444",
+            },
+          }}
+        >
+          Xóa
+        </MenuItem>
+      </Menu>
 
       <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
         <Pagination
@@ -159,6 +250,7 @@ function ResidentsTable() {
 export default function ThongTinHoDanAdmin() {
   const [openAddProfileModal, setOpenAddProfileModal] = useState(false);
   const [userInfo, setUserInfo] = useState({});
+  const [selected, setSelected] = useState([]);
 
   const handleAddRequest = (formData) => {
     console.log("Yêu cầu thêm thành viên:", formData);
@@ -199,16 +291,23 @@ export default function ThongTinHoDanAdmin() {
           >
             <Button
               variant="contained"
-              onClick={handleOpenAddMember} // ✅ GẮN NÚT Ở ĐÂY
+              onClick={handleOpenAddMember}
+              disabled={selected.length === 0}
               sx={{
-                backgroundColor: "#2D66F5",
+                backgroundColor: selected.length === 0 ? "#fca5a5" : "#ef4444",
                 borderRadius: "8px",
                 textTransform: "none",
                 px: 3,
                 py: 1,
                 fontSize: "14px",
                 fontWeight: "500",
-                "&:hover": { backgroundColor: "#1E54D4" },
+                "&:hover": { 
+                  backgroundColor: selected.length === 0 ? "#fca5a5" : "#c84848ff" 
+                },
+                "&.Mui-disabled": {
+                  backgroundColor: "#fca5a5",
+                  color: "rgba(255, 255, 255, 0.7)",
+                },
               }}
             >
               Xóa thành viên
@@ -347,7 +446,7 @@ export default function ThongTinHoDanAdmin() {
             p: 2,
           }}
         >
-          <ResidentsTable />
+          <ResidentsTable selected={selected} setSelected={setSelected} />
         </Box>
       </Box>
 
