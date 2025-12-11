@@ -8,11 +8,9 @@ import {
   deleteHousehold,
   addMember,
   removeMember,
-  getResidentHistory,
-  addTemporaryResident,
-  endOfTemporaryLiving,
   splitHousehold,
   moveMember,
+  getHouseholdChanges
 } from "../controllers/householdController.js";
 
 import { protect, authorizePermission, authorize } from "../middleware/authMiddleware.js";
@@ -33,8 +31,6 @@ router.delete("/:householdId/members/:memberId", protect, authorizePermission("E
 router.post("/split", protect, authorizePermission("EDIT HOUSEHOLD"), splitHousehold);
 router.post("/move", protect, authorizePermission("EDIT HOUSEHOLD"), moveMember);
 
-router.get("/:householdId/resident-histories", protect, authorize("HAMLET LEADER"), getResidentHistory);
-router.post("/:householdId/temporary-residents", protect, authorize("HAMLET LEADER"), addTemporaryResident);
-router.put("/:householdId/temporary-residents/end", protect, authorize("HAMLET LEADER"), endOfTemporaryLiving);
-
+// Route xem biến động
+router.get("/:id/changes", protect, authorizePermission("VIEW HOUSEHOLD"), getHouseholdChanges);
 export default router;
