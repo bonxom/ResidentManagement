@@ -24,7 +24,7 @@ function Dashboard() {
 
       <Box sx={{ flexGrow: 1, p: 4, ml: `${drawerWidth}px` }}>
         <Typography variant="h4" gutterBottom>
-          Chào mừng trở lại, {user.ten}!
+          Chào mừng trở lại, {user.name}!
         </Typography>
 
         <Card sx={{ mb: 3 }}>
@@ -32,14 +32,14 @@ function Dashboard() {
             <Typography variant="h6">Thông tin cá nhân</Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
               <Avatar sx={{ mr: 2, width: 56, height: 56 }}>
-                {user.ten ? user.ten.charAt(0).toUpperCase() : 'U'}
+                {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
               </Avatar>
 
               <Box>
-                <Typography><strong>Họ tên:</strong> {user.ten}</Typography>
+                <Typography><strong>Họ tên:</strong> {user.name}</Typography>
                 <Typography><strong>Email:</strong> {user.email}</Typography>
-                <Typography><strong>Số điện thoại:</strong> {user.soDienThoai || 'Chưa cập nhật'}</Typography>
-                <Typography><strong>Nơi ở:</strong> {user.noiO || 'Chưa cập nhật'}</Typography>
+                <Typography><strong>Số điện thoại:</strong> {user.phoneNumber || 'Chưa cập nhật'}</Typography>
+                <Typography><strong>Nơi ở:</strong> {user.location || 'Chưa cập nhật'}</Typography>
                 <Typography><strong>Vai trò:</strong> {user.role.role_name}</Typography>
               </Box>
             </Box>

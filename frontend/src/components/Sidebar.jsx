@@ -4,7 +4,7 @@ import { Home, Users, User, FileText, PlusCircle, History, CheckCircle, Repeat }
 export const drawerWidth = 304;
 
 export function Sidebar({ user }) {
-  const appTitle = user?.ten ? `Xin chào, ${user.ten}` : "MY APP";
+  const appTitle = user?.ten ? `Xin chào, ${user.name}` : "MY APP";
 
   return (
       <Box

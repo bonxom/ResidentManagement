@@ -72,57 +72,79 @@ export const userAPI = {
 
 // ============= HOUSEHOLD API =============
 export const householdAPI = {
-  // Lấy tất cả hộ gia đình
+  // CRUD
   getAll: async (params = {}) => {
-    const response = await api.get('/households', { params })
-    return response.data
+    const response = await api.get('/households', { params });
+    return response.data;
   },
 
-  // Lấy hộ gia đình theo ID
   getById: async (id) => {
-    const response = await api.get(`/households/${id}`)
-    return response.data
+    const response = await api.get(`/households/${id}`);
+    return response.data;
   },
 
-  // Tạo hộ gia đình mới
   create: async (householdData) => {
-    const response = await api.post('/households', householdData)
-    return response.data
+    const response = await api.post('/households', householdData);
+    return response.data;
   },
 
-  // Cập nhật hộ gia đình
   update: async (id, householdData) => {
-    const response = await api.put(`/households/${id}`, householdData)
-    return response.data
+    const response = await api.put(`/households/${id}`, householdData);
+    return response.data;
   },
 
-  // Xóa hộ gia đình
   delete: async (id) => {
-    const response = await api.delete(`/households/${id}`)
-    return response.data
+    const response = await api.delete(`/households/${id}`);
+    return response.data;
   },
 
-  // Lấy thành viên của hộ gia đình
   getMembers: async (id) => {
-    const response = await api.get(`/households/${id}/members`)
-    return response.data
+    const response = await api.get(`/households/${id}/members`);
+    return response.data;
   },
 
-  // Thêm thành viên vào hộ gia đình
   addMember: async (id, memberData) => {
-    const response = await api.post(`/households/${id}/members`, memberData)
-    return response.data
+    const response = await api.post(`/households/${id}/members`, memberData);
+    return response.data;
   },
 
-  // Xóa thành viên khỏi hộ gia đình
   removeMember: async (householdId, memberId) => {
-    const response = await api.delete(`/households/${householdId}/members/${memberId}`)
-    return response.data
+    const response = await api.delete(`/households/${householdId}/members/${memberId}`);
+    return response.data;
   },
-}
+
+  getResidentHistory: async (householdId) => {
+    const response = await api.get(`/households/${householdId}/resident-history`);
+    return response.data;
+  },
+
+  addTemporaryResident: async (householdId, residentData) => {
+    const response = await api.post(`/households/${householdId}/temporary-residents`, residentData);
+    return response.data;
+  },
+
+  endTemporaryResident: async (householdId, data) => {
+    // data = { userCardID, endDate }
+    const response = await api.put(`/households/${householdId}/temporary-residents/end`, data);
+    return response.data;
+  },
+
+  //
+  splitHousehold: async (splitData) => {
+    // splitData = { userId, newHouseHoldID, newAddress }
+    const response = await api.post('/households/split', splitData);
+    return response.data;
+  },
+
+  moveMember: async (moveData) => {
+    // moveData = { userId, targetHouseholdId, relationship }
+    const response = await api.post('/households/move', moveData);
+    return response.data;
+  },
+};
 
 
-// ==============MONEY API===============
+// ==============FEE API===============
 
 export const feeAPI = {
   // Tạo fee

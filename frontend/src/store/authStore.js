@@ -55,7 +55,7 @@ const useAuthStore = create((set, get) => ({
         email: userData.email,
         password: userData.password,
         soDienThoai: userData.phoneNumber,
-        noiO: userData.address,
+        location: userData.address,
         // Backend sẽ tự gán role "CƯ DÂN"
       };
 

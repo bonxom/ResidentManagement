@@ -18,6 +18,7 @@ import DanhSachKhaiBaoSinhTu from "./pages/Admin/DanhSachKhaiBaoSinhTu";
 import DanhSachThuTien from "./pages/Admin/DanhSachThuTien";
 import DanhSachTamTruVang from "./pages/Admin/DanhSachTamTruVang";
 import FeeManagement from "./pages/fee";
+import FeeHouseholdPage from "./pages/FeeHouseholdPage";
 const theme = createTheme({
   palette: {
     mode: "light",
@@ -61,6 +62,7 @@ function App() {
           <Route path="/nhankhau" element={<NhanKhau />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/fee" element={<FeeManagement /> }/>
+          <Route path="/housefee" element={<FeeHouseholdPage /> }/>
         </Routes>
       </Router>
     </ThemeProvider>
