@@ -1,11 +1,11 @@
 import express from "express";
 import {
   createUpdateRequest,
-  createPaymentRequest,
+  createPaymentRequest,   
   createTemporaryResidenceRequest,
-  createTemporaryAbsenceRequest,  
-  createBirthRequest,             
-  createDeathRequest,             
+  createTemporaryAbsenceRequest,
+  createBirthRequest,
+  createDeathRequest,         
   getAllRequests,
   reviewRequest,
 } from "../controllers/requestController.js";
@@ -17,6 +17,10 @@ const router = express.Router();
 // --- KHU VỰC DÀNH CHO CƯ DÂN & NGƯỜI DÙNG ---
 router.post("/update-info", protect, createUpdateRequest);
 router.post("/payment", protect, createPaymentRequest); // Route mới cho nộp tiền
+router.post("/temporary-residence", protect, createTemporaryResidenceRequest);
+router.post("/temporary-absence", protect, createTemporaryAbsenceRequest);
+router.post("/birth", protect, createBirthRequest);
+router.post("/death", protect, createDeathRequest);
 // --- KHU VỰC DÀNH RIÊNG CHO TỔ TRƯỞNG ---
 
 // Xem danh sách: Yêu cầu quyền READ REQUESTS LIST (đã define trong initialize.js)

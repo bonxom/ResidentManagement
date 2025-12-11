@@ -1,7 +1,8 @@
 import Household from "../models/Household.js";
 import User from "../models/User.js";
 import mongoose from "mongoose";
-
+import ResidentHistory from "../models/ResidentHistory.js";
+import Request from "../models/Request.js"; // Import thêm Request để lấy lịch sử Sinh/Tử
 // @desc    Tạo hộ khẩu mới
 // @route   POST /api/households
 export const createHousehold = async (req, res) => {
@@ -367,6 +368,9 @@ export const moveMember = async (req, res) => {
     if (!targetHousehold) return res.status(404).json({ message: "Cannot find target household" });
 
     const oldHousehold = await Household.findById(user.household);
+    if (!oldHousehold) {
+      return res.status(404).json({ message: "User's current household record is missing" });
+    }
     
     // Check nếu chuyển vào chính hộ đang ở
     if (oldHousehold._id.toString() === targetHouseholdId) {
@@ -435,4 +439,39 @@ export const moveMember = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
+};
+
+
+// Xem lịch sử biến động của 1 hộ (Sinh/Tử/Chuyển đi/Chuyển đến)
+// @route GET /api/households/:id/changes
+export const getHouseholdChanges = async (req, res) => {
+    const { id } = req.params;
+    try {
+        // 1. Lấy lịch sử tạm trú/vắng
+        const resHistory = await ResidentHistory.findOne({ houseHoldId: id })
+            .populate("temporaryAbsent.user", "name");
+
+        // 2. Lấy các Request đã duyệt liên quan đến hộ này (Sinh, Tử, Tách, Nhập)
+        const requests = await Request.find({
+            "requestData.householdId": new mongoose.Types.ObjectId(id), 
+            status: "APPROVED"
+        }).sort({ updatedAt: -1 });
+
+        // 3. Tổng hợp lại
+        const timeline = requests.map(req => ({
+            date: req.updatedAt,
+            type: req.type, // BIRTH_REPORT, DEATH_REPORT...
+            description: req.type === 'BIRTH_REPORT' ? `Khai sinh cho bé ${req.requestData.name}` :
+                         req.type === 'DEATH_REPORT' ? `Khai tử cho thành viên ID ${req.requestData.deceasedUserId}` :
+                         req.type
+        }));
+
+        res.status(200).json({
+            temporaryHistory: resHistory, // Chi tiết tạm trú/vắng
+            majorChanges: timeline        // Biến động nhân khẩu
+        });
+
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 };
