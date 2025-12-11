@@ -2,7 +2,7 @@ import axios from "axios";
 
 // Tạo một instance (thể hiện) của axios
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:5000", // URL backend THẬT của bạn
+  baseURL: "http://localhost:5000/api", // URL backend THẬT của bạn
   timeout: 30000, 
   headers: {
     "Content-Type": "application/json",
@@ -39,7 +39,7 @@ axiosInstance.interceptors.response.use(
     }
     
     // Ném lỗi để các hàm .catch() (như trong authStore) có thể bắt
-    return Promise.reject(error.response.data); 
+    return Promise.reject(error.response.data || error.message); 
   }
 );
 

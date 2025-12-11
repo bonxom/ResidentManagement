@@ -26,16 +26,19 @@ permissionSchema.statics.findByName = function(name) {
   return this.findOne({ permission_name: name }, null, { runSettersOnQuery: true });
 };
 
-permissionSchema.statics.findByListOfName = async function (names) {
+permissionSchema.statics.findByListOfName = async function (names = []) {
   if (!Array.isArray(names) || names.length === 0) return [];
-  const perList = [];
-  for (const permission_name of names) {
-    const permission = await this.findOne({ permission_name });
-    if (permission) {
-      perList.push(permission);
-    }
-  }
-  return perList;
-}
+
+  const normalized = [...new Set(
+    names
+      .filter((name) => typeof name === "string")
+      .map((name) => name.trim().toUpperCase())
+      .filter(Boolean)
+  )];
+
+  if (normalized.length === 0) return [];
+
+  return this.find({ permission_name: { $in: normalized } });
+};
 
 export default mongoose.model("Permission", permissionSchema);

@@ -1,28 +1,11 @@
 import { Box, Typography, Button, TextField, InputAdornment, Select, MenuItem } from "@mui/material";
 import { Search, Filter, ChevronDown } from "lucide-react";
-import Sidebar from "../../components/Sidebar";
-import Topbar from "../../components/Topbar";
+import MainLayout from "../../layout/MainLayout";
 
 export default function ResidentManagement() {
     return (
-        <Box
-            sx={{
-                backgroundColor: "rgba(255, 255, 255, 0.4)",  
-                backdropFilter: "blur(3px)",                 
-                WebkitBackdropFilter: "blur(3px)",          
-            }}
-        >
-            <Box sx={{ display: "flex", minHeight: "100vh", width: "100%" }}>
-
-                {/* Sidebar */}
-                <Sidebar />
-
-                {/* Main content */}
-                <Box sx={{ flex: 1, position: "relative", display: "flex", flexDirection: "column" }}>
-                    <Topbar />
-
-                    {/* PAGE CONTENT */}
-                    <Box sx={{ padding: "24px 32px",display:"flex", flexDirection:"column", flex:1}}>
+        <MainLayout>
+            <Box sx={{ padding: "24px 32px"}}>
 
                         {/* TITLE + BUTTON */}
                         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
@@ -190,8 +173,6 @@ export default function ResidentManagement() {
                         </Box>
 
                     </Box>
-                </Box>
-            </Box>
-        </Box>
+        </MainLayout>
     );
 }

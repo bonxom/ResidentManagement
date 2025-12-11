@@ -27,7 +27,7 @@ export const protect = async (req, res, next) => {
       if (!user) {
         return res
           .status(401)
-          .json({ message: "Không tìm thấy người dùng tương ứng với token." });
+          .json({ message: "Cannot find user with that token" });
       }
 
       const rolePermissions =
@@ -40,14 +40,14 @@ export const protect = async (req, res, next) => {
     } catch (error) {
       console.error(error);
       return res.status(401).json({
-        message: "Token không hợp lệ hoặc đã hết hạn.",
+        message: "Token invalid or expired",
       });
     }
   }
 
   if (!token) {
     return res.status(401).json({
-      message: "Không tìm thấy token. Vui lòng đăng nhập.",
+      message: "Cannot find the token",
     });
   }
 };
@@ -63,14 +63,14 @@ export const authorize = (...roles) => {
     const role_name = role?.role_name;
     if (!req.user || !req.user.role) {
          return res.status(403).json({ 
-            message: "Lỗi phân quyền, không tìm thấy vai trò." ,
+            message: "Cannot find the role" ,
             role: req.user  || "ok"
           });
     }
 
     if (!roles.includes(role_name)) {
       return res.status(403).json({ 
-        message: `Vai trò "${role_name}" không có quyền thực hiện hành động này` 
+        message: `Role "${role_name}" cannot do this` 
       });
     }
     
@@ -83,7 +83,7 @@ export const authorizePermission = (...requiredPermissions) => {
     if (!req.user) {
       return res
         .status(401)
-        .json({ message: "Chưa xác thực người dùng (thiếu req.user)." });
+        .json({ message: "Invalid user auth" });
     }
 
     const userPermissions = req.user.permissions || [];
@@ -100,7 +100,7 @@ export const authorizePermission = (...requiredPermissions) => {
 
     if (!hasPermission) {
       return res.status(403).json({
-        message: "Bạn không có quyền thực hiện hành động này.",
+        message: "You don't have the rights to do",
         required: normalizedRequired,
         yourPermissions: normalizedUserPerms,
       });

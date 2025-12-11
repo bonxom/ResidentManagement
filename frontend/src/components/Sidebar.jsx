@@ -3,21 +3,30 @@ import { Home, Users, User, FileText, PlusCircle, History, CheckCircle, Repeat, 
 import { useNavigate } from "react-router-dom";
 
 
-export default function Sidebar() {
-  const navigate = useNavigate();
+export const drawerWidth = 304;
+
+export function Sidebar({ user }) {
+  const appTitle = user?.ten ? `Xin chào, ${user.ten}` : "MY APP";
+
   return (
-    <Box
-      sx={{
-        width: "280px",
-        height: "100vh",
-        backgroundColor: "#1F2335",
-        padding: "24px 20px",
-        color: "#D4DBE5",
-        display: "flex",
-        flexDirection: "column",
-        gap: "18px",
-      }}
-    >
+      <Box
+        sx={{
+          width: `${drawerWidth}px`,
+          height: "100vh",
+          backgroundColor: "#1F2335",
+          padding: "24px 20px",
+          color: "#D4DBE5",
+          display: "flex",
+          flexDirection: "column",
+          gap: "18px",
+          position: "fixed",
+          left: 0,
+          top: 0,
+          overflowY: "auto",
+          zIndex: 1000,
+        }}
+      >
+
 
       {/* Title */}
       <Typography
@@ -30,7 +39,7 @@ export default function Sidebar() {
           mt: 4,
         }}
       >
-        MY APP
+        {appTitle}
       </Typography>
 
       {/* MENU */}
@@ -94,3 +103,4 @@ function MenuItem({ icon, label, to }) {
   );
 }
 
+export default Sidebar;

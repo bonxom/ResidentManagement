@@ -59,14 +59,6 @@ export default function Topbar() {
             },
           }}
         >
-          <MenuItem
-            onClick={() => {
-              handleCloseUserMenu();
-              navigate("/mainprofile");
-            }}
-          >
-            Hồ sơ cá nhân
-          </MenuItem>
 
           <MenuItem
             onClick={() => {

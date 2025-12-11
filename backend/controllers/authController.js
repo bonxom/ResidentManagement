@@ -1,44 +1,62 @@
+import { AppError } from "../middleware/AppError.js";
+import { ERROR_CODE } from "../middleware/errorCode.js";
 import User from "../models/User.js";
 import generateToken from "../utils/generateToken.js";
 
 // @desc    Xác thực user & lấy token
-// @route   POST /auth/login
+// @route   POST /api/auth/login
 // @access  Public
 export const loginUser = async (req, res) => {
-    console.time('LOGIN_FULL_REQUEST');
+  console.time("LOGIN_FULL_REQUEST");
   try {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ message: "Vui lòng cung cấp email và mật khẩu" });
+      // return res.status(400).json({ message: "Vui lòng cung cấp email và mật khẩu" });
+      throw new AppError(ERROR_CODE.EMAIL_PASSWORD_REQUIRED);
     }
 
     const normalizedEmail = email.toLowerCase();
 
     // 2. Tìm user trong DB
     // Chúng ta phải .select('+password') vì trong Model ta đã ẩn nó đi\
-    console.time('DB_FIND_USER');
+    console.time("DB_FIND_USER");
     const user = await User.findOne({ email: normalizedEmail })
       .select("+password")
       .populate({
         path: "role",
         populate: {
           path: "permissions",
-          select: "permission_name", 
+          select: "permission_name",
         },
       });
-    console.timeEnd('DB_FIND_USER');
+    console.timeEnd("DB_FIND_USER");
     if (!user) {
-      return res.status(401).json({ message: "Email hoặc mật khẩu không đúng" });
+      // return res.status(401).json({ message: "Email hoặc mật khẩu không đúng" });
+      throw new AppError(ERROR_CODE.INVALID_CREDENTIALS);
     }
 
     // 3. So sánh mật khẩu (dùng method ta đã tạo trong Model)
-    console.time('BCRYPT_COMPARE');
+    console.time("BCRYPT_COMPARE");
     const isMatch = await user.comparePassword(password);
-    console.timeEnd('BCRYPT_COMPARE');
+    console.timeEnd("BCRYPT_COMPARE");
 
     if (!isMatch) {
-      return res.status(401).json({ message: "Email hoặc mật khẩu không đúng" });
+      return res.status(401).json({ message: "Email/password not correct" });
+    }
+    
+    if (user.status === "PENDING") {
+        return res.status(403).json({ 
+            message: "Your account has not been verified",
+            code: "ACCOUNT_PENDING" // Mã lỗi để Frontend hiển thị giao diện 'Chờ duyệt'
+        });
+    }
+
+    if (user.status === "LOCKED") {
+        return res.status(403).json({ 
+            message: "Your account has been suspended",
+            code: "ACCOUNT_LOCKED"
+        });
     }
 
     // 4. Nếu mọi thứ OK, tạo và gửi token
@@ -46,20 +64,19 @@ export const loginUser = async (req, res) => {
 
     // Bỏ mật khẩu khỏi đối tượng user trước khi gửi về
     user.password = undefined;
-    console.timeEnd('LOGIN_FULL_REQUEST');
+    console.timeEnd("LOGIN_FULL_REQUEST");
     res.status(200).json({
-      message: "Đăng nhập thành công",
+      message: "Login successful",
       token,
       user, // Gửi thông tin user (đã bao gồm role)
     });
-
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
 // @desc    Lấy thông tin user hiện tại (dựa trên token)
-// @route   GET /auth/me
+// @route   GET /api/auth/me
 // @access  Private
 export const getMe = async (req, res) => {
   // Middleware 'protect' (sẽ tạo ở bước 4) đã chạy
