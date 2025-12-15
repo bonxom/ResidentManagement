@@ -1,7 +1,6 @@
 import { Box, Typography, Avatar, Button, Grid } from "@mui/material";
 import { useState } from "react";
 
-import MainLayout from "../../../layout/MainLayout";
 import ProfileInfoField from "../../../feature/profile/ProfileInfoField";
 import EditProfileModal from "../../../feature/admin/EditProfileModal";
 import useAuthStore from "../../../store/authStore";
@@ -31,13 +30,11 @@ export default function ThongTinChiTietAdmin() {
     };
 
     return (
-        <MainLayout>
-            {/* Profile Container */}
-            <Box
-                sx={{
-                    backgroundColor: "white",
-                    borderRadius: "16px",
-                    boxShadow: "0px 3px 12px rgba(0, 0, 0, 0.08)",
+        <Box
+            sx={{
+                backgroundColor: "white",
+                borderRadius: "16px",
+                boxShadow: "0px 3px 12px rgba(0, 0, 0, 0.08)",
                     padding: "24px 32px",
                     maxWidth: "1200px",
                     margin: "24px",
@@ -155,8 +152,6 @@ export default function ThongTinChiTietAdmin() {
                     currentData={userInfo}
                     onSubmit={handleEditRequest}
                 />
-            </Box>
-
-        </MainLayout>
+        </Box>
     );
 }

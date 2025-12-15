@@ -18,8 +18,7 @@ import {
   Pagination,
 } from "@mui/material";
 import { Search, Filter, ChevronDown } from "lucide-react";
-import MainLayoutForUser from "../../layout/MainLayoutForUser";
-import { useNavigate } from "react-router-dom";
+import { useRoleNavigation } from "../../hooks/useRoleNavigation";
 import AddProfileModal from "../../feature/profile/AddProfile";
 
 // ===== DỮ LIỆU ẢO (3 dòng để test) =====
@@ -52,7 +51,7 @@ function ResidentsTable() {
   const ROWS_PER_PAGE = 10;
   const [selected, setSelected] = useState([]);
   const [page, setPage] = useState(1);
-  const navigate = useNavigate();
+  const { navigateWithRole } = useRoleNavigation();
 
   const pageCount = Math.ceil(residents.length / ROWS_PER_PAGE) || 1;
   const start = (page - 1) * ROWS_PER_PAGE;
@@ -131,7 +130,7 @@ function ResidentsTable() {
                         color: "#1E54D4",
                         "&:hover": { textDecoration: "underline" },
                       }}
-                      onClick={() => navigate(`/ThongTinChiTiet`)}
+                      onClick={() => navigateWithRole('/ThongTinChiTiet')}
                     >
                       Xem chi tiết
                     </Button>
@@ -174,7 +173,7 @@ export default function ThongTinHoDan() {
   };
 
   return (
-    <MainLayoutForUser>
+    <>
       <Box sx={{ padding: "24px 32px" }}>
         {/* TITLE + BUTTON */}
         <Box
@@ -199,7 +198,7 @@ export default function ThongTinHoDan() {
           >
             <Button
               variant="contained"
-              onClick={handleOpenAddMember} // ✅ GẮN NÚT Ở ĐÂY
+              onClick={handleOpenAddMember}
               sx={{
                 backgroundColor: "#2D66F5",
                 borderRadius: "8px",
@@ -216,7 +215,7 @@ export default function ThongTinHoDan() {
 
             <Button
               variant="contained"
-              onClick={handleOpenAddMember} // ✅ GẮN NÚT Ở ĐÂY
+              onClick={handleOpenAddMember}
               sx={{
                 backgroundColor: "#2D66F5",
                 borderRadius: "8px",
@@ -232,6 +231,7 @@ export default function ThongTinHoDan() {
             </Button>
           </Box>
         </Box>
+
         {/* SEARCH BOX */}
         <Box
           sx={{
@@ -358,6 +358,6 @@ export default function ThongTinHoDan() {
         currentData={userInfo}
         onSubmit={handleAddRequest}
       />
-    </MainLayoutForUser >
+    </>
   );
 }

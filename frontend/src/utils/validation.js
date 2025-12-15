@@ -7,6 +7,15 @@ export const signUpSchema = z.object({
   .max(100, 'Họ tên không được quá 100 ký tự')
   .regex(/^[\p{L}\d\s]+$/u, 'Họ tên chỉ chứa chữ cái, số và khoảng trắng'),
 
+  sex: z
+    .string()
+    .min(1, 'Vui lòng chọn giới tính'),
+
+  userCardID: z
+    .string()
+    .min(1, 'Vui lòng nhập CCCD')
+    .regex(/^\d{12}$/, 'CCCD phải có đúng 12 chữ số'),
+
   phoneNumber: z
     .string()
     .min(1, 'Vui lòng nhập số điện thoại')
@@ -17,13 +26,24 @@ export const signUpSchema = z.object({
     .min(1, 'Vui lòng nhập email')
     .email('Email không hợp lệ'),
   
-  location: z
+  dob: z
     .string()
-    .min(1, 'Vui lòng nhập địa chỉ') // Đổi tên lỗi
-    .max(200, 'Địa chỉ không được quá 200 ký tự'),
+    .min(1, 'Vui lòng nhập ngày sinh'),
+
+  birthLocation: z
+    .string()
+    .min(1, 'Vui lòng nhập nơi sinh')
+    .max(200, 'Nơi sinh không được quá 200 ký tự'),
   
-  // Xóa 'curAddress'
-  // Xóa 'householdBookId'
+  job: z
+    .string()
+    .min(1, 'Vui lòng nhập nghề nghiệp')
+    .max(100, 'Nghề nghiệp không được quá 100 ký tự'),
+
+  ethnic: z
+    .string()
+    .min(1, 'Vui lòng nhập dân tộc')
+    .max(50, 'Dân tộc không được quá 50 ký tự'),
   
   password: z
     .string()
@@ -34,8 +54,6 @@ export const signUpSchema = z.object({
   confirmPassword: z
     .string()
     .min(1, 'Vui lòng xác nhận mật khẩu'),
-  
-  // Xóa 'role'
 
 }).refine((data) => data.password === data.confirmPassword, {
   message: 'Mật khẩu xác nhận không khớp',

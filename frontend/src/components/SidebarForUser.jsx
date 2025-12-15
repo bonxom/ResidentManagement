@@ -74,15 +74,15 @@ export function SidebarForUser({ user, onWidthChange }) {
 
       {/* MENU */}
       {isExpanded && <SectionTitle text="Menu" />}
-      <MenuItem icon={<Home size={18} />} label="Dashboard" to="/mainuser" isExpanded={isExpanded} />
-      <MenuItem icon={<Users size={18} />} label="Thông tin thành viên" to="/userinfo" isExpanded={isExpanded} />
-      <MenuItem icon={<Wallet size={18} />} label="Các khoản nộp" to="/feeuser" isExpanded={isExpanded} />
+      <MenuItem icon={<Home size={18} />} label="Dashboard" to="/member/dashboard" isExpanded={isExpanded} />
+      <MenuItem icon={<Users size={18} />} label="Thông tin thành viên" to="/member/ThongTinHoDan" isExpanded={isExpanded} />
+      <MenuItem icon={<Wallet size={18} />} label="Các khoản nộp" to="/member/feeuser" isExpanded={isExpanded} />
 
       {/* HISTORY */}
       {isExpanded && <SectionTitle text="History" />}
-      <MenuItem icon={<History size={18} />} label="Lịch sử giao dịch" to="/lichsu/giaodich" isExpanded={isExpanded} />
-      <MenuItem icon={<CheckCircle size={18} />} label="Lịch sử phê duyệt" to="/lichsu/pheduyet" isExpanded={isExpanded} />
-      <MenuItem icon={<Repeat size={18} />} label="Lịch sử thay đổi" to="/lichsu/thaydoi" isExpanded={isExpanded} />
+      <MenuItem icon={<History size={18} />} label="Lịch sử giao dịch"  isExpanded={isExpanded} />
+      <MenuItem icon={<CheckCircle size={18} />} label="Lịch sử phê duyệt" isExpanded={isExpanded} />
+      <MenuItem icon={<Repeat size={18} />} label="Lịch sử thay đổi"  isExpanded={isExpanded} />
 
       {/* Logout Button */}
       <LogoutButton isExpanded={isExpanded} />

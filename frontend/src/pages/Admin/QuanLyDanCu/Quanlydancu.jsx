@@ -19,8 +19,7 @@ import {
   Pagination,
 } from "@mui/material";
 import { Search, Filter, ChevronDown } from "lucide-react";
-import MainLayout from "../../../layout/MainLayout";
-import { useNavigate } from "react-router-dom";
+import { useRoleNavigation } from "../../../hooks/useRoleNavigation";
 import AddProfileModal from "../../../feature/profile/AddProfile";
 
 // ===== DỮ LIỆU ẢO: DANH SÁCH HỘ DÂN =====
@@ -54,7 +53,7 @@ function ResidentsTable({ selected, setSelected }) {
   const [page, setPage] = useState(1);
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedRow, setSelectedRow] = useState(null);
-  const navigate = useNavigate();
+  const { navigateWithRole } = useRoleNavigation();
 
   const handleMenuOpen = (event, row) => {
     setAnchorEl(event.currentTarget);
@@ -68,7 +67,7 @@ function ResidentsTable({ selected, setSelected }) {
 
   const handleViewDetail = () => {
     if (selectedRow) {
-      navigate(`/ThongTinHoDanAdmin`);
+      navigateWithRole('/ThongTinHoDanAdmin');
     }
     handleMenuClose();
   };
@@ -265,7 +264,7 @@ export default function Quanlydancu() {
   };
 
   return (
-    <MainLayout>
+    <>
       <Box sx={{ padding: "24px 32px" }}>
         {/* TITLE + BUTTON */}
         <Box
@@ -455,6 +454,6 @@ export default function Quanlydancu() {
         currentData={userInfo}
         onSubmit={handleAddRequest}
       />
-    </MainLayout>
+    </>
   );
 }

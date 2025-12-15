@@ -19,8 +19,7 @@ import {
   Pagination,
 } from "@mui/material";
 import { Search, Filter, ChevronDown } from "lucide-react";
-import MainLayout from "../../../layout/MainLayout";
-import { useNavigate } from "react-router-dom";
+import { useRoleNavigation } from "../../../hooks/useRoleNavigation";
 import AddProfileModal from "../../../feature/profile/AddProfile";
 
 // ===== DỮ LIỆU ẢO (3 dòng để test) =====
@@ -54,7 +53,7 @@ function ResidentsTable({ selected, setSelected }) {
   const [page, setPage] = useState(1);
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedRow, setSelectedRow] = useState(null);
-  const navigate = useNavigate();
+  const { navigateWithRole } = useRoleNavigation();
 
   const pageCount = Math.ceil(residents.length / ROWS_PER_PAGE) || 1;
   const start = (page - 1) * ROWS_PER_PAGE;
@@ -87,7 +86,7 @@ function ResidentsTable({ selected, setSelected }) {
   };
 
   const handleViewDetail = () => {
-    navigate(`/ThongTinChiTietAdmin`);
+    navigateWithRole('/ThongTinChiTietAdmin');
     handleMenuClose();
   };
 
@@ -266,7 +265,7 @@ export default function ThongTinHoDanAdmin() {
   };
 
   return (
-    <MainLayout>
+    <>
       <Box sx={{ padding: "24px 32px" }}>
         {/* TITLE + BUTTON */}
         <Box
@@ -315,7 +314,7 @@ export default function ThongTinHoDanAdmin() {
 
             <Button
               variant="contained"
-              onClick={handleOpenAddMember} // ✅ GẮN NÚT Ở ĐÂY
+              onClick={handleOpenAddMember}
               sx={{
                 backgroundColor: "#2D66F5",
                 borderRadius: "8px",
@@ -331,6 +330,7 @@ export default function ThongTinHoDanAdmin() {
             </Button>
           </Box>
         </Box>
+
         {/* SEARCH BOX */}
         <Box
           sx={{
@@ -457,6 +457,6 @@ export default function ThongTinHoDanAdmin() {
         currentData={userInfo}
         onSubmit={handleAddRequest}
       />
-    </MainLayout>
+    </>
   );
 }
