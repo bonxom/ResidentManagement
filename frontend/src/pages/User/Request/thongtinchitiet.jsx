@@ -1,9 +1,9 @@
 import { Box, Typography, Avatar, Button, Grid } from "@mui/material";
 import { useState } from "react";
 
-import ProfileInfoField from "../../feature/profile/ProfileInfoField";
-import EditRequestModal from "../../feature/profile/EditRequestModal";
-import useAuthStore from "../../store/authStore";
+import ProfileInfoField from "../../../feature/profile/ProfileInfoField";
+import EditRequestModal from "../../../feature/profile/EditRequestModal";
+import useAuthStore from "../../../store/authStore";
 
 export default function DetailProfile() {
     const { user } = useAuthStore();

@@ -18,8 +18,8 @@ import {
   Pagination,
 } from "@mui/material";
 import { Search, Filter, ChevronDown } from "lucide-react";
-import { useRoleNavigation } from "../../hooks/useRoleNavigation";
-import AddProfileModal from "../../feature/profile/AddProfile";
+import { useRoleNavigation } from "../../../hooks/useRoleNavigation";
+import AddProfileModal from "../../../feature/profile/AddProfile";
 
 // ===== DỮ LIỆU ẢO (3 dòng để test) =====
 const residents = [

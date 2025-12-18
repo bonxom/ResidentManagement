@@ -121,7 +121,7 @@ export function Sidebar({ user, onWidthChange }) {
       ) : (
         <MenuItem icon={<FileText size={18} />} label="Phê duyệt" to={`${rolePrefix}/dktk`} isExpanded={isExpanded} />
       )}
-      <MenuItem icon={<PlusCircle size={18} />} label="Thêm thông tin cư dân" isExpanded={isExpanded} />
+      <MenuItem icon={<PlusCircle size={18} />} label="Thêm thông tin cư dân" to={`${rolePrefix}/themcudan`} isExpanded={isExpanded} />
 
       {/* HISTORY */}
       {isExpanded && <SectionTitle text="History" />}

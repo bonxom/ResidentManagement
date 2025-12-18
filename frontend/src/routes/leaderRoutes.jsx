@@ -8,10 +8,11 @@ import DanhSachDangKyTaiKhoan from '../pages/Admin/PheDuyet/DanhSachDangKyTaiKho
 import DanhSachKhaiBaoSinhTu from '../pages/Admin/PheDuyet/DanhSachKhaiBaoSinhTu';
 import DanhSachThuTien from '../pages/Admin/PheDuyet/DanhSachThuTien';
 import DanhSachTamTruVang from '../pages/Admin/PheDuyet/DanhSachTamTruVang';
-import FeeManagement from '../pages/Admin/fee';
-import FeeHouseholdPage from '../pages/FeeHouseholdPage';
+import FeeManagement from '../pages/Admin/ThuPhi/fee';
+import FeeHouseholdPage from '../pages/Admin/ThuPhi/FeeHouseholdPage';
 import ThongTinChiTietAdmin from '../pages/Admin/QuanLyDanCu/ThongTinChiTietAdmin';
 import ThongTinHoDanAdmin from '../pages/Admin/QuanLyDanCu/ThongTinHoDanAdmin';
+import ThemThongTinCuDan from '../pages/Admin/QuanLyDanCu/ThemThongTinCuDan';
 import NhanKhau from '../pages/NhanKhau';
 
 // Routes cho Tổ trưởng (HAMLET LEADER)
@@ -27,6 +28,7 @@ export const leaderRoutes = (
     <Route path="thutien" element={<DanhSachThuTien />} />
     <Route path="tamtruvang" element={<DanhSachTamTruVang />} />
     <Route path="nhankhau" element={<NhanKhau />} />
+    <Route path="themcudan" element={<ThemThongTinCuDan />} />
     <Route path="fee" element={<FeeManagement />} />
     <Route path="housefee" element={<FeeHouseholdPage />} />
     <Route path="ThongTinChiTietadmin" element={<ThongTinChiTietAdmin />} />

@@ -123,22 +123,31 @@ export function SidebarForUser({ user, onWidthChange }) {
         to="/member/requesttamtruvang"
         isExpanded={isExpanded}
       />
+      <MenuItem
+        icon={<PlusCircle size={18} />}
+        label="Yêu cầu tạm trú/vắng nhanh"
+        to="/member/yeucau/tamtruvang"
+        isExpanded={isExpanded}
+      />
 
       {/* HISTORY */}
       {isExpanded && <SectionTitle text="History" />}
       <MenuItem
         icon={<History size={18} />}
         label="Lịch sử giao dịch"
+        to="/member/lichsu/giaodich"
         isExpanded={isExpanded}
       />
       <MenuItem
         icon={<CheckCircle size={18} />}
         label="Lịch sử phê duyệt"
+        to="/member/lichsu/pheduyet"
         isExpanded={isExpanded}
       />
       <MenuItem
         icon={<Repeat size={18} />}
         label="Lịch sử thay đổi"
+        to="/member/lichsu/thaydoi"
         isExpanded={isExpanded}
       />
 

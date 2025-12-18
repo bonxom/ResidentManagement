@@ -1,6 +1,5 @@
 import { Box, Typography, TextField, MenuItem, Button, Paper, Tabs, Tab } from "@mui/material";
 import { useState } from "react";
-import MainLayout from "../layout/MainLayout";
 
 export default function YeuCauTamTruVang() {
   const [tabIndex, setTabIndex] = useState(0); // 0: Tạm trú, 1: Tạm vắng
@@ -57,9 +56,8 @@ export default function YeuCauTamTruVang() {
   };
 
   return (
-    <MainLayout>
-      <Box display="flex" justifyContent="center" mt={6} mb={6}>
-        <Paper elevation={6} sx={{ p: 5, borderRadius: "16px", maxWidth: 600, width: "100%" }}>
+    <Box display="flex" justifyContent="center" mt={6} mb={6}>
+      <Paper elevation={6} sx={{ p: 5, borderRadius: "16px", maxWidth: 600, width: "100%" }}>
           {/* Tabs */}
           <Tabs
             value={tabIndex}
@@ -194,6 +192,5 @@ export default function YeuCauTamTruVang() {
           )}
         </Paper>
       </Box>
-    </MainLayout>
   );
 }

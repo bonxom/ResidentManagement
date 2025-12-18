@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Box, Typography, Paper, Table, TableHead, TableRow, TableCell, TableBody, Chip } from "@mui/material";
-import { Sidebar, drawerWidth } from "../components/Sidebar";
-import useAuthStore from "../store/authStore";
-import { feeAPI } from "../services/apiService";
+import { Sidebar, drawerWidth } from "../../../components/Sidebar";
+import useAuthStore from "../../../store/authStore";
+import { feeAPI } from "../../../services/apiService";
 import { useNavigate } from "react-router-dom";
 
 function FeeHouseholdPage() {

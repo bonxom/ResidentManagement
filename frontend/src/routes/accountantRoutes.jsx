@@ -3,8 +3,8 @@ import MainLayout from '../layout/MainLayout';
 import Dashboard from '../pages/Dashboard';
 import Profile from '../pages/Profile';
 import DanhSachThuTien from '../pages/Admin/PheDuyet/DanhSachThuTien';
-import FeeManagement from '../pages/Admin/fee';
-import FeeHouseholdPage from '../pages/FeeHouseholdPage';
+import FeeManagement from '../pages/Admin/ThuPhi/fee';
+import FeeHouseholdPage from '../pages/Admin/ThuPhi/FeeHouseholdPage';
 
 // Routes cho Kế toán (ACCOUNTANT)
 export const accountantRoutes = (
