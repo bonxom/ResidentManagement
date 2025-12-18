@@ -24,33 +24,14 @@ import AddProfileModal from "../../feature/profile/AddProfile";
 
 // ===== DỮ LIỆU ẢO (3 dòng để test) =====
 const residents = [
-  {
-    id: 1,
-    cccd: "012345678901",
-    fullName: "Nguyễn Văn A",
-    relation: "Chủ hộ",
-    dob: "12/03/1980",
-  },
-  {
-    id: 2,
-    cccd: "012345678902",
-    fullName: "Trần Thị B",
-    relation: "Vợ",
-    dob: "20/11/1985",
-  },
-  {
-    id: 3,
-    cccd: "012345678903",
-    fullName: "Nguyễn Văn C",
-    relation: "Con",
-    dob: "05/04/2010",
-  },
+  { id: 1, cccd: "012345678901", fullName: "Nguyễn Văn A", relation: "Chủ hộ", dob: "12/03/1980" },
+  { id: 2, cccd: "012345678902", fullName: "Trần Thị B", relation: "Vợ", dob: "20/11/1985" },
+  { id: 3, cccd: "012345678903", fullName: "Nguyễn Văn C", relation: "Con", dob: "05/04/2010" },
 ];
 
 // ===== COMPONENT BẢNG =====
-function ResidentsTable() {
+function ResidentsTable({ residents, selected, setSelected }) {
   const ROWS_PER_PAGE = 10;
-  const [selected, setSelected] = useState([]);
   const [page, setPage] = useState(1);
   const navigate = useNavigate();
 
@@ -65,11 +46,11 @@ function ResidentsTable() {
   };
 
   const handleSelectAll = (e) => {
+    const idsOnPage = visibleRows.map((r) => r.id);
+
     if (e.target.checked) {
-      const idsOnPage = visibleRows.map((r) => r.id);
       setSelected((prev) => Array.from(new Set([...prev, ...idsOnPage])));
     } else {
-      const idsOnPage = visibleRows.map((r) => r.id);
       setSelected((prev) => prev.filter((id) => !idsOnPage.includes(id)));
     }
   };
@@ -100,6 +81,7 @@ function ResidentsTable() {
               <TableCell align="center">Xem chi tiết</TableCell>
             </TableRow>
           </TableHead>
+
           <TableBody>
             {visibleRows.map((row) => {
               const checked = selected.includes(row.id);
@@ -121,7 +103,6 @@ function ResidentsTable() {
                   <TableCell>{row.relation}</TableCell>
                   <TableCell>{row.dob}</TableCell>
 
-                  {/* NÚT XEM CHI TIẾT */}
                   <TableCell align="center">
                     <Button
                       variant="text"
@@ -160,23 +141,38 @@ export default function ThongTinHoDan() {
   const [openAddProfileModal, setOpenAddProfileModal] = useState(false);
   const [userInfo, setUserInfo] = useState({});
 
+  // ✅ đưa residents vào state để xóa được
+  const [residentList, setResidentList] = useState(residents);
+  // ✅ đưa selected lên page để nút "Xóa thành viên" dùng được
+  const [selected, setSelected] = useState([]);
+
   const handleAddRequest = (formData) => {
     console.log("Yêu cầu thêm thành viên:", formData);
-    // TODO: Gửi formData lên backend
     alert("Yêu cầu đã được gửi!");
     setOpenAddProfileModal(false);
   };
 
-  // Bấm nút "Yêu cầu thêm thành viên" -> mở form trống
   const handleOpenAddMember = () => {
     setUserInfo({});
     setOpenAddProfileModal(true);
   };
 
+  // ✅ XÓA THEO CÁC ID ĐÃ TICK
+  const handleDeleteSelected = () => {
+    if (selected.length === 0) {
+      alert("Bạn chưa chọn thành viên nào để xóa.");
+      return;
+    }
+    const ok = window.confirm(`Xóa ${selected.length} thành viên đã chọn?`);
+    if (!ok) return;
+
+    setResidentList((prev) => prev.filter((r) => !selected.includes(r.id)));
+    setSelected([]);
+  };
+
   return (
     <MainLayoutForUser>
       <Box sx={{ padding: "24px 32px" }}>
-        {/* TITLE + BUTTON */}
         <Box
           sx={{
             display: "flex",
@@ -188,6 +184,7 @@ export default function ThongTinHoDan() {
           <Typography sx={{ fontSize: "26px", fontWeight: "600" }}>
             Thông tin thành viên hộ dân
           </Typography>
+
           <Box
             sx={{
               display: "flex",
@@ -197,9 +194,10 @@ export default function ThongTinHoDan() {
               gap: 3,
             }}
           >
+            {/* ✅ NÚT XÓA: bấm sẽ xóa các dòng đã tick */}
             <Button
               variant="contained"
-              onClick={handleOpenAddMember} // ✅ GẮN NÚT Ở ĐÂY
+              onClick={handleDeleteSelected}
               sx={{
                 backgroundColor: "#2D66F5",
                 borderRadius: "8px",
@@ -216,7 +214,7 @@ export default function ThongTinHoDan() {
 
             <Button
               variant="contained"
-              onClick={handleOpenAddMember} // ✅ GẮN NÚT Ở ĐÂY
+              onClick={handleOpenAddMember}
               sx={{
                 backgroundColor: "#2D66F5",
                 borderRadius: "8px",
@@ -232,6 +230,7 @@ export default function ThongTinHoDan() {
             </Button>
           </Box>
         </Box>
+
         {/* SEARCH BOX */}
         <Box
           sx={{
@@ -245,7 +244,6 @@ export default function ThongTinHoDan() {
             mb: 4,
           }}
         >
-          {/* SEARCH INPUT */}
           <Box sx={{ flex: 1 }}>
             <Typography sx={{ fontSize: "13px", mb: 1 }}>Tìm kiếm</Typography>
             <TextField
@@ -261,15 +259,12 @@ export default function ThongTinHoDan() {
                   background: "#F1F3F6",
                   borderRadius: "8px",
                   height: "40px",
-                  "& .MuiInputBase-input": {
-                    padding: "10px 0px",
-                  },
+                  "& .MuiInputBase-input": { padding: "10px 0px" },
                 },
               }}
             />
           </Box>
 
-          {/* FILTER SELECT */}
           <Box sx={{ width: "220px" }}>
             <Typography sx={{ fontSize: "13px", mb: 1 }}>Lọc theo</Typography>
 
@@ -283,25 +278,17 @@ export default function ThongTinHoDan() {
                 px: 1,
                 overflow: "hidden",
                 border: "1px solid #bec0c5ff",
-                "&:hover": {
-                  borderColor: "#000000ff",
-                },
+                "&:hover": { borderColor: "#000000ff" },
               }}
             >
-              <Filter
-                size={18}
-                color="#555"
-                style={{ marginLeft: 8, marginRight: 6 }}
-              />
+              <Filter size={18} color="#555" style={{ marginLeft: 8, marginRight: 6 }} />
 
               <Select
                 fullWidth
                 displayEmpty
                 variant="standard"
                 disableUnderline
-                IconComponent={() => (
-                  <ChevronDown size={18} style={{ marginRight: 2 }} />
-                )}
+                IconComponent={() => <ChevronDown size={18} style={{ marginRight: 2 }} />}
                 sx={{
                   flex: 1,
                   fontSize: "14px",
@@ -320,7 +307,6 @@ export default function ThongTinHoDan() {
             </Box>
           </Box>
 
-          {/* SEARCH BUTTON */}
           <Button
             variant="contained"
             sx={{
@@ -347,17 +333,20 @@ export default function ThongTinHoDan() {
             p: 2,
           }}
         >
-          <ResidentsTable />
+          <ResidentsTable
+            residents={residentList}
+            selected={selected}
+            setSelected={setSelected}
+          />
         </Box>
       </Box>
 
-      {/* MODAL THÊM THÀNH VIÊN */}
       <AddProfileModal
         open={openAddProfileModal}
         onClose={() => setOpenAddProfileModal(false)}
         currentData={userInfo}
         onSubmit={handleAddRequest}
       />
-    </MainLayoutForUser >
+    </MainLayoutForUser>
   );
 }
