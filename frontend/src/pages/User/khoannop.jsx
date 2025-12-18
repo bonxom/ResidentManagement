@@ -17,8 +17,7 @@ import {
   Pagination,
 } from "@mui/material";
 import { Search, Filter, ChevronDown } from "lucide-react";
-import MainLayoutForUser from "../../layout/MainLayoutForUser";
-import { useNavigate } from "react-router-dom";
+import { useRoleNavigation } from "../../hooks/useRoleNavigation";
 import AddProfileModal from "../../feature/profile/AddProfile";
 
 // ===== DỮ LIỆU ẢO (KHOẢN NỘP) =====
@@ -47,7 +46,7 @@ const payments = [
 function PaymentsTable() {
   const ROWS_PER_PAGE = 10;
   const [page, setPage] = useState(1);
-  const navigate = useNavigate();
+  const { navigateWithRole } = useRoleNavigation();
 
   const pageCount = Math.ceil(payments.length / ROWS_PER_PAGE) || 1;
   const start = (page - 1) * ROWS_PER_PAGE;
@@ -108,7 +107,7 @@ function PaymentsTable() {
                       color: "#1E54D4",
                       "&:hover": { textDecoration: "underline" },
                     }}
-                    onClick={() => navigate(`/payment-detail/${row.id}`)}
+                    onClick={() => navigateWithRole(`/payment-detail/${row.id}`)}
                   >
                     Chi tiết
                   </Button>
@@ -135,8 +134,7 @@ function PaymentsTable() {
 // ===== PAGE =====
 export default function KhoanNop() {
   return (
-    <MainLayoutForUser>
-      <Box sx={{ padding: "24px 32px" }}>
+    <Box sx={{ padding: "24px 32px" }}>
         {/* TITLE */}
         <Box
           sx={{
@@ -261,6 +259,5 @@ export default function KhoanNop() {
           <PaymentsTable />
         </Box>
       </Box>
-    </MainLayoutForUser>
   );
 }

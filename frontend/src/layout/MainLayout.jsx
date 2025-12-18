@@ -1,9 +1,10 @@
 import { Box } from "@mui/material";
 import { useState } from "react";
+import { Outlet } from "react-router-dom";
 import Sidebar, { drawerWidthCollapsed } from "../components/Sidebar";
 import Topbar from "../components/Topbar";
 
-export default function MainLayout({ children }) {
+export default function MainLayout() {
     const [sidebarWidth, setSidebarWidth] = useState(drawerWidthCollapsed);
 
     return (
@@ -33,7 +34,7 @@ export default function MainLayout({ children }) {
                         flex: 1,
                     }}
                 >
-                    {children}
+                    <Outlet />
                 </Box>
             </Box>
         </>

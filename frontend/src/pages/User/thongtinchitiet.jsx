@@ -1,7 +1,6 @@
 import { Box, Typography, Avatar, Button, Grid } from "@mui/material";
 import { useState } from "react";
 
-import MainLayoutForUser from "../../layout/MainLayoutForUser";
 import ProfileInfoField from "../../feature/profile/ProfileInfoField";
 import EditRequestModal from "../../feature/profile/EditRequestModal";
 import useAuthStore from "../../store/authStore";
@@ -31,18 +30,16 @@ export default function DetailProfile() {
     };
 
     return (
-        <MainLayoutForUser>
-            {/* Profile Container */}
-            <Box
-                sx={{
-                    backgroundColor: "white",
-                    borderRadius: "16px",
-                    boxShadow: "0px 3px 12px rgba(0, 0, 0, 0.08)",
-                    padding: "24px 32px",
-                    maxWidth: "1200px",
-                    margin: "24px",
-                }}
-            >
+        <Box
+            sx={{
+                backgroundColor: "white",
+                borderRadius: "16px",
+                boxShadow: "0px 3px 12px rgba(0, 0, 0, 0.08)",
+                padding: "24px 32px",
+                maxWidth: "1200px",
+                margin: "24px",
+            }}
+        >
                 {/* Header with Avatar and Edit Button */}
                 <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 4 }}>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
@@ -130,8 +127,6 @@ export default function DetailProfile() {
                     currentData={userInfo}
                     onSubmit={handleEditRequest}
                 />
-            </Box>
-
-        </MainLayoutForUser>
+        </Box>
     );
 }

@@ -1,6 +1,5 @@
 import { Box, Typography, Avatar, Button, Grid } from "@mui/material";
 import { useState } from "react";
-import MainLayout from "../layout/MainLayout";
 import ProfileInfoField from "../feature/profile/ProfileInfoField";
 import EditRequestModal from "../feature/profile/EditRequestModal";
 import ChangePasswordBox from "../feature/profile/ChangePasswordBox";
@@ -31,8 +30,7 @@ export default function Profile() {
     };
 
     return (
-        <MainLayout>
-            {/* Profile Container */}
+        <>
             <Box
                 sx={{
                     backgroundColor: "white",
@@ -134,6 +132,6 @@ export default function Profile() {
 
             {/* Đổi mật khẩu */}
             <ChangePasswordBox />
-        </MainLayout>
+        </>
     );
 }
