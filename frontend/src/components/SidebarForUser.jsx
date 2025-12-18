@@ -117,6 +117,12 @@ export function SidebarForUser({ user, onWidthChange }) {
         to="/member/requestsinhtu"
         isExpanded={isExpanded}
       />
+      <MenuItem
+        icon={<Wallet size={18} />}
+        label="Khai báo tạm trú tạm vắng"
+        to="/member/requesttamtruvang"
+        isExpanded={isExpanded}
+      />
 
       {/* HISTORY */}
       {isExpanded && <SectionTitle text="History" />}
