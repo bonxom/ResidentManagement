@@ -31,6 +31,7 @@ import MainUser from "./pages/User/trangchinhuser";
 import KhoanNop from "./pages/User/khoannop";
 
 import LandingPage from "./pages/public/LandingPage";
+import YeuCauTamTruVang from "./pages/usertemp";
 const theme = createTheme({
   palette: {
     mode: "light",
@@ -85,6 +86,8 @@ function App() {
           <Route path="/ThongTinChiTiet" element={<ThongTinChiTiet />} />
           <Route path="/MainUser" element={<MainUser />} />
           <Route path="/feeuser" element={<KhoanNop />} />
+
+          <Route path="/requesttemp" element={<YeuCauTamTruVang />} />
 
 
         </Routes>
