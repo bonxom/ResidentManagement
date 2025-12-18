@@ -1,5 +1,4 @@
 import { useState } from "react";
-import MainLayout from "../../../layout/MainLayout";
 import {
   Box,
   Table,
@@ -179,8 +178,7 @@ export default function DanhSachKhaiBaoSinhTu() {
   };
 
   return (
-    <MainLayout>
-      <div style={{ padding: "20px" }}>
+    <div style={{ padding: "20px" }}>
         {/* Header */}
         <div
           style={{
@@ -457,6 +455,5 @@ export default function DanhSachKhaiBaoSinhTu() {
           onReject={() => handleStatusChange("Không phê duyệt")}
         />
       </div>
-    </MainLayout>
   );
 }

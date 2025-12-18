@@ -36,7 +36,7 @@ const useAuthStore = create((set, get) => ({
       localStorage.setItem("user", JSON.stringify(user));
 
       set({ token, user, isLoading: false, isLoggedIn: true, error: null });
-      return { success: true };
+      return { success: true, user, token }; // Trả về user và token
     } catch (error) {
       const message = error.customMessage || "Đăng nhập thất bại";
       set({ isLoading: false, error: message, isLoggedIn: false });

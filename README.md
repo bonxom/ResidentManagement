@@ -22,3 +22,6 @@ Introduction to SE project
 
 Update page qldc - Admin
 Update page hộ dân và fee - User
+
+18/12/2025
+đã thêm lịch sử chỉnh sửa, sửa lại nút xóa + chỉnh lại lỗi linh tinh

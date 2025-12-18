@@ -1,10 +1,10 @@
-import { useNavigate } from "react-router-dom";
 import { Box, IconButton, Typography } from "@mui/material";
 import { Bell, User, Settings } from "lucide-react";
 import useAuthStore from "../store/authStore";
+import { useRoleNavigation } from "../hooks/useRoleNavigation";
 
 export default function Topbar() {
-  const navigate = useNavigate();
+  const { navigateWithRole } = useRoleNavigation();
   const { user } = useAuthStore();
 
   return (
@@ -84,7 +84,7 @@ export default function Topbar() {
 
         {/* USER ICON */}
         <IconButton
-          onClick={() => navigate("/profile")}
+          onClick={() => navigateWithRole('/profile')}
           sx={{
             color: "#4b5563",
             backgroundColor: "rgba(255, 255, 255, 0.8)",

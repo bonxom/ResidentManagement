@@ -3,12 +3,17 @@ import { Home, Users, User, FileText, PlusCircle, History, CheckCircle, Repeat, 
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import LogoutButton from "../feature/admin/LogoutButton";
+import useAuthStore from "../store/authStore";
 
 export const drawerWidthExpanded = 304;
 export const drawerWidthCollapsed = 80;
 export const drawerWidth = drawerWidthExpanded; // For backward compatibility
 
 export function Sidebar({ user, onWidthChange }) {
+  const { user: authUser } = useAuthStore();
+  const userRole = authUser?.role?.role_name;
+  const rolePrefix = userRole === 'HAMLET LEADER' ? '/leader' : userRole === 'ACCOUNTANT' ? '/accountant' : '';
+  
   const appTitle = user?.ten ? `Xin chào, ${user.ten}` : "DÂN CƯ SỐ";
   const [expandedMenu, setExpandedMenu] = useState(null);
   const [hideTimeout, setHideTimeout] = useState(null);
@@ -88,12 +93,12 @@ export function Sidebar({ user, onWidthChange }) {
 
       {/* MENU */}
       {isExpanded && <SectionTitle text="Menu" />}
-      <MenuItem icon={<Home size={18} />} label="Dashboard" to="/tc" isExpanded={isExpanded} />
-      <MenuItem icon={<Users size={18} />} label="Quản lý hộ khẩu" to="/qldc" isExpanded={isExpanded} />
+      <MenuItem icon={<Home size={18} />} label="Dashboard" to={`${rolePrefix}/dashboard`} isExpanded={isExpanded} />
+      <MenuItem icon={<Users size={18} />} label="Quản lý hộ khẩu" to={`${rolePrefix}/qldc`} isExpanded={isExpanded} />
 
       {/* ACTION */}
       {isExpanded && <SectionTitle text="Action" />}
-      <MenuItem icon={<Wallet size={18} />} label="Thu phí" to="/fee" isExpanded={isExpanded} />
+      <MenuItem icon={<Wallet size={18} />} label="Thu phí" to={`${rolePrefix}/fee`} isExpanded={isExpanded} />
       {isExpanded ? (
         <MenuItemWithSubmenu 
           icon={<FileText size={18} />} 
@@ -102,10 +107,10 @@ export function Sidebar({ user, onWidthChange }) {
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
           submenu={[
-            { label: "Danh sách đăng kí tài khoản", path: "/dktk" },
-            { label: "Danh sách khai báo sinh tử", path: "/kbst" },
-            { label: "Danh sách thu tiền", path: "/thutien" },
-            { label: "Danh sách tạm trú tạm vắng", path: "/tamtruvang" },
+            { label: "Danh sách đăng kí tài khoản", path: `${rolePrefix}/dktk` },
+            { label: "Danh sách khai báo sinh tử", path: `${rolePrefix}/kbst` },
+            { label: "Danh sách thu tiền", path: `${rolePrefix}/thutien` },
+            { label: "Danh sách tạm trú tạm vắng", path: `${rolePrefix}/tamtruvang` },
           ]}
           onSubmenuClick={(path) => {
             navigate(path);
@@ -114,7 +119,7 @@ export function Sidebar({ user, onWidthChange }) {
           isSidebarExpanded={isExpanded}
         />
       ) : (
-        <MenuItem icon={<FileText size={18} />} label="Phê duyệt" to="/dktk" isExpanded={isExpanded} />
+        <MenuItem icon={<FileText size={18} />} label="Phê duyệt" to={`${rolePrefix}/dktk`} isExpanded={isExpanded} />
       )}
       <MenuItem icon={<PlusCircle size={18} />} label="Thêm thông tin cư dân" isExpanded={isExpanded} />
 

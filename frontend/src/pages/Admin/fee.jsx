@@ -2,7 +2,6 @@ import React, { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import useAuthStore from "../../store/authStore";
 import { feeAPI } from "../../services/apiService";
-import MainLayout from "../../layout/MainLayout";
 
 import {
   Box,
@@ -325,8 +324,7 @@ function FeeManagement() {
   };
 
   return (
-    <MainLayout>
-      <Box sx={{ p: 4 }}>
+    <Box sx={{ p: 4 }}>
         <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
           <Typography variant="h4" fontWeight={600}>
             Quản lý khoản thu
@@ -795,7 +793,6 @@ function FeeManagement() {
           </Alert>
         </Snackbar>
       </Box>
-    </MainLayout>
   );
 }
 
