@@ -29,6 +29,7 @@ import ThongTinHoDan from "./pages/User/thongtinhodan";
 import ThongTinChiTiet from "./pages/User/thongtinchitiet";
 import MainUser from "./pages/User/trangchinhuser";
 import KhoanNop from "./pages/User/khoannop";
+import LichSuPheDuyet from "./pages/User/lichsupheduyet";
 
 import LandingPage from "./pages/public/LandingPage";
 const theme = createTheme({
@@ -85,6 +86,7 @@ function App() {
           <Route path="/ThongTinChiTiet" element={<ThongTinChiTiet />} />
           <Route path="/MainUser" element={<MainUser />} />
           <Route path="/feeuser" element={<KhoanNop />} />
+          <Route path="/lichsu/thaydoi" element={<LichSuPheDuyet />} />
 
 
         </Routes>

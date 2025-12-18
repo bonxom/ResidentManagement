@@ -75,7 +75,7 @@ export function SidebarForUser({ user, onWidthChange }) {
       {/* MENU */}
       {isExpanded && <SectionTitle text="Menu" />}
       <MenuItem icon={<Home size={18} />} label="Dashboard" to="/mainuser" isExpanded={isExpanded} />
-      <MenuItem icon={<Users size={18} />} label="Thông tin thành viên" to="/userinfo" isExpanded={isExpanded} />
+      <MenuItem icon={<Users size={18} />} label="Thông tin thành viên" to="/thongtinhodan" isExpanded={isExpanded} />
       <MenuItem icon={<Wallet size={18} />} label="Các khoản nộp" to="/feeuser" isExpanded={isExpanded} />
 
       {/* HISTORY */}
