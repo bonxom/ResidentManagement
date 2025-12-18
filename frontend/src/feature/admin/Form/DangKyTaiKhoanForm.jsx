@@ -1,26 +1,34 @@
-import { Dialog, DialogContent, DialogActions, Button, Box, Typography, Grid } from "@mui/material";
+import {
+  Dialog,
+  DialogContent,
+  DialogActions,
+  Button,
+  Box,
+  Typography,
+  Grid,
+} from "@mui/material";
 
 function InfoField({ label, value }) {
   return (
     <Box>
-      <Typography 
-        sx={{ 
-          fontSize: "13px", 
-          fontWeight: "500", 
-          mb: 1, 
-          color: "#666" 
+      <Typography
+        sx={{
+          fontSize: "13px",
+          fontWeight: "500",
+          mb: 1,
+          color: "#666",
         }}
       >
         {label}
       </Typography>
-      <Typography 
-        sx={{ 
-          fontSize: "15px", 
-          fontWeight: "400", 
+      <Typography
+        sx={{
+          fontSize: "15px",
+          fontWeight: "400",
           color: "#333",
           backgroundColor: "#F5F7FA",
           padding: "12px 14px",
-          borderRadius: "8px"
+          borderRadius: "8px",
         }}
       >
         {value || "Chưa cập nhật"}
@@ -29,7 +37,13 @@ function InfoField({ label, value }) {
   );
 }
 
-export default function DangKyTaiKhoanForm({ open, onClose, person, onApprove, onReject }) {
+export default function DangKyTaiKhoanForm({
+  open,
+  onClose,
+  person,
+  onApprove,
+  onReject,
+}) {
   if (!person) return null;
 
   return (
@@ -87,7 +101,9 @@ export default function DangKyTaiKhoanForm({ open, onClose, person, onApprove, o
         </Grid>
       </DialogContent>
 
-      <DialogActions sx={{ justifyContent: "flex-end", gap: 2, padding: "16px 32px 24px" }}>
+      <DialogActions
+        sx={{ justifyContent: "flex-end", gap: 2, padding: "16px 32px 24px" }}
+      >
         <Button
           variant="contained"
           onClick={onApprove}

@@ -1,5 +1,17 @@
 import { Box, Typography, IconButton } from "@mui/material";
-import { Home, Users, User, FileText, PlusCircle, History, CheckCircle, Repeat, Wallet, Menu, X } from "lucide-react";
+import {
+  Home,
+  Users,
+  User,
+  FileText,
+  PlusCircle,
+  History,
+  CheckCircle,
+  Repeat,
+  Wallet,
+  Menu,
+  X,
+} from "lucide-react";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import LogoutButton from "../feature/admin/LogoutButton";
@@ -12,8 +24,10 @@ export function SidebarForUser({ user, onWidthChange }) {
   const navigate = useNavigate();
   const appTitle = user?.ten ? `Xin chào, ${user.ten}` : "DÂN CƯ SỐ";
   const [isExpanded, setIsExpanded] = useState(false);
-  
-  const currentDrawerWidth = isExpanded ? drawerWidthExpanded : drawerWidthCollapsed;
+
+  const currentDrawerWidth = isExpanded
+    ? drawerWidthExpanded
+    : drawerWidthCollapsed;
 
   // Notify parent of width changes
   React.useEffect(() => {
@@ -42,14 +56,19 @@ export function SidebarForUser({ user, onWidthChange }) {
         transition: "width 0.3s ease, padding 0.3s ease",
       }}
     >
-
       {/* Toggle Button */}
-      <Box sx={{ display: "flex", justifyContent: isExpanded ? "flex-end" : "center", mb: 2 }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: isExpanded ? "flex-end" : "center",
+          mb: 2,
+        }}
+      >
         <IconButton
           onClick={() => setIsExpanded(!isExpanded)}
           sx={{
             color: "white",
-            "&:hover": { backgroundColor: "#2A2E42" }
+            "&:hover": { backgroundColor: "#2A2E42" },
           }}
         >
           {isExpanded ? <X size={20} /> : <Menu size={20} />}
@@ -74,19 +93,57 @@ export function SidebarForUser({ user, onWidthChange }) {
 
       {/* MENU */}
       {isExpanded && <SectionTitle text="Menu" />}
-      <MenuItem icon={<Home size={18} />} label="Dashboard" to="/member/dashboard" isExpanded={isExpanded} />
-      <MenuItem icon={<Users size={18} />} label="Thông tin thành viên" to="/member/ThongTinHoDan" isExpanded={isExpanded} />
-      <MenuItem icon={<Wallet size={18} />} label="Các khoản nộp" to="/member/feeuser" isExpanded={isExpanded} />
+      <MenuItem
+        icon={<Home size={18} />}
+        label="Dashboard"
+        to="/member/dashboard"
+        isExpanded={isExpanded}
+      />
+      <MenuItem
+        icon={<Users size={18} />}
+        label="Thông tin thành viên"
+        to="/member/ThongTinHoDan"
+        isExpanded={isExpanded}
+      />
+      <MenuItem
+        icon={<Wallet size={18} />}
+        label="Các khoản nộp"
+        to="/member/feeuser"
+        isExpanded={isExpanded}
+      />
+      <MenuItem
+        icon={<Wallet size={18} />}
+        label="Khai báo sinh tử"
+        to="/member/requestsinhtu"
+        isExpanded={isExpanded}
+      />
+      <MenuItem
+        icon={<Wallet size={18} />}
+        label="Khai báo tạm trú tạm vắng"
+        to="/member/requesttamtruvang"
+        isExpanded={isExpanded}
+      />
 
       {/* HISTORY */}
       {isExpanded && <SectionTitle text="History" />}
-      <MenuItem icon={<History size={18} />} label="Lịch sử giao dịch"  isExpanded={isExpanded} />
-      <MenuItem icon={<CheckCircle size={18} />} label="Lịch sử phê duyệt" isExpanded={isExpanded} />
-      <MenuItem icon={<Repeat size={18} />} label="Lịch sử thay đổi"  isExpanded={isExpanded} />
+      <MenuItem
+        icon={<History size={18} />}
+        label="Lịch sử giao dịch"
+        isExpanded={isExpanded}
+      />
+      <MenuItem
+        icon={<CheckCircle size={18} />}
+        label="Lịch sử phê duyệt"
+        isExpanded={isExpanded}
+      />
+      <MenuItem
+        icon={<Repeat size={18} />}
+        label="Lịch sử thay đổi"
+        isExpanded={isExpanded}
+      />
 
       {/* Logout Button */}
       <LogoutButton isExpanded={isExpanded} />
-
     </Box>
   );
 }
@@ -136,4 +193,3 @@ function MenuItem({ icon, label, to, isExpanded }) {
 }
 
 export default SidebarForUser;
-
