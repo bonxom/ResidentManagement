@@ -1,7 +1,7 @@
-import { AppError } from "../middleware/AppError.js";
-import { ERROR_CODE } from "../middleware/errorCode.js";
 import mongoose from "mongoose";
 import Permission from "../models/Permission.js";
+import { AppError } from "../middleware/AppError.js";
+import { ERROR_CODE } from "../middleware/errorCode.js";
 
 // @desc    Create a new permission
 // @route   POST /api/permissions

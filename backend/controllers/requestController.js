@@ -5,6 +5,7 @@ import Transaction from "../models/Transaction.js";
 import ResidentHistory from "../models/ResidentHistory.js";
 import Role from "../models/Role.js";
 import Household from "../models/Household.js";
+import mongoose from "mongoose";
 
 // @desc    Gửi yêu cầu cập nhật thông tin (Dành cho Người dân)
 // @route   POST /api/requests/update-info
@@ -327,6 +328,14 @@ export const reviewRequest = async (req, res) => {
             // Cách cũ: Tạo User -> Lỗi vì thiếu Email
             // Cách mới: Lưu vào ResidentHistory
             
+            if (!data.householdId || !mongoose.Types.ObjectId.isValid(data.householdId)) {
+                return res.status(400).json({ message: "Invalid household for birth record" });
+            }
+            const birthHousehold = await Household.findById(data.householdId);
+            if (!birthHousehold) {
+                return res.status(404).json({ message: "Household not found for birth record" });
+            }
+
             // 1. Tìm hoặc tạo lịch sử cư trú cho hộ này
             let histBirth = await ResidentHistory.findOne({ houseHoldId: data.householdId });
             if (!histBirth) {
@@ -352,7 +361,13 @@ export const reviewRequest = async (req, res) => {
 
         // [New] Xử lý KHAI TỬ
         case "DEATH_REPORT":
+            if (!data.householdId || !mongoose.Types.ObjectId.isValid(data.householdId)) {
+                return res.status(400).json({ message: "Invalid household for death record" });
+            }
             const household = await Household.findById(data.householdId);
+            if (!household) {
+                return res.status(404).json({ message: "Household not found for death record" });
+            }
             // Nếu người mất là chủ hộ -> Chặn
             if (household.leader.toString() === data.deceasedUserId) {
                 return res.status(400).json({ message: "Không thể duyệt báo tử cho Chủ hộ. Hãy yêu cầu đổi chủ hộ trước." });

@@ -13,7 +13,7 @@ router.post("/", protect, authorizePermission("RECORD PAYMENT"), createTransacti
 router.get("/", protect, authorizePermission("VIEW FEES"), getTransactions);
 
 // --- BỔ SUNG 2 DÒNG NÀY ---
-router.put("/:id", protect, authorizePermission("EDIT FEE"), updateTransaction);
-router.delete("/:id", protect, authorizePermission("DELETE FEE"), deleteTransaction);
+router.put("/:id", protect, authorizePermission("RECORD PAYMENT"), updateTransaction);
+router.delete("/:id", protect, authorizePermission("RECORD PAYMENT"), deleteTransaction);
 
 export default router;
