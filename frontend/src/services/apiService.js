@@ -189,3 +189,25 @@ export const feeAPI = {
     return res.data;
   },
 };
+
+// ============= REQUEST API =============
+export const requestAPI = {
+  // Cư dân gửi yêu cầu cập nhật thông tin
+  updateInfo: async (newData) => {
+    const response = await api.post("/requests/update-info", { newData });
+    return response.data;
+  },
+  // Lấy danh sách yêu cầu
+  getRequests: async (params = {}) => {
+    const response = await api.get("/requests", { params });
+    return response.data;
+  },
+  // Tổ trưởng duyệt/từ chối yêu cầu
+  reviewRequest: async (id, status, leaderComment = "") => {
+    const response = await api.put(`/requests/${id}/review`, {
+      status,
+      leaderComment,
+    });
+    return response.data;
+  },
+};

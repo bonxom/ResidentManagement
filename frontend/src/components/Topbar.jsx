@@ -5,7 +5,17 @@ import { useRoleNavigation } from "../hooks/useRoleNavigation";
 
 export default function Topbar() {
   const { navigateWithRole } = useRoleNavigation();
-  const { user } = useAuthStore();
+  const { user, checkAuth } = useAuthStore();
+
+  const handleProfileClick = async () => {
+    // Refresh user data before navigating to profile
+    try {
+      await checkAuth();
+    } catch (error) {
+      console.error("Failed to refresh profile", error);
+    }
+    navigateWithRole("/profile");
+  };
 
   return (
     <Box
@@ -84,7 +94,7 @@ export default function Topbar() {
 
         {/* USER ICON */}
         <IconButton
-          onClick={() => navigateWithRole('/profile')}
+          onClick={handleProfileClick}
           sx={{
             color: "#4b5563",
             backgroundColor: "rgba(255, 255, 255, 0.8)",

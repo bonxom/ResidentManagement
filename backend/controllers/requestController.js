@@ -207,7 +207,15 @@ export const getAllRequests = async (req, res) => {
     if (type) filter.type = type;
 
     const requests = await Request.find(filter)
-      .populate("requester", "name email userCardID household") // Hiện tên người gửi
+      .populate({
+        path: "requester",
+        select:
+          "name email userCardID household role dob sex phoneNumber job ethnic birthLocation relationshipWithHead status",
+        populate: [
+          { path: "role", select: "role_name" },
+          { path: "household", select: "houseHoldID address" },
+        ],
+      }) // Hiện tên người gửi + thông tin cần hiển thị
       .sort({ createdAt: -1 }); // Mới nhất lên đầu
 
     res.status(200).json(requests);
