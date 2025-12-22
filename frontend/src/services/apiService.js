@@ -68,6 +68,15 @@ export const userAPI = {
     return response.data;
   },
 
+  // Đổi mật khẩu
+  changePassword: async (userId, oldPassword, newPassword) => {
+    const response = await api.patch(`/users/${userId}/password`, {
+      oldPassword,
+      newPassword
+    });
+    return response.data;
+  },
+
 }
 
 // ============= HOUSEHOLD API =============

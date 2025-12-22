@@ -162,6 +162,7 @@ export const updateUser = async (req, res) => {
     user.job = req.body.job || user.job;
     user.ethnic = req.body.ethnic || user.ethnic;
     user.birthLocation = req.body.birthLocation || user.birthLocation;
+    user.relationshipWithHead = req.body.relationshipWithHead || user.relationshipWithHead;
 
     // Xử lý Role (Cẩn trọng: Thường chỉ Admin mới được sửa quyền)
     if (req.body.roleName) {

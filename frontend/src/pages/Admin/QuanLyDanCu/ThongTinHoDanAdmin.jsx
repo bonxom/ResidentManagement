@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import {
   Box,
   Typography,
@@ -7,7 +8,6 @@ import {
   InputAdornment,
   Select,
   MenuItem,
-  Menu,
   Table,
   TableBody,
   TableCell,
@@ -17,47 +17,36 @@ import {
   Checkbox,
   Paper,
   Pagination,
+  CircularProgress,
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
-import { Search, Filter, ChevronDown } from "lucide-react";
+import { Search, Filter, ChevronDown, Trash2 } from "lucide-react";
 import { useRoleNavigation } from "../../../hooks/useRoleNavigation";
+import { useNavigate } from "react-router-dom";
 import AddProfileModal from "../../../feature/profile/AddProfile";
-
-// ===== DỮ LIỆU ẢO (3 dòng để test) =====
-const residents = [
-  {
-    id: 1,
-    cccd: "012345678901",
-    fullName: "Nguyễn Văn A",
-    relation: "Chủ hộ",
-    dob: "12/03/1980",
-  },
-  {
-    id: 2,
-    cccd: "012345678902",
-    fullName: "Trần Thị B",
-    relation: "Vợ",
-    dob: "20/11/1985",
-  },
-  {
-    id: 3,
-    cccd: "012345678903",
-    fullName: "Nguyễn Văn C",
-    relation: "Con",
-    dob: "05/04/2010",
-  },
-];
+import ThemThanhVien from "../../../feature/admin/QuanLyHoKhau/ThemThanhVien";
+import { householdAPI, userAPI } from "../../../services/apiService";
 
 // ===== COMPONENT BẢNG =====
-function ResidentsTable({ selected, setSelected }) {
+function ResidentsTable({ selected, setSelected, members, loading, onDelete, onViewDetail }) {
   const ROWS_PER_PAGE = 10;
   const [page, setPage] = useState(1);
-  const [anchorEl, setAnchorEl] = useState(null);
-  const [selectedRow, setSelectedRow] = useState(null);
   const { navigateWithRole } = useRoleNavigation();
 
-  const pageCount = Math.ceil(residents.length / ROWS_PER_PAGE) || 1;
+  const pageCount = Math.ceil(members.length / ROWS_PER_PAGE) || 1;
   const start = (page - 1) * ROWS_PER_PAGE;
-  const visibleRows = residents.slice(start, start + ROWS_PER_PAGE);
+  const visibleRows = members.slice(start, start + ROWS_PER_PAGE);
+
+  // Format date helper
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    const date = new Date(dateString);
+    return date.toLocaleDateString('vi-VN');
+  };
 
   const handleSelectRow = (id) => {
     setSelected((prev) =>
@@ -67,39 +56,34 @@ function ResidentsTable({ selected, setSelected }) {
 
   const handleSelectAll = (e) => {
     if (e.target.checked) {
-      const idsOnPage = visibleRows.map((r) => r.id);
-      setSelected((prev) => Array.from(new Set([...prev, ...idsOnPage])));
+      const idsOnPage = visibleRows.map((r) => r._id);
+      setSelected(idsOnPage);
     } else {
-      const idsOnPage = visibleRows.map((r) => r.id);
-      setSelected((prev) => prev.filter((id) => !idsOnPage.includes(id)));
+      setSelected([]);
     }
-  };
-
-  const handleMenuOpen = (event, row) => {
-    setAnchorEl(event.currentTarget);
-    setSelectedRow(row);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-    setSelectedRow(null);
-  };
-
-  const handleViewDetail = () => {
-    navigateWithRole('/ThongTinChiTietAdmin');
-    handleMenuClose();
-  };
-
-  const handleDelete = () => {
-    console.log("Xóa:", selectedRow);
-    // TODO: Xử lý xóa
-    alert(`Xóa thành viên: ${selectedRow?.fullName}`);
-    handleMenuClose();
   };
 
   const isAllSelectedOnPage =
     visibleRows.length > 0 &&
-    visibleRows.every((row) => selected.includes(row.id));
+    visibleRows.every((row) => selected.includes(row._id));
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 8 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (members.length === 0) {
+    return (
+      <Box sx={{ textAlign: 'center', py: 8 }}>
+        <Typography sx={{ color: '#666', fontSize: '16px' }}>
+          Chưa có thành viên nào
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box>
@@ -125,10 +109,10 @@ function ResidentsTable({ selected, setSelected }) {
           </TableHead>
           <TableBody>
             {visibleRows.map((row) => {
-              const checked = selected.includes(row.id);
+              const checked = selected.includes(row._id);
               return (
                 <TableRow
-                  key={row.id}
+                  key={row._id}
                   hover
                   selected={checked}
                   sx={{ cursor: "pointer" }}
@@ -136,44 +120,41 @@ function ResidentsTable({ selected, setSelected }) {
                   <TableCell padding="checkbox">
                     <Checkbox
                       checked={checked}
-                      onChange={() => handleSelectRow(row.id)}
+                      onChange={() => handleSelectRow(row._id)}
                     />
                   </TableCell>
-                  <TableCell>{row.cccd}</TableCell>
-                  <TableCell>{row.fullName}</TableCell>
-                  <TableCell>{row.relation}</TableCell>
-                  <TableCell>{row.dob}</TableCell>
+                  <TableCell>{row.userCardID || "N/A"}</TableCell>
+                  <TableCell>{row.name || "N/A"}</TableCell>
+                  <TableCell>{row.relationship || "N/A"}</TableCell>
+                  <TableCell>{formatDate(row.dateOfBirth)}</TableCell>
 
-                  {/* NÚT 3 CHẤM */}
                   <TableCell>
-                    <button
-                      onClick={(e) => handleMenuOpen(e, row)}
-                      style={{
-                        padding: "8px",
-                        color: "#3b82f6",
-                        backgroundColor: "#eff6ff",
-                        border: "none",
-                        borderRadius: "50%",
-                        width: "36px",
-                        height: "36px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        cursor: "pointer",
-                        transition: "background-color 0.2s",
-                        fontSize: "18px",
-                        fontWeight: "bold",
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = "#dbeafe";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = "#eff6ff";
-                      }}
-                      title="Thao tác"
-                    >
-                      ...
-                    </button>
+                    <Box sx={{ display: "flex", gap: 1 }}>
+                      <Button
+                        variant="contained"
+                        size="small"
+                        onClick={() => onViewDetail(row)}
+                        sx={{ 
+                          textTransform: "none",
+                          minWidth: "60px",
+                          fontSize: "13px"
+                        }}
+                      >
+                        Xem
+                      </Button>
+                      <Button
+                        color="error"
+                        size="small"
+                        onClick={() => onDelete(row)}
+                        sx={{ 
+                          textTransform: "none",
+                          minWidth: "40px",
+                          padding: "4px 8px"
+                        }}
+                      >
+                        <Trash2 size={16} />
+                      </Button>
+                    </Box>
                   </TableCell>
                 </TableRow>
               );
@@ -181,57 +162,6 @@ function ResidentsTable({ selected, setSelected }) {
           </TableBody>
         </Table>
       </TableContainer>
-
-      {/* MENU 3 CHẤM */}
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleMenuClose}
-        PaperProps={{
-          elevation: 3,
-          sx: {
-            mt: 1.5,
-            minWidth: 160,
-            borderRadius: 2,
-            overflow: "hidden",
-            boxShadow: "0 8px 24px rgba(0, 0, 0, 0.15)",
-          },
-        }}
-      >
-        <MenuItem
-          onClick={handleViewDetail}
-          sx={{
-            py: 1.5,
-            px: 2.5,
-            fontSize: "14px",
-            fontWeight: 500,
-            transition: "all 0.2s ease",
-            "&:hover": {
-              backgroundColor: "#f0f9ff",
-              color: "#2563eb",
-            },
-          }}
-        >
-          Xem chi tiết
-        </MenuItem>
-        <MenuItem
-          onClick={handleDelete}
-          sx={{
-            py: 1.5,
-            px: 2.5,
-            fontSize: "14px",
-            fontWeight: 500,
-            color: "#6b7280",
-            transition: "all 0.2s ease",
-            "&:hover": {
-              backgroundColor: "#fef2f2",
-              color: "#ef4444",
-            },
-          }}
-        >
-          Xóa
-        </MenuItem>
-      </Menu>
 
       <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
         <Pagination
@@ -247,9 +177,43 @@ function ResidentsTable({ selected, setSelected }) {
 
 // ===== PAGE CHÍNH =====
 export default function ThongTinHoDanAdmin() {
+  const location = useLocation();
+  const householdId = location.state?.householdId;
   const [openAddProfileModal, setOpenAddProfileModal] = useState(false);
+  const [openAddMemberModal, setOpenAddMemberModal] = useState(false);
   const [userInfo, setUserInfo] = useState({});
   const [selected, setSelected] = useState([]);
+  const [members, setMembers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [memberToDelete, setMemberToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const navigate = useNavigate();
+
+  // Fetch members when component mounts
+  useEffect(() => {
+    if (!householdId) {
+      setError("Không tìm thấy ID hộ dân");
+      return;
+    }
+    fetchMembers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [householdId]);
+
+  const fetchMembers = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const data = await householdAPI.getMembers(householdId);
+      setMembers(data);
+    } catch (err) {
+      console.error("Failed to fetch members:", err);
+      setError("Không thể tải danh sách thành viên. Vui lòng thử lại.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleAddRequest = (formData) => {
     console.log("Yêu cầu thêm thành viên:", formData);
@@ -260,8 +224,51 @@ export default function ThongTinHoDanAdmin() {
 
   // Bấm nút "Yêu cầu thêm thành viên" -> mở form trống
   const handleOpenAddMember = () => {
-    setUserInfo({});
-    setOpenAddProfileModal(true);
+    setOpenAddMemberModal(true);
+  };
+
+  // Callback khi thêm thành viên thành công
+  const handleAddMemberSuccess = () => {
+    fetchMembers();
+  };
+
+  // Xử lý xem chi tiết thành viên
+  const handleViewDetail = (member) => {
+    navigate('/leader/ThongTinChiTietMember', { state: { memberId: member._id } });
+  };
+
+  // Xử lý xóa thành viên (single)
+  const handleDeleteSingle = (member) => {
+    setMemberToDelete(member);
+    setDeleteDialogOpen(true);
+  };
+
+  // Xác nhận xóa từ dialog
+  const handleConfirmDelete = async () => {
+    if (!memberToDelete) return;
+
+    setIsDeleting(true);
+    setError("");
+
+    try {
+      await userAPI.delete(memberToDelete._id);
+      await fetchMembers();
+      setDeleteDialogOpen(false);
+      setMemberToDelete(null);
+      alert("Đã xóa thành viên thành công");
+    } catch (err) {
+      console.error("Failed to delete member:", err);
+      setError(err.response?.data?.message || "Không thể xóa thành viên. Vui lòng thử lại.");
+      setDeleteDialogOpen(false);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  // Hủy xóa
+  const handleCancelDelete = () => {
+    setDeleteDialogOpen(false);
+    setMemberToDelete(null);
   };
 
   return (
@@ -282,15 +289,12 @@ export default function ThongTinHoDanAdmin() {
           <Box
             sx={{
               display: "flex",
-              justifyContent: "space-between",
               alignItems: "center",
-              mb: 3,
               gap: 3,
             }}
           >
             <Button
               variant="contained"
-              onClick={handleOpenAddMember}
               disabled={selected.length === 0}
               sx={{
                 backgroundColor: selected.length === 0 ? "#fca5a5" : "#ef4444",
@@ -330,6 +334,17 @@ export default function ThongTinHoDanAdmin() {
             </Button>
           </Box>
         </Box>
+
+        {/* Error Alert */}
+        {error && (
+          <Alert 
+            severity="error" 
+            sx={{ mb: 3 }} 
+            onClose={() => setError("")}
+          >
+            {error}
+          </Alert>
+        )}
 
         {/* SEARCH BOX */}
         <Box
@@ -446,7 +461,14 @@ export default function ThongTinHoDanAdmin() {
             p: 2,
           }}
         >
-          <ResidentsTable selected={selected} setSelected={setSelected} />
+          <ResidentsTable 
+            selected={selected} 
+            setSelected={setSelected}
+            members={members}
+            loading={loading}
+            onDelete={handleDeleteSingle}
+            onViewDetail={handleViewDetail}
+          />
         </Box>
       </Box>
 
@@ -456,6 +478,63 @@ export default function ThongTinHoDanAdmin() {
         onClose={() => setOpenAddProfileModal(false)}
         currentData={userInfo}
         onSubmit={handleAddRequest}
+      />
+
+      {/* DELETE CONFIRMATION DIALOG */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleCancelDelete}
+        PaperProps={{
+          sx: {
+            borderRadius: "12px",
+            padding: "8px"
+          }
+        }}
+      >
+        <DialogTitle sx={{ fontSize: "18px", fontWeight: "600" }}>
+          Xác nhận xóa thành viên
+        </DialogTitle>
+        <DialogContent>
+          <Typography>
+            Bạn có chắc chắn muốn xóa thành viên <strong>{memberToDelete?.name}</strong> không?
+          </Typography>
+          <Typography sx={{ mt: 2, color: "#d32f2f", fontSize: "14px" }}>
+            <strong>Cảnh báo:</strong> Hành động này không thể hoàn tác!
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button
+            onClick={handleCancelDelete}
+            disabled={isDeleting}
+            sx={{
+              textTransform: "none",
+              color: "#666",
+              fontSize: "14px"
+            }}
+          >
+            Hủy
+          </Button>
+          <Button
+            onClick={handleConfirmDelete}
+            variant="contained"
+            color="error"
+            disabled={isDeleting}
+            sx={{
+              textTransform: "none",
+              fontSize: "14px"
+            }}
+          >
+            {isDeleting ? "Đang xóa..." : "Xác nhận xóa"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* MODAL THÊM THÀNH VIÊN MỚI */}
+      <ThemThanhVien
+        open={openAddMemberModal}
+        onClose={() => setOpenAddMemberModal(false)}
+        onSuccess={handleAddMemberSuccess}
+        householdId={householdId}
       />
     </>
   );

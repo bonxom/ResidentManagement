@@ -309,7 +309,7 @@ function SignUp() {
                 value={formData.password}
                 onChange={handleChange}
                 error={!!errors.password}
-                helperText={errors.password || "Tối thiểu 6 ký tự"}
+                helperText={errors.password || "Tối thiểu 8 ký tự"}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
