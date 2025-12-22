@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
+import { feeAPI } from "../../services/apiService";
+
 import {
   Box,
   Typography,
@@ -9,272 +11,397 @@ import {
   TableCell,
   TableBody,
   Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  MenuItem,
+  Alert,
   Stack,
-  Chip,
   Divider,
+  CircularProgress,
+  Snackbar,
 } from "@mui/material";
-import useAuthStore from "../../store/authStore";
-import { feeAPI } from "../../services/apiService";
-import FeeForm from "./form/FeeForm";
 
 function FeeHouseHoldPage() {
-  const { user } = useAuthStore();
-
+  const [tab, setTab] = useState(0); // 0: list, 1: stats
   const [fees, setFees] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // tab: 0 = danh sách, 1 = thống kê
-  const [tab, setTab] = useState(0);
+  const [open, setOpen] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const [openForm, setOpenForm] = useState(false);
-  const [selectedFee, setSelectedFee] = useState(null);
+  const [error, setError] = useState("");
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
 
-  /* ================= FETCH ================= */
-  const fetchFees = async () => {
-    try {
-      setLoading(true);
-      const data = await feeAPI.getAllFees();
-      setFees(data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [formData, setFormData] = useState({
+    _id: "",
+    name: "",
+    type: "",
+    unitPrice: "",
+    description: "",
+    status: "ACTIVE",
+  });
+
+  // ===== STATISTICS =====
+  const [statsData, setStatsData] = useState(null);
+  const [statsLoading, setStatsLoading] = useState(false);
+  const [statsFilter, setStatsFilter] = useState("ALL");
+
+  const feeTypes = [
+    { value: "MANDATORY", label: "Bắt buộc" },
+    { value: "VOLUNTARY", label: "Tự nguyện" },
+  ];
+
+  const statusTypes = [
+    { value: "ACTIVE", label: "Đang hiệu lực" },
+    { value: "COMPLETED", label: "Đã hoàn thành" },
+  ];
 
   useEffect(() => {
     fetchFees();
   }, []);
 
-  /* ================= CREATE / UPDATE ================= */
-  const handleSubmitFee = async (formData) => {
+  const fetchFees = async () => {
     try {
-      if (formData._id) {
-        const updated = await feeAPI.updateFee(formData._id, formData);
-        setFees((prev) =>
-          prev.map((f) => (f._id === updated._id ? updated : f))
-        );
-      } else {
-        const created = await feeAPI.createFee(formData);
-        setFees((prev) => [...prev, created]);
+      setLoading(true);
+      const data = await feeAPI.getAllFees();
+      setFees(data || []);
+    } catch (err) {
+      setError("Không thể tải danh sách khoản thu");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const showSuccess = (msg) =>
+    setSnackbar({ open: true, message: msg, severity: "success" });
+  const showError = (msg) =>
+    setSnackbar({ open: true, message: msg, severity: "error" });
+
+  const handleOpenCreate = () => {
+    setIsEdit(false);
+    setFormData({
+      _id: "",
+      name: "",
+      type: "",
+      unitPrice: "",
+      description: "",
+      status: "ACTIVE",
+    });
+    setOpen(true);
+  };
+
+  const handleOpenEdit = (fee) => {
+    setIsEdit(true);
+    setFormData({
+      _id: fee._id,
+      name: fee.name,
+      type: fee.type,
+      unitPrice: fee.unitPrice?.toString() || "",
+      description: fee.description || "",
+      status: fee.status,
+    });
+    setOpen(true);
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    if (name === "unitPrice" && value && !/^\d*$/.test(value)) return;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async () => {
+    try {
+      setIsSaving(true);
+      setError("");
+
+      if (!formData.name || !formData.type) {
+        setError("Vui lòng nhập đầy đủ thông tin");
+        return;
       }
-      setOpenForm(false);
-      setSelectedFee(null);
-    } catch (err) {
-      console.error(err);
+
+      const payload = {
+        name: formData.name.trim(),
+        type: formData.type,
+        description: formData.description,
+      };
+
+      if (formData.type === "MANDATORY") {
+        payload.unitPrice = Number(formData.unitPrice);
+      }
+
+      if (isEdit) {
+        payload.status = formData.status;
+        await feeAPI.updateFee(formData._id, payload);
+        showSuccess("Cập nhật khoản thu thành công");
+      } else {
+        await feeAPI.createFee(payload);
+        showSuccess("Tạo khoản thu thành công");
+      }
+
+      setOpen(false);
+      fetchFees();
+    } catch {
+      showError("Lỗi khi lưu khoản thu");
+    } finally {
+      setIsSaving(false);
     }
   };
 
-  /* ================= DELETE ================= */
-  const handleDeleteFee = async (id) => {
-    if (!window.confirm("Bạn có chắc muốn xóa khoản thu này?")) return;
+  const handleDelete = async (id) => {
+    if (!window.confirm("Xóa khoản thu này?")) return;
+    await feeAPI.deleteFee(id);
+    fetchFees();
+    showSuccess("Đã xóa khoản thu");
+  };
+
+  // ===== STATISTICS =====
+  const handleViewStats = async (feeId) => {
     try {
-      await feeAPI.deleteFee(id);
-      setFees((prev) => prev.filter((f) => f._id !== id));
-    } catch (err) {
-      console.error(err);
+      setStatsLoading(true);
+      const data = await feeAPI.getFeeStatistics(feeId);
+      setStatsData(data);
+      setStatsFilter("ALL");
+    } catch {
+      showError("Không thể tải báo cáo");
+    } finally {
+      setStatsLoading(false);
     }
   };
 
-  /* ================= THỐNG KÊ ================= */
-  const totalFee = fees.reduce((sum, f) => sum + (f.unitPrice || 0), 0);
+  const filteredDetails = useMemo(() => {
+    if (!statsData?.details) return [];
+    if (statsFilter === "ALL") return statsData.details;
+    return statsData.details.filter((d) => d.status === statsFilter);
+  }, [statsData, statsFilter]);
 
-  const activeCount = fees.filter((f) => f.status === "ACTIVE").length;
-
-  /* ================= UI ================= */
   return (
-    <Box sx={{ p: 4, width: "100%", backgroundColor: "#fff" }}>
-      {/* ===== Header ===== */}
-      <Stack
-        direction="row"
-        justifyContent="space-between"
-        alignItems="center"
-        sx={{ mb: 3 }}
-      >
-        <Typography variant="h4" fontWeight="bold">
-          Quản lý khoản thu
+    <Box sx={{ p: 4 }}>
+      <Stack direction="row" justifyContent="space-between" mb={2}>
+        <Typography variant="h4" fontWeight={600}>
+          Quản lý khoản thu (Accountant)
         </Typography>
-
-        <Stack direction="row" spacing={2}>
+        <Box>
           <Button
             variant={tab === 0 ? "contained" : "outlined"}
             onClick={() => setTab(0)}
+            sx={{ mr: 1 }}
           >
-            DANH SÁCH KHOẢN THU
+            Danh sách khoản thu
           </Button>
           <Button
             variant={tab === 1 ? "contained" : "outlined"}
             onClick={() => setTab(1)}
           >
-            BÁO CÁO THỐNG KÊ
+            Báo cáo thống kê
           </Button>
-        </Stack>
+        </Box>
       </Stack>
 
       <Divider sx={{ mb: 3 }} />
 
-      {/* ================= TAB 0: DANH SÁCH ================= */}
       {tab === 0 && (
         <>
-          <Button
-            variant="contained"
-            sx={{ mb: 3 }}
-            onClick={() => {
-              setSelectedFee(null);
-              setOpenForm(true);
-            }}
-          >
-            TẠO KHOẢN THU MỚI
+          <Button variant="contained" onClick={handleOpenCreate} sx={{ mb: 2 }}>
+            Tạo khoản thu mới
           </Button>
 
-          <Paper elevation={1}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Tên khoản thu</TableCell>
-                  <TableCell>Loại</TableCell>
-                  <TableCell>Đơn giá</TableCell>
-                  <TableCell>Trạng thái</TableCell>
-                  <TableCell>Mô tả</TableCell>
-                  <TableCell>Hành động</TableCell>
-                </TableRow>
-              </TableHead>
-
-              <TableBody>
-                {loading ? (
+          {loading ? (
+            <CircularProgress />
+          ) : (
+            <Paper>
+              <Table>
+                <TableHead>
                   <TableRow>
-                    <TableCell colSpan={6} align="center">
-                      Đang tải dữ liệu...
-                    </TableCell>
+                    <TableCell>Tên</TableCell>
+                    <TableCell>Loại</TableCell>
+                    <TableCell>Đơn giá</TableCell>
+                    <TableCell>Trạng thái</TableCell>
+                    <TableCell>Hành động</TableCell>
                   </TableRow>
-                ) : fees.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} align="center">
-                      Chưa có khoản thu
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  fees.map((fee) => (
-                    <TableRow key={fee._id} hover>
-                      <TableCell>{fee.name}</TableCell>
+                </TableHead>
+                <TableBody>
+                  {fees.map((f) => (
+                    <TableRow key={f._id}>
+                      <TableCell>{f.name}</TableCell>
                       <TableCell>
-                        <Chip
-                          label={
-                            fee.type === "MANDATORY" ? "Bắt buộc" : "Tự nguyện"
-                          }
-                          color="info"
-                          size="small"
-                        />
+                        {f.type === "MANDATORY" ? "Bắt buộc" : "Tự nguyện"}
                       </TableCell>
                       <TableCell>
-                        {fee.unitPrice
-                          ? fee.unitPrice.toLocaleString() + " VND"
-                          : "-"}
+                        {f.unitPrice?.toLocaleString() || "-"}
                       </TableCell>
+                      <TableCell>{f.status}</TableCell>
                       <TableCell>
-                        <Chip
-                          label={
-                            fee.status === "ACTIVE"
-                              ? "Đang hiệu lực"
-                              : "Kết thúc"
-                          }
-                          color={
-                            fee.status === "ACTIVE" ? "success" : "default"
-                          }
-                          size="small"
-                        />
-                      </TableCell>
-                      <TableCell>{fee.description || "-"}</TableCell>
-                      <TableCell>
-                        <Stack direction="row" spacing={1}>
-                          <Button
-                            size="small"
-                            onClick={() => {
-                              setSelectedFee(fee);
-                              setOpenForm(true);
-                            }}
-                          >
-                            SỬA
-                          </Button>
-                          <Button
-                            size="small"
-                            color="error"
-                            onClick={() => handleDeleteFee(fee._id)}
-                          >
-                            XÓA
-                          </Button>
-                        </Stack>
+                        <Button onClick={() => handleOpenEdit(f)}>Sửa</Button>
+                        <Button
+                          color="error"
+                          onClick={() => handleDelete(f._id)}
+                        >
+                          Xóa
+                        </Button>
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </Paper>
+                  ))}
+                </TableBody>
+              </Table>
+            </Paper>
+          )}
         </>
       )}
 
-      {/* ================= TAB 1: BÁO CÁO ================= */}
       {tab === 1 && (
         <>
-          <Stack direction="row" spacing={4} sx={{ mb: 4 }}>
-            <Paper sx={{ p: 3, minWidth: 220 }}>
-              <Typography variant="subtitle2">Tổng số khoản thu</Typography>
-              <Typography variant="h5">{fees.length}</Typography>
-            </Paper>
+          <TextField
+            select
+            fullWidth
+            label="Chọn khoản thu"
+            onChange={(e) => handleViewStats(e.target.value)}
+          >
+            {fees.map((f) => (
+              <MenuItem key={f._id} value={f._id}>
+                {f.name}
+              </MenuItem>
+            ))}
+          </TextField>
 
-            <Paper sx={{ p: 3, minWidth: 220 }}>
-              <Typography variant="subtitle2">Đang hiệu lực</Typography>
-              <Typography variant="h5">{activeCount}</Typography>
-            </Paper>
+          {statsLoading && <CircularProgress sx={{ mt: 3 }} />}
 
-            <Paper sx={{ p: 3, minWidth: 220 }}>
-              <Typography variant="subtitle2">Tổng đơn giá</Typography>
-              <Typography variant="h5">
-                {totalFee.toLocaleString()} VND
+          {statsData && (
+            <Paper sx={{ mt: 3, p: 2 }}>
+              <Typography fontWeight={600}>
+                Tổng quan: {statsData.fee_info.name}
               </Typography>
-            </Paper>
-          </Stack>
+              <Divider sx={{ my: 2 }} />
 
-          <Paper elevation={1}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Tên khoản thu</TableCell>
-                  <TableCell>Đơn giá</TableCell>
-                  <TableCell>Trạng thái</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {fees.map((f) => (
-                  <TableRow key={f._id}>
-                    <TableCell>{f.name}</TableCell>
-                    <TableCell>
-                      {f.unitPrice
-                        ? f.unitPrice.toLocaleString() + " VND"
-                        : "-"}
-                    </TableCell>
-                    <TableCell>
-                      {f.status === "ACTIVE" ? "Đang hiệu lực" : "Kết thúc"}
-                    </TableCell>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Mã hộ</TableCell>
+                    <TableCell>Địa chỉ</TableCell>
+                    <TableCell>Phải thu</TableCell>
+                    <TableCell>Đã thu</TableCell>
+                    <TableCell>Còn thiếu</TableCell>
+                    <TableCell>Trạng thái</TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </Paper>
+                </TableHead>
+                <TableBody>
+                  {filteredDetails.map((r) => (
+                    <TableRow key={r.household_id}>
+                      <TableCell>{r.household_code}</TableCell>
+                      <TableCell>{r.address}</TableCell>
+                      <TableCell>{r.required.toLocaleString()}</TableCell>
+                      <TableCell>{r.paid.toLocaleString()}</TableCell>
+                      <TableCell>{r.remaining.toLocaleString()}</TableCell>
+                      <TableCell>{r.status}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </Paper>
+          )}
         </>
       )}
 
-      {/* ===== MODAL FORM ===== */}
-      <FeeForm
-        open={openForm}
-        handleClose={() => {
-          setOpenForm(false);
-          setSelectedFee(null);
-        }}
-        onSubmit={handleSubmitFee}
-        initialData={selectedFee}
-      />
+      <Dialog
+        open={open}
+        onClose={() => setOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          {isEdit ? "Cập nhật khoản thu" : "Tạo khoản thu"}
+        </DialogTitle>
+        <DialogContent>
+          {error && <Alert severity="error">{error}</Alert>}
+
+          <TextField
+            label="Tên khoản thu"
+            fullWidth
+            margin="normal"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+          />
+
+          <TextField
+            select
+            label="Loại"
+            fullWidth
+            margin="normal"
+            name="type"
+            value={formData.type}
+            onChange={handleChange}
+          >
+            {feeTypes.map((t) => (
+              <MenuItem key={t.value} value={t.value}>
+                {t.label}
+              </MenuItem>
+            ))}
+          </TextField>
+
+          <TextField
+            label="Đơn giá"
+            fullWidth
+            margin="normal"
+            name="unitPrice"
+            value={formData.unitPrice}
+            onChange={handleChange}
+            disabled={formData.type === "VOLUNTARY"}
+          />
+
+          <TextField
+            label="Mô tả"
+            fullWidth
+            margin="normal"
+            name="description"
+            value={formData.description}
+            onChange={handleChange}
+          />
+
+          {isEdit && (
+            <TextField
+              select
+              label="Trạng thái"
+              fullWidth
+              margin="normal"
+              name="status"
+              value={formData.status}
+              onChange={handleChange}
+            >
+              {statusTypes.map((s) => (
+                <MenuItem key={s.value} value={s.value}>
+                  {s.label}
+                </MenuItem>
+              ))}
+            </TextField>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpen(false)}>Hủy</Button>
+          <Button
+            variant="contained"
+            onClick={handleSubmit}
+            disabled={isSaving}
+          >
+            Lưu
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+      >
+        <Alert severity={snackbar.severity}>{snackbar.message}</Alert>
+      </Snackbar>
     </Box>
   );
 }

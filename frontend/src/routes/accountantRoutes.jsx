@@ -1,23 +1,3 @@
-// import { Route, Navigate } from "react-router-dom";
-// import MainLayoutForAccountant from "../layout/MainLayoutForAccountant";
-
-// // CHÚ Ý: Import đúng file Dashboard bạn vừa tạo cho Accountant
-// import AccountantDashboard from "../pages/Accountant/AccountantDashboard";
-// import Profile from "../pages/Profile";
-
-// export const accountantRoutes = (
-//   <Route path="accountant" element={<MainLayoutForAccountant />}>
-//     <Route index element={<Navigate to="dashboard" replace />} />
-
-//     {/* Trang chủ */}
-//     <Route path="dashboard" element={<AccountantDashboard />} />
-//     {/* <Route path="/accountant/ThongTinHoDan" element={<ThongTinHoDanPage />} /> */}
-//     {/* Chỉ để lại Navigate cho những link thực sự sai hoàn toàn */}
-//     <Route path="*" element={<Navigate to="dashboard" replace />} />
-//   </Route>
-// );
-// export default accountantRoutes;
-
 import { Route, Navigate } from "react-router-dom";
 import MainLayoutForAccountant from "../layout/MainLayoutForAccountant";
 
