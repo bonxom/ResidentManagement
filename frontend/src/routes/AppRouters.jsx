@@ -22,7 +22,7 @@ export const AppRouters = (
     <Route path="/forgot-password" element={<ForgotPassword />} />
 
     {/* Protected routes for MEMBER */}
-    <Route element={<ProtectedRoute allowedRoles={["MEMBER"]} />}>
+    <Route element={<ProtectedRoute allowedRoles={["MEMBER", "HOUSE MEMBER"]} />}>
       {memberRoutes}
     </Route>
 

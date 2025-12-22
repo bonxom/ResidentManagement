@@ -126,7 +126,7 @@ const SEED_USERS_DATA = {
       phoneNumber: "0938456123",
     },
   ],
-  "HOUSE MEMBER": [
+  "MEMBER": [
     {
       email: "member@resident.test",
       userCardID: 689123456004,

@@ -29,8 +29,13 @@ function InfoField({ label, value }) {
   );
 }
 
-export default function KhaiBaoSinhTuForm({ open, onClose, person, onApprove, onReject }) {
-  if (!person) return null;
+export default function KhaiBaoSinhTuForm({ open, onClose, request, onApprove, onReject }) {
+  if (!request) return null;
+
+  const requester = request.requester || {};
+  const data = request.requestData || {};
+  const isBirth = request.type === "BIRTH_REPORT";
+  const householdId = requester.household?.houseHoldID || requester.household || "Chưa cập nhật";
 
   return (
     <Dialog
@@ -61,33 +66,77 @@ export default function KhaiBaoSinhTuForm({ open, onClose, person, onApprove, on
         {/* Form Fields */}
         <Grid container spacing={3}>
           <Grid item xs={12} sm={6}>
-            <InfoField label="Họ và tên" value={person.name} />
+            <InfoField label="Chủ hộ" value={requester.name} />
           </Grid>
           <Grid item xs={12} sm={6}>
-            <InfoField label="Vai trò" value={person.role} />
+            <InfoField label="Mã hộ gia đình" value={householdId} />
           </Grid>
           <Grid item xs={12} sm={6}>
-            <InfoField label="Mã hộ gia đình" value={person.houseHoldID} />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <InfoField label="Tên chủ hộ" value={person.chuHo} />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <InfoField label="Phân loại" value={person.classification} />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <InfoField label="Ngày sinh" value={person.dateOfBirth} />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <InfoField label="Giới tính" value={person.gender} />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <InfoField label="Số định danh cá nhân" value={person.personalId || "Chưa có (dưới 14 tuổi)"} />
-          </Grid>
-          <Grid item xs={12}>
-            <InfoField label="Địa chỉ" value={person.address} />
+            <InfoField label="Phân loại" value={isBirth ? "Khai sinh" : "Khai tử"} />
           </Grid>
         </Grid>
+
+        {isBirth ? (
+          <Box sx={{ mt: 3 }}>
+            <Typography
+              sx={{
+                fontSize: "16px",
+                fontWeight: "600",
+                mb: 2,
+                color: "#333",
+              }}
+            >
+              Thông tin khai sinh
+            </Typography>
+            <Grid container spacing={3}>
+              <Grid item xs={12} sm={6}>
+                <InfoField label="Tên bé" value={data.name} />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <InfoField label="Giới tính" value={data.sex} />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <InfoField label="Ngày sinh" value={data.dob} />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <InfoField label="Nơi sinh" value={data.birthLocation} />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <InfoField label="Dân tộc" value={data.ethnic} />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <InfoField label="Số giấy khai sinh" value={data.birthCertificateNumber} />
+              </Grid>
+            </Grid>
+          </Box>
+        ) : (
+          <Box sx={{ mt: 3 }}>
+            <Typography
+              sx={{
+                fontSize: "16px",
+                fontWeight: "600",
+                mb: 2,
+                color: "#333",
+              }}
+            >
+              Thông tin khai tử
+            </Typography>
+            <Grid container spacing={3}>
+              <Grid item xs={12} sm={6}>
+                <InfoField label="Thành viên" value={data.deceasedUserName || data.deceasedUserId} />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <InfoField label="Ngày mất" value={data.dateOfDeath} />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <InfoField label="Nguyên nhân" value={data.reason} />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <InfoField label="Giấy khai tử" value={data.deathCertificateUrl} />
+              </Grid>
+            </Grid>
+          </Box>
+        )}
       </DialogContent>
 
       <DialogActions sx={{ justifyContent: "flex-end", gap: 2, padding: "16px 32px 24px" }}>

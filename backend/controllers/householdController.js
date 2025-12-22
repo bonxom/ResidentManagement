@@ -3,6 +3,7 @@ import User from "../models/User.js";
 import mongoose from "mongoose";
 import ResidentHistory from "../models/ResidentHistory.js";
 import Request from "../models/Request.js"; // Import thêm Request để lấy lịch sử Sinh/Tử
+import { getHouseMemberRoleId, getMemberRoleId } from "../utils/roleUtils.js";
 // @desc    Tạo hộ khẩu mới
 // @route   POST /api/households
 export const createHousehold = async (req, res) => {
@@ -32,9 +33,11 @@ export const createHousehold = async (req, res) => {
       leader: leaderId,
       members: [leaderId], // Khởi tạo với chủ hộ là thành viên đầu tiên
     });
+    const houseMemberRoleId = await getHouseMemberRoleId();
     await User.findByIdAndUpdate(leaderId, {
       household: household._id,
-      relationshipWithHead: "household owner"
+      relationshipWithHead: "household owner",
+      role: houseMemberRoleId,
     });
     res.status(201).json(household);
   } catch (error) {
@@ -128,6 +131,7 @@ export const updateHousehold = async (req, res) => {
 
     // Xử lý logic đổi chủ hộ
     if (leaderId && leaderId !== household.leader.toString()) {
+      const houseMemberRoleId = await getHouseMemberRoleId();
       const newLeader = await User.findById(leaderId);
       if (!newLeader) return res.status(404).json({ message: "User not found" });
 
@@ -144,10 +148,14 @@ export const updateHousehold = async (req, res) => {
         household.members.push(leaderId);
       }
 
-      await User.findByIdAndUpdate(oldLeaderId, { relationshipWithHead: "member" });
+      await User.findByIdAndUpdate(oldLeaderId, { 
+        relationshipWithHead: "member",
+        role: houseMemberRoleId,
+      });
       await User.findByIdAndUpdate(leaderId, { 
         household: household._id,
-        relationshipWithHead: "household owner" 
+        relationshipWithHead: "household owner",
+        role: houseMemberRoleId,
       });
     }
 
@@ -162,7 +170,12 @@ export const updateHousehold = async (req, res) => {
         (m) => m.toString() === oldLeaderId
       );
       if (!isOldLeaderStillMember) {
-        await User.findByIdAndUpdate(oldLeaderId, { household: null, relationshipWithHead: null });
+        const memberRoleId = await getMemberRoleId();
+        await User.findByIdAndUpdate(oldLeaderId, {
+          household: null,
+          relationshipWithHead: null,
+          role: memberRoleId,
+        });
       }
     }
 
@@ -191,9 +204,10 @@ export const deleteHousehold = async (req, res) => {
     ].filter(Boolean);
 
     if (memberIds.length) {
+      const memberRoleId = await getMemberRoleId();
       await User.updateMany(
         { _id: { $in: memberIds } },
-        { $set: { household: null, relationshipWithHead: null } }
+        { $set: { household: null, relationshipWithHead: null, role: memberRoleId } }
       );
     }
 
@@ -235,6 +249,7 @@ export const addMember = async (req, res) => {
 
     user.household = householdId;
     user.relationshipWithHead = relationship || "Thành viên";
+    user.role = await getHouseMemberRoleId();
     await user.save();
     res.status(200).json(household);
   } catch (error) {
@@ -260,10 +275,12 @@ export const removeMember = async (req, res) => {
             // CASE ĐẶC BIỆT: Hộ chỉ có 1 người (là chủ hộ) -> Xóa luôn hộ
             await household.deleteOne();
 
+            const memberRoleId = await getMemberRoleId();
             // Cập nhật User về trạng thái tự do
             await User.findByIdAndUpdate(memberId, { 
                 household: null,
-                relationshipWithHead: null 
+                relationshipWithHead: null,
+                role: memberRoleId,
             });
 
             return res.status(200).json({ 
@@ -284,9 +301,11 @@ export const removeMember = async (req, res) => {
     await household.save();
 
     // Cập nhật User (Set về null)
+    const memberRoleId = await getMemberRoleId();
     await User.findByIdAndUpdate(memberId, { 
         household: null,
-        relationshipWithHead: null 
+        relationshipWithHead: null,
+        role: memberRoleId,
     });
 
     res.status(200).json(household);
@@ -347,6 +366,7 @@ export const splitHousehold = async (req, res) => {
     // 7. Cập nhật thông tin User
     user.household = newHousehold._id;
     user.relationshipWithHead = "household owner"; // Cập nhật thành chủ hộ
+    user.role = await getHouseMemberRoleId();
     await user.save();
 
     res.status(201).json({
@@ -435,6 +455,7 @@ export const moveMember = async (req, res) => {
     // 5. Cập nhật User
     user.household = targetHousehold._id;
     user.relationshipWithHead = relationship;
+    user.role = await getHouseMemberRoleId();
     
     // Nếu chuyển sang nhà mới mà nhà mới chưa có chủ hộ (hiếm gặp nhưng cứ handle)
     // Hoặc đơn giản là thành viên thường

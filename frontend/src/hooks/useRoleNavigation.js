@@ -22,6 +22,7 @@ export const useRoleNavigation = () => {
     
     switch(roleName) {
       case 'MEMBER':
+      case 'HOUSE MEMBER':
         return '/member';
       case 'HAMLET LEADER':
         return '/leader';
