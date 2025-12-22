@@ -5,6 +5,7 @@ import Profile from '../pages/Profile';
 import DanhSachThuTien from '../pages/Admin/PheDuyet/DanhSachThuTien';
 import FeeManagement from '../pages/Admin/ThuPhi/fee';
 import FeeHouseholdPage from '../pages/Admin/ThuPhi/FeeHouseholdPage';
+import Setting from '../feature/Setting';
 
 // Routes cho Kế toán (ACCOUNTANT)
 export const accountantRoutes = (
@@ -16,6 +17,7 @@ export const accountantRoutes = (
     <Route path="fee" element={<FeeManagement />} />
     <Route path="housefee" element={<FeeHouseholdPage />} />
     <Route path="*" element={<Navigate to="dashboard" replace />} />
+    <Route path="setting" element={<Setting />} />
   </Route>
 );
 

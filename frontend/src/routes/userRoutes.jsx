@@ -9,6 +9,7 @@ import RequestSinhTu from "../pages/User/Request/requestsinhtu";
 import RequestTamTruVang from "../pages/User/Request/requesttamtruvang";
 import YeuCauTamTruVang from "../pages/UserTemp";
 import LichSuPheDuyet from "../pages/User/LichSu/lichsuchinhsua";
+import Setting from "../feature/Setting";
 // Routes cho Dân cư (MEMBER)
 export const memberRoutes = (
   <Route path="member" element={<MainLayoutForUser />}>
@@ -23,6 +24,7 @@ export const memberRoutes = (
     <Route path="yeucau/tamtruvang" element={<YeuCauTamTruVang />} />
     <Route path="lichsu/thaydoi" element={<LichSuPheDuyet />} />
     <Route path="*" element={<Navigate to="dashboard" replace />} />
+    <Route path="setting" element={<Setting />}/>
   </Route>
 );
 

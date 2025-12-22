@@ -4,10 +4,12 @@ import useAuthStore from "../store/authStore";
 import { useRoleNavigation } from "../hooks/useRoleNavigation";
 import { useState } from "react";
 import NotificationPanel from "./In4ButtonTop3/NotificationPanel"; // Đảm bảo đúng đường dẫn file
+import useNotificationStore from "../store/notificationStore";
 
 export default function Topbar() {
   const { navigateWithRole } = useRoleNavigation();
   const { user, checkAuth } = useAuthStore();
+  const { enabled: notificationsEnabled } = useNotificationStore();
 
   const handleProfileClick = async () => {
     // Refresh user data before navigating to profile
@@ -19,10 +21,21 @@ export default function Topbar() {
     navigateWithRole("/profile");
   };
 
+  // Navigate sang Setting
+  const handleSettingClick = async () => {
+    try {
+      await checkAuth();
+    } catch (error) {
+      console.error("Failed to refresh settings data", error);
+    }
+    navigateWithRole("/setting");
+  };
+
   // Logic mở thông báo
   const [anchorEl, setAnchorEl] = useState(null);
 
   const handleOpenNoti = (event) => {
+    if (!notificationsEnabled) return; // đã tắt thông báo -> không mở panel
     setAnchorEl(event.currentTarget);
   };
 
@@ -62,21 +75,30 @@ export default function Topbar() {
 
       <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
         {/* Nút Chuông */}
-        <IconButton
+                <IconButton
           onClick={handleOpenNoti}
           sx={{
-            color: anchorEl ? "#2563eb" : "#4b5563",
-            backgroundColor: anchorEl
+            color: !notificationsEnabled
+              ? "#9ca3af"
+              : anchorEl
+              ? "#2563eb"
+              : "#4b5563",
+            backgroundColor: !notificationsEnabled
+              ? "rgba(229, 231, 235, 0.7)"
+              : anchorEl
               ? "rgba(37, 99, 235, 0.1)"
               : "rgba(255, 255, 255, 0.8)",
             borderRadius: "12px",
             padding: "10px",
             transition: "all 0.3s ease",
-            "&:hover": {
-              backgroundColor: "rgba(37, 99, 235, 0.1)",
-              color: "#2563eb",
-              transform: "translateY(-2px)",
-            },
+            cursor: !notificationsEnabled ? "not-allowed" : "pointer",
+            "&:hover": notificationsEnabled
+              ? {
+                  backgroundColor: "rgba(37, 99, 235, 0.1)",
+                  color: "#2563eb",
+                  transform: "translateY(-2px)",
+                }
+              : {},
           }}
         >
           <Bell size={20} />
@@ -89,7 +111,8 @@ export default function Topbar() {
           onClose={handleCloseNoti}
         />
 
-        <IconButton
+          <IconButton
+          onClick={handleSettingClick}
           sx={{
             color: "#4b5563",
             backgroundColor: "rgba(255, 255, 255, 0.8)",
