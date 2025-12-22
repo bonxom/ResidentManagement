@@ -2,6 +2,8 @@ import { Box, IconButton, Typography } from "@mui/material";
 import { Bell, User, Settings } from "lucide-react";
 import useAuthStore from "../store/authStore";
 import { useRoleNavigation } from "../hooks/useRoleNavigation";
+import { useState } from "react";
+import NotificationPanel from "./In4ButtonTop3/NotificationPanel"; // Đảm bảo đúng đường dẫn file
 
 export default function Topbar() {
   const { navigateWithRole } = useRoleNavigation();
@@ -17,24 +19,34 @@ export default function Topbar() {
     navigateWithRole("/profile");
   };
 
+  // Logic mở thông báo
+  const [anchorEl, setAnchorEl] = useState(null);
+
+  const handleOpenNoti = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleCloseNoti = () => {
+    setAnchorEl(null);
+  };
+
   return (
     <Box
       sx={{
         width: "100%",
         height: "70px",
-        background: "linear-gradient(to right, #ffffff 0%, #eff6ff 50%, #dbeafe 100%)",
+        background:
+          "linear-gradient(to right, #ffffff 0%, #eff6ff 50%, #dbeafe 100%)",
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
         px: 4,
-        borderBottom: "none",
         boxShadow: "0 2px 10px rgba(0, 0, 0, 0.08)",
         position: "sticky",
         top: 0,
         zIndex: 10,
       }}
     >
-      {/* Left: Welcome message */}
       <Box>
         <Typography
           sx={{
@@ -48,19 +60,15 @@ export default function Topbar() {
         </Typography>
       </Box>
 
-      {/* Right: icons */}
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          gap: 2,
-        }}
-      >
-        {/* Notification Icon */}
+      <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+        {/* Nút Chuông */}
         <IconButton
+          onClick={handleOpenNoti}
           sx={{
-            color: "#4b5563",
-            backgroundColor: "rgba(255, 255, 255, 0.8)",
+            color: anchorEl ? "#2563eb" : "#4b5563",
+            backgroundColor: anchorEl
+              ? "rgba(37, 99, 235, 0.1)"
+              : "rgba(255, 255, 255, 0.8)",
             borderRadius: "12px",
             padding: "10px",
             transition: "all 0.3s ease",
@@ -74,25 +82,28 @@ export default function Topbar() {
           <Bell size={20} />
         </IconButton>
 
-        {/* Settings Icon */}
+        {/* Khung thông báo tách riêng */}
+        <NotificationPanel
+          anchorEl={anchorEl}
+          open={Boolean(anchorEl)}
+          onClose={handleCloseNoti}
+        />
+
         <IconButton
           sx={{
             color: "#4b5563",
             backgroundColor: "rgba(255, 255, 255, 0.8)",
             borderRadius: "12px",
             padding: "10px",
-            transition: "all 0.3s ease",
             "&:hover": {
               backgroundColor: "rgba(37, 99, 235, 0.1)",
               color: "#2563eb",
-              transform: "translateY(-2px)",
             },
           }}
         >
           <Settings size={20} />
         </IconButton>
 
-        {/* USER ICON */}
         <IconButton
           onClick={handleProfileClick}
           sx={{
@@ -100,11 +111,9 @@ export default function Topbar() {
             backgroundColor: "rgba(255, 255, 255, 0.8)",
             borderRadius: "12px",
             padding: "10px",
-            transition: "all 0.3s ease",
             "&:hover": {
               backgroundColor: "rgba(37, 99, 235, 0.1)",
               color: "#2563eb",
-              transform: "translateY(-2px)",
             },
           }}
         >
