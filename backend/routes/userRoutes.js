@@ -17,6 +17,11 @@ router.get("/me/household", protect, getMyHousehold);
 router.get("/:id", protect, authorizePermission("VIEW USER"), getUserById);
 router.put("/:id", protect, authorizePermission("EDIT USER"), updateUser);
 router.delete("/:id", protect, authorizePermission("DELETE USER"), deleteUser);
-router.patch("/:id/password", protect, authorizePermission("RESET USER PASSWORD"), changePassword);
+router.patch("/:id/password", protect, (req, res, next) => {
+  if (req.user?._id?.toString() === req.params.id) {
+    return changePassword(req, res, next);
+  }
+  return authorizePermission("RESET USER PASSWORD")(req, res, () => changePassword(req, res, next));
+});
 
 export default router;

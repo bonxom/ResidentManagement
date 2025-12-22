@@ -15,14 +15,13 @@ import { useState, useEffect } from "react";
 
 export default function EditRequestModal({ open, onClose, currentData, onSubmit }) {
     const [formData, setFormData] = useState({
-        fullName: "",
-        dateOfBirth: "",
-        gender: "",
-        nationality: "",
-        personalId: "",
-        permanentAddress: "",
-        household: "",
-        relationshipToHead: "",
+        name: "",
+        dob: "",
+        sex: "",
+        birthLocation: "",
+        ethnic: "",
+        job: "",
+        relationshipWithHead: "",
         email: "",
         phoneNumber: "",
         reason: ""
@@ -32,14 +31,13 @@ export default function EditRequestModal({ open, onClose, currentData, onSubmit 
     useEffect(() => {
         if (open) {
             setFormData({
-                fullName: currentData.fullName || "",
-                dateOfBirth: currentData.dateOfBirth || "",
-                gender: currentData.gender || "",
-                nationality: currentData.nationality || "",
-                personalId: currentData.personalId || "",
-                permanentAddress: currentData.permanentAddress || "",
-                household: currentData.household || "",
-                relationshipToHead: currentData.relationshipToHead || "",
+                name: currentData.name || "",
+                dob: currentData.dob || "",
+                sex: currentData.sex || "",
+                birthLocation: currentData.birthLocation || "",
+                ethnic: currentData.ethnic || "",
+                job: currentData.job || "",
+                relationshipWithHead: currentData.relationshipWithHead || "",
                 email: currentData.email || "",
                 phoneNumber: currentData.phoneNumber || "",
                 reason: ""
@@ -54,21 +52,26 @@ export default function EditRequestModal({ open, onClose, currentData, onSubmit 
         });
     };
 
-    const handleSubmit = () => {
-        onSubmit(formData);
-        onClose();
+    const handleSubmit = async () => {
+        try {
+            const success = await onSubmit(formData);
+            if (success) {
+                onClose();
+            }
+        } catch (error) {
+            console.error("Submit update-info failed", error);
+        }
     };
 
     const handleClose = () => {
         setFormData({
-            fullName: "",
-            dateOfBirth: "",
-            gender: "",
-            nationality: "",
-            personalId: "",
-            permanentAddress: "",
-            household: "",
-            relationshipToHead: "",
+            name: "",
+            dob: "",
+            sex: "",
+            birthLocation: "",
+            ethnic: "",
+            job: "",
+            relationshipWithHead: "",
             email: "",
             phoneNumber: "",
             reason: ""
@@ -109,8 +112,8 @@ export default function EditRequestModal({ open, onClose, currentData, onSubmit 
                         </Typography>
                         <TextField
                             fullWidth
-                            name="fullName"
-                            value={formData.fullName}
+                            name="name"
+                            value={formData.name}
                             onChange={handleChange}
                             placeholder="Nhập họ và tên"
                             sx={{
@@ -137,8 +140,8 @@ export default function EditRequestModal({ open, onClose, currentData, onSubmit 
                         <TextField
                             fullWidth
                             type="date"
-                            name="dateOfBirth"
-                            value={formData.dateOfBirth}
+                            name="dob"
+                            value={formData.dob}
                             onChange={handleChange}
                             sx={{
                                 "& .MuiOutlinedInput-root": {
@@ -163,8 +166,8 @@ export default function EditRequestModal({ open, onClose, currentData, onSubmit 
                         </Typography>
                         <TextField
                             fullWidth
-                            name="gender"
-                            value={formData.gender}
+                            name="sex"
+                            value={formData.sex}
                             onChange={handleChange}
                             placeholder="Nhập giới tính"
                             sx={{
@@ -183,17 +186,17 @@ export default function EditRequestModal({ open, onClose, currentData, onSubmit 
                         />
                     </Grid>
 
-                    {/* Quốc tịch */}
+                    {/* Nơi sinh */}
                     <Grid item xs={12} sm={6}>
                         <Typography sx={{ fontSize: "14px", fontWeight: "500", mb: 1, color: "#333" }}>
-                            Quốc tịch <span style={{ color: "red" }}>*</span>
+                            Nơi sinh
                         </Typography>
                         <TextField
                             fullWidth
-                            name="nationality"
-                            value={formData.nationality}
+                            name="birthLocation"
+                            value={formData.birthLocation}
                             onChange={handleChange}
-                            placeholder="Nhập quốc tịch"
+                            placeholder="Nhập nơi sinh"
                             sx={{
                                 "& .MuiOutlinedInput-root": {
                                     backgroundColor: "#F5F7FA",
@@ -210,17 +213,17 @@ export default function EditRequestModal({ open, onClose, currentData, onSubmit 
                         />
                     </Grid>
 
-                    {/* Số định danh cá nhân */}
+                    {/* Dân tộc */}
                     <Grid item xs={12} sm={6}>
                         <Typography sx={{ fontSize: "14px", fontWeight: "500", mb: 1, color: "#333" }}>
-                            Số định danh cá nhân <span style={{ color: "red" }}>*</span>
+                            Dân tộc
                         </Typography>
                         <TextField
                             fullWidth
-                            name="personalId"
-                            value={formData.personalId}
+                            name="ethnic"
+                            value={formData.ethnic}
                             onChange={handleChange}
-                            placeholder="Nhập số định danh"
+                            placeholder="Nhập dân tộc"
                             sx={{
                                 "& .MuiOutlinedInput-root": {
                                     backgroundColor: "#F5F7FA",
@@ -237,44 +240,17 @@ export default function EditRequestModal({ open, onClose, currentData, onSubmit 
                         />
                     </Grid>
 
-                    {/* Địa chỉ thường trú */}
+                    {/* Nghề nghiệp */}
                     <Grid item xs={12} sm={6}>
                         <Typography sx={{ fontSize: "14px", fontWeight: "500", mb: 1, color: "#333" }}>
-                            Địa chỉ thường trú <span style={{ color: "red" }}>*</span>
+                            Nghề nghiệp
                         </Typography>
                         <TextField
                             fullWidth
-                            name="permanentAddress"
-                            value={formData.permanentAddress}
+                            name="job"
+                            value={formData.job}
                             onChange={handleChange}
-                            placeholder="Nhập địa chỉ"
-                            sx={{
-                                "& .MuiOutlinedInput-root": {
-                                    backgroundColor: "#F5F7FA",
-                                    borderRadius: "8px",
-                                    "& fieldset": { borderColor: "transparent" },
-                                    "&:hover fieldset": { borderColor: "#E0E0E0" },
-                                    "&.Mui-focused fieldset": { borderColor: "#2D66F5" },
-                                },
-                                "& .MuiInputBase-input": {
-                                    padding: "12px 14px",
-                                    fontSize: "14px"
-                                }
-                            }}
-                        />
-                    </Grid>
-
-                    {/* Hộ gia đình */}
-                    <Grid item xs={12} sm={6}>
-                        <Typography sx={{ fontSize: "14px", fontWeight: "500", mb: 1, color: "#333" }}>
-                            Hộ gia đình <span style={{ color: "red" }}>*</span>
-                        </Typography>
-                        <TextField
-                            fullWidth
-                            name="household"
-                            value={formData.household}
-                            onChange={handleChange}
-                            placeholder="Nhập mã hộ gia đình"
+                            placeholder="Nhập nghề nghiệp"
                             sx={{
                                 "& .MuiOutlinedInput-root": {
                                     backgroundColor: "#F5F7FA",
@@ -298,8 +274,8 @@ export default function EditRequestModal({ open, onClose, currentData, onSubmit 
                         </Typography>
                         <TextField
                             fullWidth
-                            name="relationshipToHead"
-                            value={formData.relationshipToHead}
+                            name="relationshipWithHead"
+                            value={formData.relationshipWithHead}
                             onChange={handleChange}
                             placeholder="Nhập quan hệ"
                             sx={{

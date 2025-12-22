@@ -8,7 +8,8 @@ export const createTransaction = async (req, res) => {
   const { feeId, householdId, amount, note } = req.body;
 
   try {
-    if (!amount || amount <= 0) {
+    const parsedAmount = Number(amount);
+    if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
       return res.status(400).json({ message: "Amount must be greater than 0" });
     }
 
@@ -28,7 +29,7 @@ export const createTransaction = async (req, res) => {
       fee: feeId,
       household: householdId,
       payer: payerId, 
-      amount,
+      amount: parsedAmount,
       note
     });
 
@@ -72,7 +73,13 @@ export const updateTransaction = async (req, res) => {
     }
 
     // Cho phép sửa tiền và ghi chú
-    if (amount) transaction.amount = amount;
+    if (amount !== undefined) {
+      const parsedAmount = Number(amount);
+      if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+        return res.status(400).json({ message: "Amount must be greater than 0" });
+      }
+      transaction.amount = parsedAmount;
+    }
     if (note) transaction.note = note;
 
     const updatedTransaction = await transaction.save();

@@ -40,11 +40,38 @@ function InfoField({ label, value }) {
 export default function DangKyTaiKhoanForm({
   open,
   onClose,
-  person,
+  request,
   onApprove,
   onReject,
 }) {
-  if (!person) return null;
+  if (!request) return null;
+
+  const requester = request.requester || {};
+  const requestData = request.requestData || {};
+
+  const householdId = requester.household?.houseHoldID || requester.household || "Chưa cập nhật";
+  const roleName = requester.role?.role_name || "MEMBER";
+  const dobDisplay = requester.dob
+    ? new Date(requester.dob).toLocaleDateString("vi-VN")
+    : "Chưa cập nhật";
+
+  const labelMap = {
+    name: "Họ và tên",
+    dob: "Ngày sinh",
+    sex: "Giới tính",
+    birthLocation: "Nơi sinh",
+    ethnic: "Dân tộc",
+    job: "Nghề nghiệp",
+    relationshipWithHead: "Quan hệ với chủ hộ",
+    email: "Email",
+    phoneNumber: "Số điện thoại",
+  };
+  const updateFields = Object.entries(requestData).filter(([key]) => key !== "reason");
+  const reason = requestData?.reason;
+  const title =
+    request.type === "UPDATE_INFO"
+      ? "Yêu cầu cập nhật tài khoản"
+      : "Thông tin đăng ký tài khoản";
 
   return (
     <Dialog
@@ -69,36 +96,84 @@ export default function DangKyTaiKhoanForm({
             color: "#333",
           }}
         >
-          Thông tin đăng ký tài khoản
+          {title}
         </Typography>
 
         {/* Form Fields */}
         <Grid container spacing={3}>
           <Grid item xs={12} sm={6}>
-            <InfoField label="Họ và tên" value={person.name} />
+            <InfoField label="Họ và tên" value={requester.name} />
           </Grid>
           <Grid item xs={12} sm={6}>
-            <InfoField label="Vai trò" value={person.role} />
+            <InfoField label="Vai trò" value={roleName} />
           </Grid>
           <Grid item xs={12} sm={6}>
-            <InfoField label="Mã hộ gia đình" value={person.houseHoldID} />
+            <InfoField label="Mã hộ gia đình" value={householdId} />
           </Grid>
           <Grid item xs={12} sm={6}>
-            <InfoField label="Tên chủ hộ" value={person.chuHo} />
+            <InfoField label="Email" value={requester.email} />
           </Grid>
           <Grid item xs={12} sm={6}>
-            <InfoField label="Ngày sinh" value={person.dateOfBirth} />
+            <InfoField label="Ngày sinh" value={dobDisplay} />
           </Grid>
           <Grid item xs={12} sm={6}>
-            <InfoField label="Giới tính" value={person.gender} />
+            <InfoField label="Giới tính" value={requester.sex} />
           </Grid>
           <Grid item xs={12} sm={6}>
-            <InfoField label="Số định danh cá nhân" value={person.personalId} />
+            <InfoField label="CCCD/ID" value={requester.userCardID} />
           </Grid>
           <Grid item xs={12} sm={6}>
-            <InfoField label="Địa chỉ" value={person.address} />
+            <InfoField label="Số điện thoại" value={requester.phoneNumber} />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <InfoField label="Nghề nghiệp" value={requester.job} />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <InfoField label="Dân tộc" value={requester.ethnic} />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <InfoField label="Nơi sinh" value={requester.birthLocation} />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <InfoField label="Quan hệ với chủ hộ" value={requester.relationshipWithHead} />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <InfoField label="Trạng thái tài khoản" value={requester.status} />
           </Grid>
         </Grid>
+
+        {request.type === "UPDATE_INFO" && (
+          <Box sx={{ mt: 3 }}>
+            <Typography
+              sx={{
+                fontSize: "16px",
+                fontWeight: "600",
+                mb: 2,
+                color: "#333",
+              }}
+            >
+              Thông tin yêu cầu cập nhật
+            </Typography>
+            <Grid container spacing={3}>
+              {updateFields.length === 0 ? (
+                <Grid item xs={12}>
+                  <InfoField label="Không có dữ liệu cập nhật" value="" />
+                </Grid>
+              ) : (
+                updateFields.map(([key, value]) => (
+                  <Grid item xs={12} sm={6} key={key}>
+                    <InfoField label={labelMap[key] || key} value={value} />
+                  </Grid>
+                ))
+              )}
+              {reason && (
+                <Grid item xs={12}>
+                  <InfoField label="Lý do yêu cầu" value={reason} />
+                </Grid>
+              )}
+            </Grid>
+          </Box>
+        )}
       </DialogContent>
 
       <DialogActions
