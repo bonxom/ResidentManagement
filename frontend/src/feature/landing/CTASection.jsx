@@ -1,7 +1,7 @@
-import { Container, Box, Typography, Button, Grid } from '@mui/material';
-import { Link as RouterLink } from 'react-router-dom';
-import { ArrowRight, Phone } from 'lucide-react';
-import './style/CTASection.css';
+import { Container, Box, Typography, Button, Grid } from "@mui/material";
+import { Link as RouterLink } from "react-router-dom";
+import { ArrowRight, Phone } from "lucide-react";
+import "./style/CTASection.css";
 
 function CTASection() {
   return (
@@ -14,8 +14,8 @@ function CTASection() {
                 Sẵn sàng số hóa quản lý dân cư?
               </Typography>
               <Typography variant="h6" className="cta-description">
-                Tham gia cùng hàng nghìn tổ dân phố, phường xã đã tin dùng hệ thống. 
-                Dùng thử miễn phí 30 ngày, không cần thẻ tín dụng.
+                Tham gia cùng hàng nghìn tổ dân phố, phường xã đã tin dùng hệ
+                thống. Dùng thử miễn phí 30 ngày, không cần thẻ tín dụng.
               </Typography>
               <Box className="cta-features">
                 <Typography variant="body2" className="cta-feature">
@@ -29,7 +29,7 @@ function CTASection() {
                 </Typography>
               </Box>
             </Grid>
-            
+
             <Grid item xs={12} md={4}>
               <Box className="cta-buttons">
                 <Button
@@ -43,20 +43,20 @@ function CTASection() {
                 >
                   Bắt đầu miễn phí
                 </Button>
-                
+
                 <Button
                   variant="outlined"
                   size="large"
                   fullWidth
                   className="cta-secondary-button"
                   startIcon={<Phone />}
-                  sx={{ 
-                    color: '#ffffff',
-                    borderColor: '#ffffff',
-                    '&:hover': {
-                      borderColor: '#ffffff',
-                      backgroundColor: 'rgba(255, 255, 255, 0.1)'
-                    }
+                  sx={{
+                    color: "#ffffff",
+                    borderColor: "#ffffff",
+                    "&:hover": {
+                      borderColor: "#ffffff",
+                      backgroundColor: "rgba(255, 255, 255, 0.1)",
+                    },
                   }}
                 >
                   Liên hệ tư vấn
