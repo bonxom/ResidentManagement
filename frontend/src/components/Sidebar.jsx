@@ -1,5 +1,19 @@
 import { Box, Typography, IconButton } from "@mui/material";
-import { Home, Users, User, FileText, PlusCircle, History, CheckCircle, Repeat, ChevronDown, UserCircle, Menu, X, Wallet } from "lucide-react";
+import {
+  Home,
+  Users,
+  User,
+  FileText,
+  PlusCircle,
+  History,
+  CheckCircle,
+  Repeat,
+  ChevronDown,
+  UserCircle,
+  Menu,
+  X,
+  Wallet,
+} from "lucide-react";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import LogoutButton from "../feature/admin/LogoutButton";
@@ -12,15 +26,22 @@ export const drawerWidth = drawerWidthExpanded; // For backward compatibility
 export function Sidebar({ user, onWidthChange }) {
   const { user: authUser } = useAuthStore();
   const userRole = authUser?.role?.role_name;
-  const rolePrefix = userRole === 'HAMLET LEADER' ? '/leader' : userRole === 'ACCOUNTANT' ? '/accountant' : '';
-  
-  const appTitle = user?.ten ? `Xin chào, ${user.ten}` : "DÂN CƯ SỐ";
+  const rolePrefix =
+    userRole === "HAMLET LEADER"
+      ? "/leader"
+      : userRole === "ACCOUNTANT"
+      ? "/accountant"
+      : "";
+
+  const appTitle = user?.ten ? `Xin chào, ${user.ten}` : "TỔ TRƯỞNG";
   const [expandedMenu, setExpandedMenu] = useState(null);
   const [hideTimeout, setHideTimeout] = useState(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const navigate = useNavigate();
-  
-  const currentDrawerWidth = isExpanded ? drawerWidthExpanded : drawerWidthCollapsed;
+
+  const currentDrawerWidth = isExpanded
+    ? drawerWidthExpanded
+    : drawerWidthCollapsed;
 
   // Notify parent of width changes
   React.useEffect(() => {
@@ -61,14 +82,19 @@ export function Sidebar({ user, onWidthChange }) {
         transition: "width 0.3s ease, padding 0.3s ease",
       }}
     >
-
       {/* Toggle Button */}
-      <Box sx={{ display: "flex", justifyContent: isExpanded ? "flex-end" : "center", mb: 2 }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: isExpanded ? "flex-end" : "center",
+          mb: 2,
+        }}
+      >
         <IconButton
           onClick={() => setIsExpanded(!isExpanded)}
           sx={{
             color: "white",
-            "&:hover": { backgroundColor: "#2A2E42" }
+            "&:hover": { backgroundColor: "#2A2E42" },
           }}
         >
           {isExpanded ? <X size={20} /> : <Menu size={20} />}
@@ -93,24 +119,45 @@ export function Sidebar({ user, onWidthChange }) {
 
       {/* MENU */}
       {isExpanded && <SectionTitle text="Menu" />}
-      <MenuItem icon={<Home size={18} />} label="Dashboard" to={`${rolePrefix}/dashboard`} isExpanded={isExpanded} />
-      <MenuItem icon={<Users size={18} />} label="Quản lý hộ khẩu" to={`${rolePrefix}/qldc`} isExpanded={isExpanded} />
+      <MenuItem
+        icon={<Home size={18} />}
+        label="Dashboard"
+        to={`${rolePrefix}/dashboard`}
+        isExpanded={isExpanded}
+      />
+      <MenuItem
+        icon={<Users size={18} />}
+        label="Quản lý hộ khẩu"
+        to={`${rolePrefix}/qldc`}
+        isExpanded={isExpanded}
+      />
 
       {/* ACTION */}
       {isExpanded && <SectionTitle text="Action" />}
-      <MenuItem icon={<Wallet size={18} />} label="Thu phí" to={`${rolePrefix}/fee`} isExpanded={isExpanded} />
+      <MenuItem
+        icon={<Wallet size={18} />}
+        label="Thu phí"
+        to={`${rolePrefix}/fee`}
+        isExpanded={isExpanded}
+      />
       {isExpanded ? (
-        <MenuItemWithSubmenu 
-          icon={<FileText size={18} />} 
+        <MenuItemWithSubmenu
+          icon={<FileText size={18} />}
           label="Danh sách cần phê duyệt"
           isExpanded={expandedMenu === "approval"}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
           submenu={[
-            { label: "Danh sách đăng kí tài khoản", path: `${rolePrefix}/dktk` },
+            {
+              label: "Danh sách đăng kí tài khoản",
+              path: `${rolePrefix}/dktk`,
+            },
             { label: "Danh sách khai báo sinh tử", path: `${rolePrefix}/kbst` },
             { label: "Danh sách thu tiền", path: `${rolePrefix}/thutien` },
-            { label: "Danh sách tạm trú tạm vắng", path: `${rolePrefix}/tamtruvang` },
+            {
+              label: "Danh sách tạm trú tạm vắng",
+              path: `${rolePrefix}/tamtruvang`,
+            },
           ]}
           onSubmenuClick={(path) => {
             navigate(path);
@@ -119,19 +166,40 @@ export function Sidebar({ user, onWidthChange }) {
           isSidebarExpanded={isExpanded}
         />
       ) : (
-        <MenuItem icon={<FileText size={18} />} label="Phê duyệt" to={`${rolePrefix}/dktk`} isExpanded={isExpanded} />
+        <MenuItem
+          icon={<FileText size={18} />}
+          label="Phê duyệt"
+          to={`${rolePrefix}/dktk`}
+          isExpanded={isExpanded}
+        />
       )}
-      <MenuItem icon={<PlusCircle size={18} />} label="Thêm thông tin cư dân" to={`${rolePrefix}/themcudan`} isExpanded={isExpanded} />
+      <MenuItem
+        icon={<PlusCircle size={18} />}
+        label="Thêm thông tin cư dân"
+        to={`${rolePrefix}/themcudan`}
+        isExpanded={isExpanded}
+      />
 
       {/* HISTORY */}
       {isExpanded && <SectionTitle text="History" />}
-      <MenuItem icon={<History size={18} />} label="Lịch sử giao dịch" isExpanded={isExpanded} />
-      <MenuItem icon={<CheckCircle size={18} />} label="Lịch sử phê duyệt" isExpanded={isExpanded} />
-      <MenuItem icon={<Repeat size={18} />} label="Lịch sử thay đổi" isExpanded={isExpanded} />
+      <MenuItem
+        icon={<History size={18} />}
+        label="Lịch sử giao dịch"
+        isExpanded={isExpanded}
+      />
+      <MenuItem
+        icon={<CheckCircle size={18} />}
+        label="Lịch sử phê duyệt"
+        isExpanded={isExpanded}
+      />
+      <MenuItem
+        icon={<Repeat size={18} />}
+        label="Lịch sử thay đổi"
+        isExpanded={isExpanded}
+      />
 
       {/* Logout Button */}
       <LogoutButton isExpanded={isExpanded} />
-
     </Box>
   );
 }
@@ -180,7 +248,16 @@ function MenuItem({ icon, label, to, isExpanded }) {
   );
 }
 
-function MenuItemWithSubmenu({ icon, label, isExpanded, onMouseEnter, onMouseLeave, submenu, onSubmenuClick, isSidebarExpanded }) {
+function MenuItemWithSubmenu({
+  icon,
+  label,
+  isExpanded,
+  onMouseEnter,
+  onMouseLeave,
+  submenu,
+  onSubmenuClick,
+  isSidebarExpanded,
+}) {
   return (
     <Box
       onMouseEnter={onMouseEnter}
@@ -206,8 +283,8 @@ function MenuItemWithSubmenu({ icon, label, isExpanded, onMouseEnter, onMouseLea
       >
         {icon}
         <Typography sx={{ fontSize: "14px", flex: 1 }}>{label}</Typography>
-        <ChevronDown 
-          size={16} 
+        <ChevronDown
+          size={16}
           style={{
             transition: "transform 0.2s",
             transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)",
@@ -241,7 +318,8 @@ function MenuItemWithSubmenu({ icon, label, isExpanded, onMouseEnter, onMouseLea
                 color: "#D4DBE5",
                 cursor: "pointer",
                 transition: "0.2s",
-                borderBottom: idx < submenu.length - 1 ? "1px solid #3A3E52" : "none",
+                borderBottom:
+                  idx < submenu.length - 1 ? "1px solid #3A3E52" : "none",
                 "&:hover": {
                   color: "white",
                   backgroundColor: "#3A3E52",

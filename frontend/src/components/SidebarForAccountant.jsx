@@ -22,7 +22,7 @@ export const drawerWidth = drawerWidthExpanded; // For backward compatibility
 
 export function SidebarForAccountant({ user, onWidthChange }) {
   const navigate = useNavigate();
-  const appTitle = user?.ten ? `Xin chào, ${user.ten}` : "DÂN CƯ SỐ";
+  const appTitle = user?.ten ? `Xin chào, ${user.ten}` : "KẾ TOÁN";
   const [isExpanded, setIsExpanded] = useState(false);
 
   const currentDrawerWidth = isExpanded
