@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Table,
   TableBody,
@@ -8,388 +8,278 @@ import {
   TableRow,
   Paper,
   Box,
+  Button,
+  TextField,
+  Chip,
+  CircularProgress,
+  Alert,
+  Typography,
 } from "@mui/material";
 import DangKyTaiKhoanForm from "../../../feature/admin/Form/DangKyTaiKhoanForm";
+import { requestAPI } from "../../../services/apiService";
+
+const tabs = [
+  { key: "REGISTER", label: "Yêu cầu đăng ký tài khoản" },
+  { key: "UPDATE_INFO", label: "Yêu cầu cập nhật thông tin" },
+];
+
+function StatusChip({ status }) {
+  const map = {
+    PENDING: { label: "Chờ duyệt", color: "warning" },
+    APPROVED: { label: "Đã duyệt", color: "success" },
+    REJECTED: { label: "Từ chối", color: "error" },
+  };
+  const { label, color } = map[status] || { label: status || "N/A", color: "default" };
+  return <Chip size="small" label={label} color={color} />;
+}
 
 export default function DanhSachDangKyTaiKhoan() {
-  // Dữ liệu mẫu (giữ nguyên)
-  const fullData = [
-    {
-      role: "Dân cư",
-      name: "Nguyễn Văn A",
-      houseHoldID: "HH001",
-      chuHo: "Nguyễn Văn Chủ",
-      status: "",
-      dateOfBirth: "15/05/1990",
-      gender: "Nam",
-      personalId: "001234567890",
-      address: "123 Đường ABC, Phường XYZ, Quận 1, TP.HCM",
-    },
-    {
-      role: "Dân cư",
-      name: "Nguyễn Văn B",
-      houseHoldID: "HH002",
-      chuHo: "Nguyễn Văn Hộ",
-      status: "Đã phê duyệt",
-      dateOfBirth: "20/03/1985",
-      gender: "Nam",
-      personalId: "001234567891",
-      address: "456 Đường DEF, Phường ABC, Quận 2, TP.HCM",
-    },
-    {
-      role: "Kế toán",
-      name: "Nguyễn Văn C",
-      houseHoldID: "HH003",
-      chuHo: "Nguyễn Văn Hộ",
-      status: "Không phê duyệt",
-      dateOfBirth: "10/07/1992",
-      gender: "Nữ",
-      personalId: "001234567892",
-      address: "789 Đường GHI, Phường DEF, Quận 3, TP.HCM",
-    },
-    {
-      role: "Dân cư",
-      name: "Nguyễn Văn D",
-      houseHoldID: "HH001",
-      chuHo: "Nguyễn Văn Chủ",
-      status: "",
-      dateOfBirth: "25/12/1988",
-      gender: "Nam",
-      personalId: "001234567893",
-      address: "123 Đường ABC, Phường XYZ, Quận 1, TP.HCM",
-    },
-  ];
-
-  // Data hiện tại có thể thay đổi
-  const [data, setData] = useState(fullData);
+  const [activeTab, setActiveTab] = useState("REGISTER");
+  const [registerRequests, setRegisterRequests] = useState([]);
+  const [updateRequests, setUpdateRequests] = useState([]);
   const [searchText, setSearchText] = useState("");
-  const [filterRole, setFilterRole] = useState("Tất cả");
-  const [openModal, setOpenModal] = useState(false);
-  const [selectedPerson, setSelectedPerson] = useState(null);
-  const [selectedIndex, setSelectedIndex] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [selectedRequest, setSelectedRequest] = useState(null);
+  const [processingId, setProcessingId] = useState(null);
 
-  // Lọc chỉ người chưa phê duyệt (ẩn đi những người đã phê duyệt)
-  const handleFilterChuaDuyet = () => {
-    setData((prev) => prev.filter((item) => item.status === ""));
+  const fetchRequests = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const [registerRes, updateRes] = await Promise.all([
+        requestAPI.getRequests({ type: "REGISTER", status: "PENDING" }),
+        requestAPI.getRequests({ type: "UPDATE_INFO", status: "PENDING" }),
+      ]);
+      setRegisterRequests(registerRes || []);
+      setUpdateRequests(updateRes || []);
+    } catch (err) {
+      const msg = err?.message || err?.customMessage || "Không thể tải danh sách yêu cầu";
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Tìm kiếm dựa trên data gốc
-  const handleSearch = () => {
-    let filtered = fullData;
+  useEffect(() => {
+    fetchRequests();
+  }, []);
 
-    if (searchText.trim() !== "") {
-      filtered = filtered.filter(
-        (item) =>
-          item.name.toLowerCase().includes(searchText.toLowerCase()) ||
-          item.chuHo.toLowerCase().includes(searchText.toLowerCase())
+  const dataSource = activeTab === "REGISTER" ? registerRequests : updateRequests;
+
+  const filteredData = useMemo(() => {
+    if (!searchText.trim()) return dataSource;
+    const q = searchText.toLowerCase();
+    return dataSource.filter((req) => {
+      const requester = req.requester || {};
+      return (
+        requester.name?.toLowerCase().includes(q) ||
+        requester.email?.toLowerCase().includes(q) ||
+        requester.userCardID?.toString().includes(q)
       );
+    });
+  }, [dataSource, searchText]);
+
+  const handleReview = async (request, status) => {
+    setProcessingId(request._id);
+    setError(null);
+    try {
+      await requestAPI.reviewRequest(request._id, status);
+      if (request.type === "REGISTER") {
+        setRegisterRequests((prev) => prev.filter((r) => r._id !== request._id));
+      } else {
+        setUpdateRequests((prev) => prev.filter((r) => r._id !== request._id));
+      }
+      if (selectedRequest?._id === request._id) {
+        setSelectedRequest(null);
+      }
+    } catch (err) {
+      const msg = err?.message || err?.customMessage || "Xử lý yêu cầu thất bại";
+      setError(msg);
+    } finally {
+      setProcessingId(null);
     }
-
-    if (filterRole !== "Tất cả") {
-      filtered = filtered.filter((item) => item.role === filterRole);
-    }
-
-    setData(filtered);
   };
 
-  // Cập nhật trạng thái phê duyệt
-  const updateStatus = (index, newStatus) => {
-    const newData = [...data];
-    newData[index].status = newStatus;
-    setData(newData);
-  };
+  const renderActionButtons = (request) => (
+    <Box sx={{ display: "flex", gap: 1 }}>
+      <Button
+        variant="outlined"
+        color="success"
+        size="small"
+        disabled={processingId === request._id}
+        onClick={() => handleReview(request, "APPROVED")}
+      >
+        Duyệt
+      </Button>
+      <Button
+        variant="outlined"
+        color="error"
+        size="small"
+        disabled={processingId === request._id}
+        onClick={() => handleReview(request, "REJECTED")}
+      >
+        Từ chối
+      </Button>
+      <Button
+        variant="contained"
+        size="small"
+        onClick={() => setSelectedRequest(request)}
+        sx={{ textTransform: "none" }}
+      >
+        Xem
+      </Button>
+    </Box>
+  );
 
-  // Mở modal khi click vào '...'
-  const handleOpenModal = (item, index) => {
-    setSelectedPerson(item);
-    setSelectedIndex(index);
-    setOpenModal(true);
-  };
+  const renderRow = (request) => {
+    const requester = request.requester || {};
+    const household = requester.household?.houseHoldID || requester.household || "—";
+    const roleName = requester.role?.role_name || "MEMBER";
+    const changeSummary =
+      request.type === "UPDATE_INFO"
+        ? Object.keys(request.requestData || {})
+            .filter((key) => key !== "reason")
+            .join(", ")
+        : "—";
 
-  // Đóng modal
-  const handleCloseModal = () => {
-    setOpenModal(false);
-    setSelectedPerson(null);
-    setSelectedIndex(null);
-  };
-
-  // Cập nhật trạng thái từ modal
-  const handleStatusChange = (newStatus) => {
-    if (selectedIndex !== null) {
-      updateStatus(selectedIndex, newStatus);
-    }
-    handleCloseModal();
+    return (
+      <TableRow key={request._id} sx={{ borderBottom: "1px solid #e0e0e0" }}>
+        <TableCell sx={{ padding: "12px 16px" }}>{requester.name || "Chưa cập nhật"}</TableCell>
+        <TableCell sx={{ padding: "12px 16px" }}>{requester.email || "—"}</TableCell>
+        <TableCell sx={{ padding: "12px 16px" }}>{requester.userCardID || "—"}</TableCell>
+        {activeTab === "REGISTER" && (
+          <TableCell sx={{ padding: "12px 16px" }}>{roleName}</TableCell>
+        )}
+        <TableCell sx={{ padding: "12px 16px" }}>{household}</TableCell>
+        {activeTab === "UPDATE_INFO" && (
+          <TableCell sx={{ padding: "12px 16px" }}>
+            {changeSummary || "Không có dữ liệu"}
+          </TableCell>
+        )}
+        <TableCell sx={{ padding: "12px 16px" }}>
+          <StatusChip status={request.status} />
+        </TableCell>
+        <TableCell sx={{ padding: "12px 16px" }}>{renderActionButtons(request)}</TableCell>
+      </TableRow>
+    );
   };
 
   return (
     <div style={{ padding: "20px" }}>
-      {/* Header */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <h1 style={{ margin: 0 }}>Danh sách đăng ký tài khoản</h1>
+      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <Typography variant="h5" sx={{ fontWeight: 700 }}>
+          Quản lý yêu cầu tài khoản
+        </Typography>
+        <Box sx={{ display: "flex", gap: 1 }}>
+          <Button variant="outlined" onClick={() => setSearchText("")}>
+            Xóa tìm kiếm
+          </Button>
+          <Button variant="contained" onClick={fetchRequests}>
+            Làm mới
+          </Button>
+        </Box>
+      </Box>
 
-        <button
-          onClick={handleFilterChuaDuyet}
-          style={{
-            background: "#2962ff",
-            color: "white",
-            fontSize: "18px",
-            padding: "10px 20px",
-            borderRadius: "8px",
-            border: "none",
-            cursor: "pointer",
-          }}
-        >
-          Xác nhận phê duyệt
-        </button>
-      </div>
+      <Box sx={{ display: "flex", gap: 1.5, mt: 2 }}>
+        {tabs.map((tab) => (
+          <Button
+            key={tab.key}
+            variant={activeTab === tab.key ? "contained" : "outlined"}
+            onClick={() => setActiveTab(tab.key)}
+            sx={{ textTransform: "none" }}
+          >
+            {tab.label}
+          </Button>
+        ))}
+      </Box>
 
-      {/* Khung tìm kiếm */}
-      <div
-        style={{
+      <Box
+        sx={{
           marginTop: "20px",
-          background: "#f1f3f6",
-          padding: "20px",
+          background: "#f7f9fc",
+          padding: "16px",
           borderRadius: "12px",
           display: "flex",
-          gap: "20px",
+          gap: "12px",
           alignItems: "center",
         }}
       >
-        <div style={{ flex: 1 }}>
-          <p style={{ fontWeight: "bold", marginBottom: 5 }}>
-            Tìm kiếm (Tên người / Tên chủ hộ)
-          </p>
-          <input
-            type="text"
-            placeholder="🔍 Nhập nội dung..."
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            style={{
-              width: "100%",
-              padding: "12px",
-              borderRadius: "8px",
-              border: "1px solid #ccc",
-            }}
-          />
-        </div>
+        <TextField
+          fullWidth
+          label="Tìm kiếm (Tên / Email / CCCD)"
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          size="small"
+        />
+      </Box>
 
-        <div style={{ flex: 1 }}>
-          <p style={{ fontWeight: "bold", marginBottom: 5 }}>Lọc theo</p>
-          <select
-            value={filterRole}
-            onChange={(e) => setFilterRole(e.target.value)}
-            style={{
-              width: "100%",
-              padding: "12px",
-              borderRadius: "8px",
-              border: "1px solid #ccc",
-            }}
-          >
-            <option>Tất cả</option>
-            <option>Dân cư</option>
-            <option>Kế toán</option>
-          </select>
-        </div>
+      {error && (
+        <Alert severity="error" sx={{ mt: 2 }}>
+          {error}
+        </Alert>
+      )}
 
-        <button
-          onClick={handleSearch}
-          style={{
-            height: "45px",
-            padding: "0 20px",
-            background: "#2962ff",
-            color: "white",
-            borderRadius: "8px",
-            border: "none",
-            alignSelf: "flex-end",
-            cursor: "pointer",
-          }}
-        >
-          Tìm kiếm
-        </button>
-      </div>
-
-      {/* Bảng danh sách */}
-      <TableContainer component={Paper} style={{ marginTop: "30px" }}>
-        <Table>
-          <TableHead sx={{ backgroundColor: "#f5f5f5" }}>
-            <TableRow>
-              <TableCell sx={{ fontWeight: "bold", padding: "16px" }}>
-                Vai trò
-              </TableCell>
-              <TableCell sx={{ fontWeight: "bold", padding: "16px" }}>
-                Họ và tên
-              </TableCell>
-              <TableCell sx={{ fontWeight: "bold", padding: "16px" }}>
-                Mã hộ gia đình
-              </TableCell>
-              <TableCell sx={{ fontWeight: "bold", padding: "16px" }}>
-                Tên chủ hộ
-              </TableCell>
-              <TableCell sx={{ fontWeight: "bold", padding: "16px" }}>
-                Trạng thái phê duyệt
-              </TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {data.map((item, index) => (
-              <TableRow key={index} sx={{ borderBottom: "1px solid #e0e0e0" }}>
-                <TableCell sx={{ padding: "16px" }}>{item.role}</TableCell>
-                <TableCell sx={{ padding: "16px" }}>{item.name}</TableCell>
-                <TableCell sx={{ padding: "16px" }}>
-                  {item.houseHoldID}
+      {loading ? (
+        <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+          <CircularProgress />
+        </Box>
+      ) : (
+        <TableContainer component={Paper} sx={{ mt: 3 }}>
+          <Table>
+            <TableHead sx={{ backgroundColor: "#f5f5f5" }}>
+              <TableRow>
+                <TableCell sx={{ fontWeight: "bold", padding: "12px 16px" }}>
+                  Họ và tên
                 </TableCell>
-                <TableCell sx={{ padding: "16px" }}>{item.chuHo}</TableCell>
-                <TableCell sx={{ padding: "16px" }}>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      gap: "8px",
-                      alignItems: "center",
-                    }}
-                  >
-                    {/* Nút Phê duyệt */}
-                    <button
-                      onClick={() => updateStatus(index, "Đã phê duyệt")}
-                      style={{
-                        padding: "8px",
-                        color: "#10b981",
-                        backgroundColor:
-                          item.status === "Đã phê duyệt"
-                            ? "#a9f5c0"
-                            : "transparent",
-                        border: "none",
-                        borderRadius: "50%",
-                        width: "36px",
-                        height: "36px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        cursor: "pointer",
-                        transition: "background-color 0.2s",
-                      }}
-                      onMouseEnter={(e) => {
-                        if (item.status !== "Đã phê duyệt") {
-                          e.currentTarget.style.backgroundColor = "#f0fdf4";
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (item.status !== "Đã phê duyệt") {
-                          e.currentTarget.style.backgroundColor = "transparent";
-                        }
-                      }}
-                      title="Phê duyệt"
-                    >
-                      <svg
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="3"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                      </svg>
-                    </button>
-
-                    {/* Nút Từ chối */}
-                    <button
-                      onClick={() => updateStatus(index, "Không phê duyệt")}
-                      style={{
-                        padding: "8px",
-                        color: "#f97316",
-                        backgroundColor:
-                          item.status === "Không phê duyệt"
-                            ? "#ffcb8a"
-                            : "transparent",
-                        border: "none",
-                        borderRadius: "50%",
-                        width: "36px",
-                        height: "36px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        cursor: "pointer",
-                        transition: "background-color 0.2s",
-                      }}
-                      onMouseEnter={(e) => {
-                        if (item.status !== "Không phê duyệt") {
-                          e.currentTarget.style.backgroundColor = "#fff7ed";
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (item.status !== "Không phê duyệt") {
-                          e.currentTarget.style.backgroundColor = "transparent";
-                        }
-                      }}
-                      title="Từ chối"
-                    >
-                      <svg
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="3"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                      </svg>
-                    </button>
-
-                    {/* Dấu ... - Mở modal */}
-                    <button
-                      onClick={() => handleOpenModal(item, index)}
-                      style={{
-                        padding: "8px",
-                        color: "#3b82f6",
-                        backgroundColor: "#eff6ff",
-                        border: "none",
-                        borderRadius: "50%",
-                        width: "36px",
-                        height: "36px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        cursor: "pointer",
-                        transition: "background-color 0.2s",
-                        fontSize: "18px",
-                        fontWeight: "bold",
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = "#dbeafe";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = "#eff6ff";
-                      }}
-                      title="Xem chi tiết"
-                    >
-                      ...
-                    </button>
-                  </Box>
+                <TableCell sx={{ fontWeight: "bold", padding: "12px 16px" }}>
+                  Email
+                </TableCell>
+                <TableCell sx={{ fontWeight: "bold", padding: "12px 16px" }}>
+                  CCCD/ID
+                </TableCell>
+                {activeTab === "REGISTER" && (
+                  <TableCell sx={{ fontWeight: "bold", padding: "12px 16px" }}>
+                    Vai trò
+                  </TableCell>
+                )}
+                <TableCell sx={{ fontWeight: "bold", padding: "12px 16px" }}>
+                  Mã hộ gia đình
+                </TableCell>
+                {activeTab === "UPDATE_INFO" && (
+                  <TableCell sx={{ fontWeight: "bold", padding: "12px 16px" }}>
+                    Trường cần cập nhật
+                  </TableCell>
+                )}
+                <TableCell sx={{ fontWeight: "bold", padding: "12px 16px" }}>
+                  Trạng thái
+                </TableCell>
+                <TableCell sx={{ fontWeight: "bold", padding: "12px 16px" }}>
+                  Thao tác
                 </TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            </TableHead>
+            <TableBody>
+              {filteredData.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} sx={{ textAlign: "center", py: 3 }}>
+                    Không có yêu cầu nào.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredData.map((request) => renderRow(request))
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
 
-      {/* Modal hiển thị thông tin cá nhân */}
       <DangKyTaiKhoanForm
-        open={openModal}
-        onClose={handleCloseModal}
-        person={selectedPerson}
-        onApprove={() => handleStatusChange("Đã phê duyệt")}
-        onReject={() => handleStatusChange("Không phê duyệt")}
+        open={!!selectedRequest}
+        onClose={() => setSelectedRequest(null)}
+        request={selectedRequest}
+        onApprove={() => selectedRequest && handleReview(selectedRequest, "APPROVED")}
+        onReject={() => selectedRequest && handleReview(selectedRequest, "REJECTED")}
       />
     </div>
   );
