@@ -1,14 +1,14 @@
-import { Route } from 'react-router-dom';
-import SignIn from '../pages/public/SignIn';
-import SignUp from '../pages/public/SignUp';
-import ForgotPassword from '../pages/public/ForgotPassword';
-import LandingPage from '../pages/public/LandingPage';
-import ProtectedRoute from '../components/ProtectedRoute';
+import { Route } from "react-router-dom";
+import SignIn from "../pages/public/SignIn";
+import SignUp from "../pages/public/SignUp";
+import ForgotPassword from "../pages/public/ForgotPassword";
+import LandingPage from "../pages/public/LandingPage";
+import ProtectedRoute from "../components/ProtectedRoute";
 
 // Import role-based route components
-import { memberRoutes } from './userRoutes';
-import { leaderRoutes } from './leaderRoutes';
-import { accountantRoutes } from './accountantRoutes';
+import { memberRoutes } from "./userRoutes";
+import { leaderRoutes } from "./leaderRoutes";
+import { accountantRoutes } from "./accountantRoutes";
 
 export const AppRouters = (
   <>

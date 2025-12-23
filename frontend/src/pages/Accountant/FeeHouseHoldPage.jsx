@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import useAuthStore from "../../../store/authStore";
-import { feeAPI } from "../../../services/apiService";
+import useAuthStore from "../../store/authStore";
+import { feeAPI } from "../../services/apiService";
 
 import {
   Box,
@@ -27,9 +27,7 @@ import {
   Snackbar,
 } from "@mui/material";
 
-// import CloseIcon from "@mui/icons-material/Close";
-
-function FeeManagement() {
+function FeeHouseHoldPage() {
   const navigate = useNavigate();
   const { user, signOut } = useAuthStore();
 
@@ -326,7 +324,7 @@ function FeeManagement() {
         sx={{ mb: 2 }}
       >
         <Typography variant="h4" fontWeight={600}>
-          Quản lý khoản thu
+          Quản lý khoản thu (Accountant)
         </Typography>
 
         <Box>
@@ -378,7 +376,6 @@ function FeeManagement() {
                 onClick={handleClose}
                 sx={{ position: "absolute", right: 8, top: 8 }}
               >
-                {/* <CloseIcon /> */}
                 <Typography variant="body2" component="span">
                   ×
                 </Typography>
@@ -906,4 +903,4 @@ function FeeManagement() {
   );
 }
 
-export default FeeManagement;
+export default FeeHouseHoldPage;

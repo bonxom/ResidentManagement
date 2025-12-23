@@ -19,7 +19,7 @@ export const memberRoutes = (
     <Route path="ThongTinChiTiet" element={<ThongTinChiTiet />} />
     <Route path="feeuser" element={<KhoanNop />} />
     <Route path="requestsinhtu" element={<RequestSinhTu />} />
-    <Route path="requesttamtruvang" element={<RequestTamTruVang />} /> 
+    <Route path="requesttamtruvang" element={<RequestTamTruVang />} />
     <Route path="yeucau/tamtruvang" element={<YeuCauTamTruVang />} />
     <Route path="lichsu/thaydoi" element={<LichSuPheDuyet />} />
     <Route path="*" element={<Navigate to="dashboard" replace />} />
