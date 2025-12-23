@@ -12,6 +12,7 @@ import FeeManagement from '../pages/Admin/ThuPhi/fee';
 import FeeHouseholdPage from '../pages/Admin/ThuPhi/FeeHouseholdPage';
 import ThongTinChiTietAdmin from '../pages/Admin/QuanLyDanCu/ThongTinChiTietAdmin';
 import ThongTinHoDanAdmin from '../pages/Admin/QuanLyDanCu/ThongTinHoDanAdmin';
+import ThongTinChiTietMember from '../pages/Admin/QuanLyDanCu/ThongTinChiTietMember';
 import ThemThongTinCuDan from '../pages/Admin/QuanLyDanCu/ThemThongTinCuDan';
 import NhanKhau from '../pages/NhanKhau';
 import Setting from "../feature/Setting";
@@ -34,6 +35,7 @@ export const leaderRoutes = (
     <Route path="housefee" element={<FeeHouseholdPage />} />
     <Route path="ThongTinChiTietadmin" element={<ThongTinChiTietAdmin />} />
     <Route path="ThongTinHoDanadmin" element={<ThongTinHoDanAdmin />} />
+    <Route path="ThongTinChiTietMember" element={<ThongTinChiTietMember />} />
     <Route path="*" element={<Navigate to="dashboard" replace />} />
     <Route path="setting" element={<Setting />} />
   </Route>

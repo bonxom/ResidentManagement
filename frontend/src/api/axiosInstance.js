@@ -2,8 +2,8 @@ import axios from "axios";
 
 // Tạo một instance (thể hiện) của axios
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:5000/api", // URL backend THẬT của bạn
-  timeout: 30000, 
+  baseURL: "http://localhost:3000/api", // URL backend THẬT của bạn
+  timeout: 30000,
   headers: {
     "Content-Type": "application/json",
   },
@@ -12,7 +12,7 @@ const axiosInstance = axios.create({
 // Tự động thêm token vào MỌI request
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token"); 
+    const token = localStorage.getItem("token");
     if (token) {
       config.headers["Authorization"] = `Bearer ${token}`;
     }
@@ -37,11 +37,10 @@ axiosInstance.interceptors.response.use(
       // Tạm thời, chúng ta chỉ ném lỗi để authStore bắt
       console.error("Lỗi 401 - Token không hợp lệ hoặc hết hạn.");
     }
-    
+
     // Ném lỗi để các hàm .catch() (như trong authStore) có thể bắt
-    return Promise.reject(error.response.data || error.message); 
+    return Promise.reject(error.response.data || error.message);
   }
 );
-
 
 export default axiosInstance;

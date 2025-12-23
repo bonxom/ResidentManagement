@@ -1,5 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { Box, Typography, Paper, Table, TableHead, TableRow, TableCell, TableBody, Chip } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Paper,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Chip,
+} from "@mui/material";
 import { Sidebar, drawerWidth } from "../../../components/Sidebar";
 import useAuthStore from "../../../store/authStore";
 import { feeAPI } from "../../../services/apiService";
@@ -77,8 +87,14 @@ function FeeHouseholdPage() {
 
                       <TableCell>
                         <Chip
-                          label={fee.status === "ACTIVE" ? "Đang hiệu lực" : "Đã hoàn thành"}
-                          color={fee.status === "ACTIVE" ? "success" : "primary"}
+                          label={
+                            fee.status === "ACTIVE"
+                              ? "Đang hiệu lực"
+                              : "Đã hoàn thành"
+                          }
+                          color={
+                            fee.status === "ACTIVE" ? "success" : "primary"
+                          }
                           size="small"
                         />
                       </TableCell>

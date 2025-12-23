@@ -1,29 +1,16 @@
-import {
-  Box,
-  Typography,
-  TextField,
-  Button,
-  Grid,
-  IconButton,
-  InputAdornment,
-} from "@mui/material";
+import { Box, Typography, TextField, Button, Grid, IconButton, InputAdornment, Alert } from "@mui/material";
 import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
+import { userAPI } from "../../services/apiService";
+import useAuthStore from "../../store/authStore";
 
 export default function ChangePasswordBox() {
-  const [passwordData, setPasswordData] = useState({
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: "",
-  });
-
-  const [showPassword, setShowPassword] = useState({
-    currentPassword: false,
-    newPassword: false,
-    confirmPassword: false,
-  });
-
-  const [errors, setErrors] = useState({});
+    const { user } = useAuthStore();
+    const [passwordData, setPasswordData] = useState({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: ""
+    });
 
   const handleChange = (e) => {
     setPasswordData({
@@ -39,12 +26,10 @@ export default function ChangePasswordBox() {
     }
   };
 
-  const toggleShowPassword = (field) => {
-    setShowPassword({
-      ...showPassword,
-      [field]: !showPassword[field],
-    });
-  };
+    const [errors, setErrors] = useState({});
+    const [successMessage, setSuccessMessage] = useState("");
+    const [errorMessage, setErrorMessage] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
 
   const validateForm = () => {
     const newErrors = {};
@@ -88,30 +73,41 @@ export default function ChangePasswordBox() {
     }
   };
 
-  return (
-    <Box
-      sx={(theme) => ({
-        backgroundColor: theme.palette.background.paper,
-        borderRadius: "16px",
-        boxShadow:
-          theme.palette.mode === "dark"
-            ? "0px 3px 18px rgba(0, 0, 0, 0.7)"
-            : "0px 3px 12px rgba(0, 0, 0, 0.08)",
-        padding: "24px 32px",
-        maxWidth: "1200px",
-        margin: "24px",
-      })}
-    >
-      <Typography
-        sx={(theme) => ({
-          fontSize: "18px",
-          fontWeight: "600",
-          mb: 3,
-          color: theme.palette.text.primary,
-        })}
-      >
-        Đổi mật khẩu
-      </Typography>
+    const handleSubmit = async () => {
+        if (!validateForm()) return;
+
+        setIsLoading(true);
+        setSuccessMessage("");
+        setErrorMessage("");
+
+        try {
+            await userAPI.changePassword(
+                user._id,
+                passwordData.currentPassword,
+                passwordData.newPassword
+            );
+
+            setSuccessMessage("Đổi mật khẩu thành công!");
+            
+            // Reset form
+            setPasswordData({
+                currentPassword: "",
+                newPassword: "",
+                confirmPassword: ""
+            });
+
+            // Auto dismiss success message after 5s
+            setTimeout(() => setSuccessMessage(""), 5000);
+        } catch (error) {
+            const message = error.message || "Đổi mật khẩu thất bại. Vui lòng kiểm tra lại mật khẩu hiện tại.";
+            setErrorMessage(message);
+            
+            // Auto dismiss error message after 5s
+            setTimeout(() => setErrorMessage(""), 5000);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
       <Grid container spacing={3}>
         {/* Mật khẩu hiện tại */}
@@ -180,8 +176,75 @@ export default function ChangePasswordBox() {
                 fontSize: "14px",
               },
             }}
-          />
-        </Grid>
+        >
+            <Typography sx={{ fontSize: "18px", fontWeight: "600", mb: 3, color: "#333" }}>
+                Đổi mật khẩu
+            </Typography>
+
+            {/* Success/Error Messages */}
+            {successMessage && (
+                <Alert severity="success" sx={{ mb: 3, width: "100%" }} onClose={() => setSuccessMessage("")}>
+                    {successMessage}
+                </Alert>
+            )}
+            {errorMessage && (
+                <Alert severity="error" sx={{ mb: 3, width: "100%" }} onClose={() => setErrorMessage("")}>
+                    {errorMessage}
+                </Alert>
+            )}
+
+            <Grid container spacing={3}>
+                {/* Mật khẩu hiện tại */}
+                <Grid item xs={12} sm={6}>
+                    <Typography sx={{ fontSize: "14px", fontWeight: "500", mb: 1, color: "#333" }}>
+                        Mật khẩu hiện tại <span style={{ color: "red" }}>*</span>
+                    </Typography>
+                    <TextField
+                        fullWidth
+                        type={showPassword.currentPassword ? "text" : "password"}
+                        name="currentPassword"
+                        value={passwordData.currentPassword}
+                        onChange={handleChange}
+                        placeholder="Nhập mật khẩu hiện tại"
+                        error={!!errors.currentPassword}
+                        helperText={errors.currentPassword}
+                        InputProps={{
+                            endAdornment: (
+                                <InputAdornment position="end">
+                                    <IconButton
+                                        onClick={() => toggleShowPassword('currentPassword')}
+                                        edge="end"
+                                        size="small"
+                                    >
+                                        {showPassword.currentPassword ? 
+                                            <EyeOff size={18} color="#666" /> : 
+                                            <Eye size={18} color="#666" />
+                                        }
+                                    </IconButton>
+                                </InputAdornment>
+                            ),
+                        }}
+                        sx={{
+                            "& .MuiOutlinedInput-root": {
+                                backgroundColor: "#F5F7FA",
+                                borderRadius: "8px",
+                                "& fieldset": {
+                                    borderColor: errors.currentPassword ? "#d32f2f" : "transparent",
+                                },
+                                "&:hover fieldset": {
+                                    borderColor: errors.currentPassword ? "#d32f2f" : "#E0E0E0",
+                                },
+                                "&.Mui-focused fieldset": {
+                                    borderColor: errors.currentPassword ? "#d32f2f" : "#2D66F5",
+                                },
+                            },
+                            "& .MuiInputBase-input": {
+                                padding: "12px 14px",
+                                fontSize: "14px"
+                            }
+                        }}
+                    />
+                </Grid>
 
         {/* Spacer */}
         <Grid item xs={12} sm={6} />
@@ -319,25 +382,27 @@ export default function ChangePasswordBox() {
         </Grid>
       </Grid>
 
-      {/* Submit Button */}
-      <Box sx={{ mt: 4, display: "flex", justifyContent: "flex-end" }}>
-        <Button
-          variant="contained"
-          onClick={handleSubmit}
-          sx={{
-            backgroundColor: "#2D66F5",
-            borderRadius: "8px",
-            textTransform: "none",
-            px: 4,
-            py: 1.2,
-            fontSize: "14px",
-            fontWeight: "500",
-            "&:hover": { backgroundColor: "#1E54D4" },
-          }}
-        >
-          Đổi mật khẩu
-        </Button>
-      </Box>
-    </Box>
-  );
+            {/* Submit Button */}
+            <Box sx={{ mt: 4, display: "flex", justifyContent: "flex-end" }}>
+                <Button
+                    variant="contained"
+                    onClick={handleSubmit}
+                    disabled={isLoading}
+                    sx={{
+                        backgroundColor: "#2D66F5",
+                        borderRadius: "8px",
+                        textTransform: "none",
+                        px: 4,
+                        py: 1.2,
+                        fontSize: "14px",
+                        fontWeight: "500",
+                        "&:hover": { backgroundColor: "#1E54D4" },
+                        "&:disabled": { backgroundColor: "#B0BEC5" }
+                    }}
+                >
+                    {isLoading ? "Đang xử lý..." : "Đổi mật khẩu"}
+                </Button>
+            </Box>
+        </Box>
+    );
 }

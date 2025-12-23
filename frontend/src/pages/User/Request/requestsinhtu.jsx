@@ -1,165 +1,211 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Box,
   Typography,
   Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Chip,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Grid,
+  Alert,
+  CircularProgress,
 } from "@mui/material";
+import { requestAPI, householdAPI } from "../../../services/apiService";
+import useAuthStore from "../../../store/authStore";
 
-import FormKhaiBaoSinh from "./form_in4/FormKhaiBaoSinh";
-import FormKhaiBaoTu from "./form_in4/FormKhaiBaoTu";
+const birthFields = [
+  { name: "name", label: "Họ và tên bé", required: true },
+  { name: "sex", label: "Giới tính", required: true, select: true, options: ["Nam", "Nữ", "Khác"] },
+  { name: "dob", label: "Ngày sinh", required: true, type: "date" },
+  { name: "birthLocation", label: "Nơi sinh", required: true },
+  { name: "ethnic", label: "Dân tộc", required: true },
+  { name: "birthCertificateNumber", label: "Số giấy khai sinh", required: true },
+];
 
-/* ================== DIALOG CHỌN LOẠI ================== */
-function ChonLoaiKhaiBaoDialog({ open, onClose, onSelect }) {
-  return (
-    <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
-      <DialogTitle align="center">Chọn loại khai báo</DialogTitle>
-      <DialogContent
-        sx={{ display: "flex", flexDirection: "column", gap: 3, py: 4 }}
-      >
-        <Button
-          variant="contained"
-          color="success"
-          onClick={() => onSelect("Sinh")}
-        >
-          KHAI BÁO SINH
-        </Button>
-        <Button
-          variant="contained"
-          color="error"
-          onClick={() => onSelect("Tử")}
-        >
-          KHAI BÁO TỬ
-        </Button>
-      </DialogContent>
-    </Dialog>
-  );
-}
+const deathFields = [
+  { name: "userId", label: "Thành viên", required: true, select: true, options: [] },
+  { name: "dateOfDeath", label: "Ngày mất", required: true, type: "date" },
+  { name: "reason", label: "Nguyên nhân", required: true, multiline: true },
+  { name: "deathCertificateUrl", label: "Link giấy khai tử", required: true },
+];
+
+const initialBirth = birthFields.reduce((acc, f) => ({ ...acc, [f.name]: "" }), {});
+const initialDeath = deathFields.reduce((acc, f) => ({ ...acc, [f.name]: "" }), {});
 
 export default function RequestSinhTu() {
-  const [openSelect, setOpenSelect] = useState(false);
-  const [openSinhForm, setOpenSinhForm] = useState(false);
-  const [openTuForm, setOpenTuForm] = useState(false);
+  const { user } = useAuthStore();
+  const [mode, setMode] = useState("BIRTH");
+  const [birthData, setBirthData] = useState(initialBirth);
+  const [deathData, setDeathData] = useState(initialDeath);
+  const [members, setMembers] = useState([]);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  const [pendingList, setPendingList] = useState([]);
-  const [data, setData] = useState([]);
+  useEffect(() => {
+    const fetchMembers = async () => {
+      if (!user?.household) return;
+      try {
+        const res = await householdAPI.getMembers(user.household);
+        setMembers(res || []);
+      } catch (err) {
+        console.error("Fetch members failed", err);
+      }
+    };
+    fetchMembers();
+  }, [user?.household]);
 
-  const handleSelectType = (type) => {
-    setOpenSelect(false);
-    type === "Sinh" ? setOpenSinhForm(true) : setOpenTuForm(true);
+  const deathFieldsWithOptions = useMemo(() => {
+    return deathFields.map((f) =>
+      f.name === "userId"
+        ? { ...f, options: members.map((m) => ({ value: m._id, label: `${m.name} (${m.userCardID || ""})` })) }
+        : f
+    );
+  }, [members]);
+
+  const handleChange = (setter) => (e) => {
+    const { name, value } = e.target;
+    setter((prev) => ({ ...prev, [name]: value }));
+    setError(null);
+    setSuccess(null);
   };
 
-  /* nhận dữ liệu từ form */
-  const handleAddRequest = (item) => {
-    setPendingList((prev) => [
-      ...prev,
-      {
-        ...item,
-        id: Date.now(),
-        status: "Chưa duyệt",
-      },
-    ]);
+  const validate = (fields, data) =>
+    fields.every((f) => !f.required || (data[f.name] && data[f.name].toString().trim() !== ""));
+
+  const handleSubmit = async () => {
+    setError(null);
+    setSuccess(null);
+    setLoading(true);
+    try {
+      if (!user?.household) throw new Error("Bạn chưa thuộc hộ khẩu nào.");
+      if (mode === "BIRTH") {
+        if (!validate(birthFields, birthData)) throw new Error("Vui lòng nhập đầy đủ thông tin khai sinh.");
+        await requestAPI.createBirthReport(birthData);
+        setBirthData(initialBirth);
+        setSuccess("Đã gửi yêu cầu khai sinh.");
+      } else {
+        if (!validate(deathFields, deathData)) throw new Error("Vui lòng nhập đầy đủ thông tin khai tử.");
+        await requestAPI.createDeathReport(deathData);
+        setDeathData(initialDeath);
+        setSuccess("Đã gửi yêu cầu khai tử.");
+      }
+    } catch (err) {
+      const msg = err?.message || err?.customMessage || "Gửi yêu cầu thất bại.";
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  /* cập nhật bảng */
-  const handleUpdate = () => {
-    setData((prev) => [...prev, ...pendingList]);
-    setPendingList([]);
+  const renderField = (field, data, setter) => {
+    if (field.select) {
+      return (
+        <FormControl fullWidth size="small">
+          <InputLabel>{field.label}</InputLabel>
+          <Select
+            label={field.label}
+            name={field.name}
+            value={data[field.name]}
+            onChange={handleChange(setter)}
+          >
+            {field.options.map((opt) =>
+              typeof opt === "string" ? (
+                <MenuItem key={opt} value={opt}>
+                  {opt}
+                </MenuItem>
+              ) : (
+                <MenuItem key={opt.value} value={opt.value}>
+                  {opt.label}
+                </MenuItem>
+              )
+            )}
+          </Select>
+        </FormControl>
+      );
+    }
+
+    const dateProps =
+      field.type === "date"
+        ? {
+            InputLabelProps: { shrink: true },
+          }
+        : {};
+
+    return (
+      <TextField
+        fullWidth
+        size="small"
+        name={field.name}
+        label={field.label}
+        type={field.type || "text"}
+        value={data[field.name]}
+        onChange={handleChange(setter)}
+        multiline={field.multiline}
+        minRows={field.multiline ? 2 : undefined}
+        {...dateProps}
+      />
+    );
   };
 
-  const renderStatus = (status) => {
-    if (status === "Đã duyệt") return <Chip label="Đã duyệt" color="success" />;
-    if (status === "Từ chối") return <Chip label="Từ chối" color="error" />;
-    return <Chip label="Chưa duyệt" color="warning" />;
-  };
+  const isBirth = mode === "BIRTH";
+  const currentFields = isBirth ? birthFields : deathFieldsWithOptions;
+  const currentData = isBirth ? birthData : deathData;
+  const currentSetter = isBirth ? setBirthData : setDeathData;
 
   return (
     <Box sx={{ p: 4 }}>
-      {/* HEADER */}
       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
         <Typography sx={{ fontSize: 26, fontWeight: 600 }}>
           Khai báo sinh tử
         </Typography>
-        <Box sx={{ display: "flex", gap: 2 }}>
-          <Button variant="outlined" onClick={() => setOpenSelect(true)}>
-            Khai báo
+        <Box sx={{ display: "flex", gap: 1 }}>
+          <Button variant={isBirth ? "contained" : "outlined"} onClick={() => setMode("BIRTH")}>
+            Khai sinh
           </Button>
-          <Button variant="contained" onClick={handleUpdate}>
-            Cập nhật
+          <Button variant={!isBirth ? "contained" : "outlined"} onClick={() => setMode("DEATH")}>
+            Khai tử
           </Button>
         </Box>
       </Box>
 
-      {/* TABLE */}
-      <TableContainer component={Paper} sx={{ borderRadius: 3 }}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Vai trò</TableCell>
-              <TableCell>Họ tên</TableCell>
-              <TableCell>Mã hộ</TableCell>
-              <TableCell>Chủ hộ</TableCell>
-              <TableCell>Phân loại</TableCell>
-              <TableCell>Trạng thái</TableCell>
-            </TableRow>
-          </TableHead>
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
+      {success && (
+        <Alert severity="success" sx={{ mb: 2 }}>
+          {success}
+        </Alert>
+      )}
 
-          <TableBody>
-            {data.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={6} align="center">
-                  Chưa có khai báo nào
-                </TableCell>
-              </TableRow>
-            )}
+      <Grid container spacing={2}>
+        {currentFields.map((field) => (
+          <Grid item xs={12} sm={field.multiline ? 12 : 6} key={field.name}>
+            {renderField(field, currentData, currentSetter)}
+          </Grid>
+        ))}
+      </Grid>
 
-            {data.map((item) => (
-              <TableRow key={item.id}>
-                <TableCell>{item.role}</TableCell>
-                <TableCell>{item.name}</TableCell>
-                <TableCell>{item.houseHoldID}</TableCell>
-                <TableCell>{item.chuHo}</TableCell>
-                <TableCell>
-                  <Chip
-                    label={item.type}
-                    color={item.type === "Sinh" ? "success" : "error"}
-                  />
-                </TableCell>
-                <TableCell>{renderStatus(item.status)}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-
-      {/* dialogs */}
-      <ChonLoaiKhaiBaoDialog
-        open={openSelect}
-        onClose={() => setOpenSelect(false)}
-        onSelect={handleSelectType}
-      />
-
-      <FormKhaiBaoSinh
-        open={openSinhForm}
-        onClose={() => setOpenSinhForm(false)}
-        onSubmit={handleAddRequest}
-      />
-
-      <FormKhaiBaoTu
-        open={openTuForm}
-        onClose={() => setOpenTuForm(false)}
-        onSubmit={handleAddRequest}
-      />
+      <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 3, gap: 2 }}>
+        <Button
+          variant="outlined"
+          onClick={() => {
+            setBirthData(initialBirth);
+            setDeathData(initialDeath);
+            setError(null);
+            setSuccess(null);
+          }}
+        >
+          Xóa form
+        </Button>
+        <Button variant="contained" onClick={handleSubmit} disabled={loading}>
+          {loading ? <CircularProgress size={20} /> : "Gửi yêu cầu"}
+        </Button>
+      </Box>
     </Box>
   );
 }

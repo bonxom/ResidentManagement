@@ -42,6 +42,19 @@ const residentHistorySchema = new mongoose.Schema(
             ethnic: String,
             createdAt: { type: Date, default: Date.now } // Ngày thêm vào
         }
+    ],
+
+    // --- [MỚI] Lưu thông tin khai tử đã duyệt ---
+    deaths: [
+        {
+            user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+            name: String,
+            userCardID: String,
+            dateOfDeath: Date,
+            reason: String,
+            deathCertificateUrl: String,
+            createdAt: { type: Date, default: Date.now }
+        }
     ]
   },
   { timestamps: true }

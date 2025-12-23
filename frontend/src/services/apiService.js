@@ -68,6 +68,15 @@ export const userAPI = {
     return response.data;
   },
 
+  // Đổi mật khẩu
+  changePassword: async (userId, oldPassword, newPassword) => {
+    const response = await api.patch(`/users/${userId}/password`, {
+      oldPassword,
+      newPassword
+    });
+    return response.data;
+  },
+
 }
 
 // ============= HOUSEHOLD API =============
@@ -197,6 +206,16 @@ export const requestAPI = {
     const response = await api.post("/requests/update-info", { newData });
     return response.data;
   },
+  // Cư dân khai báo tạm trú
+  createTemporaryResidence: async (payload) => {
+    const response = await api.post("/requests/temporary-residence", payload);
+    return response.data;
+  },
+  // Cư dân khai báo tạm vắng
+  createTemporaryAbsence: async (payload) => {
+    const response = await api.post("/requests/temporary-absence", payload);
+    return response.data;
+  },
   // Lấy danh sách yêu cầu
   getRequests: async (params = {}) => {
     const response = await api.get("/requests", { params });
@@ -208,6 +227,16 @@ export const requestAPI = {
       status,
       leaderComment,
     });
+    return response.data;
+  },
+  // Báo sinh
+  createBirthReport: async (payload) => {
+    const response = await api.post("/requests/birth", payload);
+    return response.data;
+  },
+  // Báo tử
+  createDeathReport: async (payload) => {
+    const response = await api.post("/requests/death", payload);
     return response.data;
   },
 };
