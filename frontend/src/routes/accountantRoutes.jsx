@@ -1,4 +1,10 @@
-import { Route, Navigate } from "react-router-dom";
+import { Route, Navigate } from 'react-router-dom';
+import Dashboard from '../pages/Dashboard';
+import Profile from '../pages/Profile';
+import DanhSachThuTien from '../pages/Admin/PheDuyet/DanhSachThuTien';
+import FeeManagement from '../pages/Admin/ThuPhi/fee';
+import FeeHouseholdPage from '../pages/Admin/ThuPhi/FeeHouseholdPage';
+import Setting from '../feature/Setting';
 import MainLayoutForAccountant from "../layout/MainLayoutForAccountant";
 
 // Import các trang của bạn
@@ -20,6 +26,7 @@ export const accountantRoutes = (
 
     {/* Trang 404 cho riêng phân hệ accountant */}
     <Route path="*" element={<Navigate to="dashboard" replace />} />
+    <Route path="setting" element={<Setting />} />
   </Route>
 );
 

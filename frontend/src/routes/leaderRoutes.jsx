@@ -15,6 +15,7 @@ import ThongTinHoDanAdmin from '../pages/Admin/QuanLyDanCu/ThongTinHoDanAdmin';
 import ThongTinChiTietMember from '../pages/Admin/QuanLyDanCu/ThongTinChiTietMember';
 import ThemThongTinCuDan from '../pages/Admin/QuanLyDanCu/ThemThongTinCuDan';
 import NhanKhau from '../pages/NhanKhau';
+import Setting from "../feature/Setting";
 
 // Routes cho Tổ trưởng (HAMLET LEADER)
 export const leaderRoutes = (
@@ -36,6 +37,7 @@ export const leaderRoutes = (
     <Route path="ThongTinHoDanadmin" element={<ThongTinHoDanAdmin />} />
     <Route path="ThongTinChiTietMember" element={<ThongTinChiTietMember />} />
     <Route path="*" element={<Navigate to="dashboard" replace />} />
+    <Route path="setting" element={<Setting />} />
   </Route>
 );
 
