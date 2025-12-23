@@ -1,4 +1,4 @@
-import api from '../api/axiosInstance'; // Import file thật
+import api from './axiosInstance'; // Import file thật
 
 export const authAPI = {
   // Đăng nhập
@@ -108,6 +108,11 @@ export const householdAPI = {
   },
 
   getMembers: async (id) => {
+    const response = await api.get(`/households/${id}/members`);
+    return response.data;
+  },
+
+  getMembersInfo: async(id) => {
     const response = await api.get(`/households/${id}/members`);
     return response.data;
   },

@@ -16,7 +16,7 @@ import {
   Typography,
 } from "@mui/material";
 import TamTruVangForm from "../../../feature/admin/Form/TamTruVangForm";
-import { requestAPI } from "../../../services/apiService";
+import { requestAPI } from "../../../api/apiService";
 
 const typeLabel = {
   TEMPORARY_RESIDENCE: "Tạm trú",

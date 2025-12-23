@@ -16,7 +16,7 @@ import {
   Typography,
 } from "@mui/material";
 import DangKyTaiKhoanForm from "../../../feature/admin/Form/DangKyTaiKhoanForm";
-import { requestAPI } from "../../../services/apiService";
+import { requestAPI } from "../../../api/apiService";
 
 const tabs = [
   { key: "REGISTER", label: "Yêu cầu đăng ký tài khoản" },

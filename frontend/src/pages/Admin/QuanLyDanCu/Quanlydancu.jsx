@@ -27,7 +27,7 @@ import { Search, Filter, ChevronDown, Trash2 } from "lucide-react";
 import { useRoleNavigation } from "../../../hooks/useRoleNavigation";
 import AddProfileModal from "../../../feature/profile/AddProfile";
 import ThemHoDan from "../../../feature/admin/QuanLyHoKhau/ThemHoDan";
-import { householdAPI } from "../../../services/apiService";
+import { householdAPI } from "../../../api/apiService";
 
 // ===== COMPONENT BẢNG HỘ DÂN =====
 function ResidentsTable({ selected, setSelected, households, loading, onDelete, onViewDetail }) {

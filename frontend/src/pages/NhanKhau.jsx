@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useAuthStore from "../store/authStore";
-import { userAPI } from "../services/apiService";
+import { userAPI } from "../api/apiService";
 import { Sidebar, drawerWidth } from "../components/Sidebar";
 import {
   Box,

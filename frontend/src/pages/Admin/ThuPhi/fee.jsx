@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import useAuthStore from "../../../store/authStore";
-import { feeAPI } from "../../../services/apiService";
+import { feeAPI } from "../../../api/apiService";
 
 import {
   Box,

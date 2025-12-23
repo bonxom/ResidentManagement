@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import { X } from "lucide-react";
 import { useState, useEffect } from "react";
-import { householdAPI, userAPI } from "../../../services/apiService";
+import { householdAPI, userAPI } from "../../../api/apiService";
 
 export default function ThemThanhVien({ open, onClose, onSuccess, householdId }) {
     const [formData, setFormData] = useState({

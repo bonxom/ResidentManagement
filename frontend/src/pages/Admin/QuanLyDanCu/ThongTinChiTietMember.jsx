@@ -17,7 +17,7 @@ import {
   Backdrop,
 } from "@mui/material";
 import { X } from "lucide-react";
-import { userAPI } from "../../../services/apiService";
+import { userAPI, householdAPI } from "../../../api/apiService";
 import ProfileInfoField from "../../../feature/profile/ProfileInfoField";
 
 export default function ThongTinChiTietMember() {
@@ -126,11 +126,20 @@ export default function ThongTinChiTietMember() {
     setIsDeleting(true);
     setError("");
     try {
-      await userAPI.delete(memberId);
-      alert("Đã xóa thành viên thành công");
+      // Lấy householdId từ memberData
+      const householdId = memberData?.household?._id || memberData?.household;
+      
+      if (!householdId) {
+        setError("Không tìm thấy thông tin hộ gia đình");
+        setIsDeleting(false);
+        return;
+      }
+
+      await householdAPI.removeMember(householdId, memberId);
+      alert("Đã xóa thành viên khỏi hộ thành công");
       navigate(-1);
     } catch (err) {
-      console.error("Failed to delete member:", err);
+      console.error("Failed to remove member:", err);
       setError(err.response?.data?.message || "Không thể xóa thành viên. Vui lòng thử lại.");
       setDeleteDialogOpen(false);
     } finally {

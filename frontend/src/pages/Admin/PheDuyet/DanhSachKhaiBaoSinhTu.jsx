@@ -16,7 +16,7 @@ import {
   Typography,
 } from "@mui/material";
 import KhaiBaoSinhTuForm from "../../../feature/admin/Form/KhaiBaoSinhTuForm";
-import { requestAPI } from "../../../services/apiService";
+import { requestAPI } from "../../../api/apiService";
 
 const typeLabel = {
   BIRTH_REPORT: "Khai sinh",

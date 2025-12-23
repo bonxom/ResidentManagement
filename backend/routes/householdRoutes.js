@@ -10,7 +10,8 @@ import {
   removeMember,
   splitHousehold,
   moveMember,
-  getHouseholdChanges
+  getHouseholdChanges,
+  getHouseholdMemberSummaries
 } from "../controllers/householdController.js";
 
 import { protect, authorizePermission, authorize } from "../middleware/authMiddleware.js";
@@ -23,6 +24,7 @@ router.get("/", protect, authorizePermission("VIEW HOUSEHOLD LIST"), getAllHouse
 
 router.get("/:id", protect, authorizePermission("VIEW HOUSEHOLD"), getHouseholdById);
 router.get("/:id/members", protect, authorizePermission("VIEW HOUSEHOLD"), getHouseholdResidents);
+router.get("/:id/members-info", protect, authorizePermission("VIEW HOUSEHOLD"), getHouseholdMemberSummaries);
 
 router.put("/:id",protect, authorizePermission("EDIT HOUSEHOLD"), updateHousehold);
 router.delete("/:id", protect, authorizePermission("DELETE HOUSEHOLD"), deleteHousehold);

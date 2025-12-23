@@ -1,6 +1,6 @@
 import { create } from "zustand";
 // import * as jose from 'jose' // <--- KHÔNG CẦN NỮA
-import { authAPI, userAPI } from "../services/apiService"; // Giả sử file này gọi axiosInstance
+import { authAPI, userAPI } from "../api/apiService"; // Giả sử file này gọi axiosInstance
 
 // Helper để lấy user/token từ localStorage một cách an toàn
 const getInitialToken = () => localStorage.getItem("token") || null;

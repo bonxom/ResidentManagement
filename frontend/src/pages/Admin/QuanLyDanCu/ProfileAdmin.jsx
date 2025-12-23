@@ -1,12 +1,15 @@
+// Admin có thể chỉnh sửa trực tiếp thông tin của chính mình
+
 import { Box, Typography, Avatar, Button, Grid, CircularProgress, Alert } from "@mui/material";
 import { useEffect, useState } from "react";
-import ProfileInfoField from "../feature/profile/ProfileInfoField";
-import EditRequestModal from "../feature/profile/EditRequestModal";
-import ChangePasswordBox from "../feature/profile/ChangePasswordBox";
-import useAuthStore from "../store/authStore";
-import { requestAPI } from "../api/apiService";
 
-export default function Profile() {
+import ProfileInfoField from "../../../feature/profile/ProfileInfoField";
+import EditProfileModal from "../../../feature/admin/EditProfileModal";
+import ChangePasswordBox from "../../../feature/profile/ChangePasswordBox";
+import useAuthStore from "../../../store/authStore";
+import { userAPI } from "../../../api/apiService";
+
+export default function ThongTinChiTietAdmin() {
     const { user, checkAuth } = useAuthStore();
     const [openEditModal, setOpenEditModal] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
@@ -82,12 +85,7 @@ export default function Profile() {
     };
 
     const handleEditRequest = async (formData) => {
-        if (!formData.reason || !formData.reason.trim()) {
-            setError("Vui lòng nhập lý do yêu cầu chỉnh sửa.");
-            return false;
-        }
-
-        // Chỉ gửi các trường thay đổi so với dữ liệu hiện tại
+        // Admin cập nhật trực tiếp thông qua userAPI.update
         const allowedFields = [
             "name",
             "dob",
@@ -117,17 +115,17 @@ export default function Profile() {
             return false;
         }
 
-        const payload = { ...changes, reason: formData.reason.trim() };
-
         setError(null);
         try {
-            await requestAPI.updateInfo(payload);
-            alert("Yêu cầu chỉnh sửa đã được gửi!");
+            await userAPI.update(user._id, changes);
+            alert("Thông tin đã được cập nhật thành công!");
             setOpenEditModal(false);
+            // Refresh user data
+            await checkAuth();
             return true;
         } catch (err) {
-            console.error("Gửi yêu cầu chỉnh sửa thất bại:", err);
-            const message = err?.message || err?.customMessage || "Gửi yêu cầu chỉnh sửa thất bại.";
+            console.error("Cập nhật thông tin thất bại:", err);
+            const message = err?.response?.data?.message || err?.message || "Cập nhật thông tin thất bại.";
             setError(message);
             return false;
         }
@@ -191,7 +189,7 @@ export default function Profile() {
                             "&:hover": { backgroundColor: "#1E54D4" }
                         }}
                     >
-                        Yêu cầu chỉnh sửa
+                        Chỉnh sửa
                     </Button>
                 </Box>
 
@@ -248,8 +246,8 @@ export default function Profile() {
                     </Grid>
                 </Grid>
 
-                {/* Modal yêu cầu chỉnh sửa */}
-                <EditRequestModal
+                {/* Modal chỉnh sửa */}
+                <EditProfileModal
                     open={openEditModal}
                     onClose={() => setOpenEditModal(false)}
                     currentData={editDefaults}

@@ -1,8 +1,9 @@
 import { Box, IconButton, Typography } from "@mui/material";
-import { Bell, User, Settings } from "lucide-react";
+import { Bell, User, Settings, ArrowLeft, ChevronLeft} from "lucide-react";
 import useAuthStore from "../store/authStore";
 import { useRoleNavigation } from "../hooks/useRoleNavigation";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import NotificationPanel from "./In4ButtonTop3/NotificationPanel"; // Đảm bảo đúng đường dẫn file
 import useNotificationStore from "../store/notificationStore";
 
@@ -10,6 +11,11 @@ export default function Topbar() {
   const { navigateWithRole } = useRoleNavigation();
   const { user, checkAuth } = useAuthStore();
   const { enabled: notificationsEnabled } = useNotificationStore();
+  const navigate = useNavigate();
+
+  const handleBackClick = () => {
+    navigate(-1);
+  };
 
   const handleProfileClick = async () => {
     // Refresh user data before navigating to profile
@@ -61,16 +67,23 @@ export default function Topbar() {
       }}
     >
       <Box>
-        <Typography
+        <IconButton
+          onClick={handleBackClick}
           sx={{
-            fontSize: "1.25rem",
-            fontWeight: 600,
-            color: "#1a1a1a",
-            letterSpacing: "0.3px",
+            color: "#4b5563",
+            backgroundColor: "rgba(255, 255, 255, 0.8)",
+            borderRadius: "12px",
+            padding: "10px",
+            transition: "all 0.3s ease",
+            "&:hover": {
+              backgroundColor: "rgba(37, 99, 235, 0.1)",
+              color: "#2563eb",
+              transform: "translateX(-2px)",
+            },
           }}
         >
-          {user?.ten ? `Xin chào, ${user.ten}` : "8xRES"}
-        </Typography>
+          <ArrowLeft size={20} />
+        </IconButton>
       </Box>
 
       <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>

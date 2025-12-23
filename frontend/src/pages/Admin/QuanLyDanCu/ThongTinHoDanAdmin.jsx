@@ -29,7 +29,7 @@ import { useRoleNavigation } from "../../../hooks/useRoleNavigation";
 import { useNavigate } from "react-router-dom";
 import AddProfileModal from "../../../feature/profile/AddProfile";
 import ThemThanhVien from "../../../feature/admin/QuanLyHoKhau/ThemThanhVien";
-import { householdAPI, userAPI } from "../../../services/apiService";
+import { householdAPI, userAPI } from "../../../api/apiService";
 
 // ===== COMPONENT BẢNG =====
 function ResidentsTable({ selected, setSelected, members, loading, onDelete, onViewDetail }) {
@@ -125,8 +125,8 @@ function ResidentsTable({ selected, setSelected, members, loading, onDelete, onV
                   </TableCell>
                   <TableCell>{row.userCardID || "N/A"}</TableCell>
                   <TableCell>{row.name || "N/A"}</TableCell>
-                  <TableCell>{row.relationship || "N/A"}</TableCell>
-                  <TableCell>{formatDate(row.dateOfBirth)}</TableCell>
+                  <TableCell>{row.relationshipWithHead || row.relationWithLeader || "N/A"}</TableCell>
+                  <TableCell>{formatDate(row.dob)}</TableCell>
 
                   <TableCell>
                     <Box sx={{ display: "flex", gap: 1 }}>
@@ -189,6 +189,8 @@ export default function ThongTinHoDanAdmin() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [memberToDelete, setMemberToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false);
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
   const navigate = useNavigate();
 
   // Fetch members when component mounts
@@ -205,7 +207,7 @@ export default function ThongTinHoDanAdmin() {
     setLoading(true);
     setError("");
     try {
-      const data = await householdAPI.getMembers(householdId);
+      const data = await householdAPI.getMembersInfo(householdId);
       setMembers(data);
     } catch (err) {
       console.error("Failed to fetch members:", err);
@@ -251,13 +253,13 @@ export default function ThongTinHoDanAdmin() {
     setError("");
 
     try {
-      await userAPI.delete(memberToDelete._id);
+      await householdAPI.removeMember(householdId, memberToDelete._id);
       await fetchMembers();
       setDeleteDialogOpen(false);
       setMemberToDelete(null);
-      alert("Đã xóa thành viên thành công");
+      alert("Đã xóa thành viên khỏi hộ thành công");
     } catch (err) {
-      console.error("Failed to delete member:", err);
+      console.error("Failed to remove member:", err);
       setError(err.response?.data?.message || "Không thể xóa thành viên. Vui lòng thử lại.");
       setDeleteDialogOpen(false);
     } finally {
@@ -269,6 +271,41 @@ export default function ThongTinHoDanAdmin() {
   const handleCancelDelete = () => {
     setDeleteDialogOpen(false);
     setMemberToDelete(null);
+  };
+
+  // Xử lý xóa nhiều thành viên
+  const handleBulkDelete = () => {
+    if (selected.length === 0) return;
+    setBulkDeleteDialogOpen(true);
+  };
+
+  // Xác nhận xóa nhiều từ dialog
+  const handleConfirmBulkDelete = async () => {
+    setIsBulkDeleting(true);
+    setError("");
+
+    try {
+      // Xóa từng member một
+      await Promise.all(
+        selected.map(memberId => householdAPI.removeMember(householdId, memberId))
+      );
+      
+      await fetchMembers();
+      setSelected([]);
+      setBulkDeleteDialogOpen(false);
+      alert(`Đã xóa ${selected.length} thành viên khỏi hộ thành công`);
+    } catch (err) {
+      console.error("Failed to remove members:", err);
+      setError(err.response?.data?.message || "Không thể xóa thành viên. Vui lòng thử lại.");
+      setBulkDeleteDialogOpen(false);
+    } finally {
+      setIsBulkDeleting(false);
+    }
+  };
+
+  // Hủy xóa nhiều
+  const handleCancelBulkDelete = () => {
+    setBulkDeleteDialogOpen(false);
   };
 
   return (
@@ -296,6 +333,7 @@ export default function ThongTinHoDanAdmin() {
             <Button
               variant="contained"
               disabled={selected.length === 0}
+              onClick={handleBulkDelete}
               sx={{
                 backgroundColor: selected.length === 0 ? "#fca5a5" : "#ef4444",
                 borderRadius: "8px",
@@ -525,6 +563,55 @@ export default function ThongTinHoDanAdmin() {
             }}
           >
             {isDeleting ? "Đang xóa..." : "Xác nhận xóa"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* BULK DELETE CONFIRMATION DIALOG */}
+      <Dialog
+        open={bulkDeleteDialogOpen}
+        onClose={handleCancelBulkDelete}
+        PaperProps={{
+          sx: {
+            borderRadius: "12px",
+            padding: "8px"
+          }
+        }}
+      >
+        <DialogTitle sx={{ fontSize: "18px", fontWeight: "600" }}>
+          Xác nhận xóa nhiều thành viên
+        </DialogTitle>
+        <DialogContent>
+          <Typography>
+            Bạn có chắc chắn muốn xóa <strong>{selected.length} thành viên</strong> đã chọn khỏi hộ này không?
+          </Typography>
+          <Typography sx={{ mt: 2, color: "#d32f2f", fontSize: "14px" }}>
+            <strong>Cảnh báo:</strong> Hành động này không thể hoàn tác!
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button
+            onClick={handleCancelBulkDelete}
+            disabled={isBulkDeleting}
+            sx={{
+              textTransform: "none",
+              color: "#666",
+              fontSize: "14px"
+            }}
+          >
+            Hủy
+          </Button>
+          <Button
+            onClick={handleConfirmBulkDelete}
+            variant="contained"
+            color="error"
+            disabled={isBulkDeleting}
+            sx={{
+              textTransform: "none",
+              fontSize: "14px"
+            }}
+          >
+            {isBulkDeleting ? "Đang xóa..." : "Xác nhận xóa"}
           </Button>
         </DialogActions>
       </Dialog>

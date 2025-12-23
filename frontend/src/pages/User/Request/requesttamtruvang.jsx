@@ -130,7 +130,7 @@ import {
   Alert,
   CircularProgress,
 } from "@mui/material";
-import { requestAPI, householdAPI } from "../../../services/apiService";
+import { requestAPI, householdAPI } from "../../../api/apiService";
 import useAuthStore from "../../../store/authStore";
 
 const residenceFields = [

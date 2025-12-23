@@ -36,7 +36,7 @@ export const createHousehold = async (req, res) => {
     const houseMemberRoleId = await getHouseMemberRoleId();
     await User.findByIdAndUpdate(leaderId, {
       household: household._id,
-      relationshipWithHead: "household owner",
+      relationshipWithHead: "Chủ hộ",
       role: houseMemberRoleId,
     });
     res.status(201).json(household);
@@ -313,6 +313,23 @@ export const removeMember = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// @desc Lấy danh sách thành viên của hộ theo ID (lấy CCCD, tên, Quan hệ với chủ hộ, Ngày tháng năm sinh)
+// @route  GET /api/households/:householdId/member-summaries
+export const getHouseholdMemberSummaries = async (req, res) => {
+  const { householdId } = req.params;
+  try {
+    const household = await Household.findById(householdId);
+    if (!household) {
+      return res.status(404).json({ message: "Household not found" });
+    }
+    const members = await User.find({ _id: { $in: household.members } })
+      .select("userCardID name relationshipWithHead dateOfBirth");
+    res.status(200).json(members);
+  } catch (error) { 
+    res.status(500).json({ message: error.message });
+  } 
+}
 
 // @desc    Tách hộ (Một thành viên ra ở riêng, lập hộ mới)
 // @route   POST /api/households/split

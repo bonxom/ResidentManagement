@@ -11,8 +11,8 @@ import {
   IconButton,
 } from "@mui/material";
 import { IdCard, Phone, Mail, User, MapPin, Lock, Users, Home, Briefcase, Globe } from "lucide-react";
-import { authAPI } from "../../services/apiService";
-import { signUpSchema } from "../../utils/validation";
+import { authAPI } from "../../api/apiService";
+import { signUpSchema } from "../../hooks/validation";
 import "./style/SignUp.css";
 
 function SignUp() {
