@@ -1,122 +1,4 @@
-// import React, { useState } from "react";
-// import {
-//   Box,
-//   Typography,
-//   Button,
-//   Table,
-//   TableBody,
-//   TableCell,
-//   TableContainer,
-//   TableHead,
-//   TableRow,
-//   Paper,
-//   Chip,
-// } from "@mui/material";
-// // Giả sử bạn muốn dùng form này làm mặc định
-// import FormKhaiBaoTamTruVang from "./form_in4/FormKhaiBaoTamTruVang";
-
-// export default function RequestTamTruVang() {
-//   // 1. Chỉ cần 1 state để quản lý việc đóng/mở form khai báo
-//   const [openForm, setOpenForm] = useState(false);
-//   const [pendingList, setPendingList] = useState([]);
-//   const [data, setData] = useState([]);
-
-//   /* nhận dữ liệu từ form */
-//   const handleAddRequest = (item) => {
-//     setPendingList((prev) => [
-//       ...prev,
-//       {
-//         ...item,
-//         id: Date.now(),
-//         status: "Chưa duyệt",
-//       },
-//     ]);
-//     setOpenForm(false); // Đóng form sau khi submit thành công
-//   };
-
-//   /* cập nhật bảng */
-//   const handleUpdate = () => {
-//     setData((prev) => [...prev, ...pendingList]);
-//     setPendingList([]);
-//   };
-
-//   const renderStatus = (status) => {
-//     if (status === "Đã duyệt") return <Chip label="Đã duyệt" color="success" />;
-//     if (status === "Từ chối") return <Chip label="Từ chối" color="error" />;
-//     return <Chip label="Chưa duyệt" color="warning" />;
-//   };
-
-//   return (
-//     <Box sx={{ p: 4 }}>
-//       {/* HEADER */}
-//       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
-//         <Typography sx={{ fontSize: 26, fontWeight: 600 }}>
-//           Khai báo tạm trú tạm vắng
-//         </Typography>
-//         <Box sx={{ display: "flex", gap: 2 }}>
-//           {/* 2. Thay đổi: Khi click sẽ setOpenForm(true) luôn */}
-//           <Button variant="outlined" onClick={() => setOpenForm(true)}>
-//             Khai báo
-//           </Button>
-//           <Button variant="contained" onClick={handleUpdate}>
-//             Cập nhật
-//           </Button>
-//         </Box>
-//       </Box>
-
-//       {/* TABLE */}
-//       <TableContainer component={Paper} sx={{ borderRadius: 3 }}>
-//         <Table>
-//           <TableHead>
-//             <TableRow>
-//               <TableCell>Vai trò</TableCell>
-//               <TableCell>Họ tên</TableCell>
-//               <TableCell>Mã hộ</TableCell>
-//               <TableCell>Chủ hộ</TableCell>
-//               <TableCell>Phân loại</TableCell>
-//               <TableCell>Trạng thái</TableCell>
-//             </TableRow>
-//           </TableHead>
-
-//           <TableBody>
-//             {data.length === 0 && (
-//               <TableRow>
-//                 <TableCell colSpan={6} align="center">
-//                   Chưa có khai báo nào
-//                 </TableCell>
-//               </TableRow>
-//             )}
-
-//             {data.map((item) => (
-//               <TableRow key={item.id}>
-//                 <TableCell>{item.role}</TableCell>
-//                 <TableCell>{item.name}</TableCell>
-//                 <TableCell>{item.houseHoldID}</TableCell>
-//                 <TableCell>{item.chuHo}</TableCell>
-//                 <TableCell>
-//                   <Chip
-//                     label={item.type}
-//                     color={item.type === "Sinh" ? "success" : "error"}
-//                   />
-//                 </TableCell>
-//                 <TableCell>{renderStatus(item.status)}</TableCell>
-//               </TableRow>
-//             ))}
-//           </TableBody>
-//         </Table>
-//       </TableContainer>
-
-//       {/* 3. Chỉ giữ lại Form bạn muốn hiển thị trực tiếp */}
-//       <FormKhaiBaoTamTruVang
-//         open={openForm}
-//         onClose={() => setOpenForm(false)}
-//         onSubmit={handleAddRequest}
-//       />
-//     </Box>
-//   );
-// }
-
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Box,
   Typography,
@@ -136,7 +18,13 @@ import useAuthStore from "../../../store/authStore";
 const residenceFields = [
   { name: "name", label: "Họ và tên", required: true },
   { name: "userCardID", label: "CCCD/ID", required: true },
-  { name: "sex", label: "Giới tính", required: true, select: true, options: ["Nam", "Nữ", "Khác"] },
+  {
+    name: "sex",
+    label: "Giới tính",
+    required: true,
+    select: true,
+    options: ["Nam", "Nữ", "Khác"],
+  },
   { name: "dob", label: "Ngày sinh", required: true, type: "date" },
   { name: "birthLocation", label: "Nơi sinh", required: true },
   { name: "ethnic", label: "Dân tộc", required: true },
@@ -148,15 +36,27 @@ const residenceFields = [
 ];
 
 const absenceFields = [
-  { name: "memberId", label: "Thành viên", required: true, select: true, options: [] },
+  {
+    name: "memberId",
+    label: "Thành viên",
+    required: true,
+    select: true,
+    options: [],
+  },
   { name: "fromDate", label: "Từ ngày", required: true, type: "date" },
   { name: "toDate", label: "Đến ngày", required: true, type: "date" },
   { name: "temporaryAddress", label: "Địa chỉ tạm trú", required: true },
   { name: "reason", label: "Lý do", required: true, multiline: true },
 ];
 
-const initialResidence = residenceFields.reduce((acc, f) => ({ ...acc, [f.name]: "" }), {});
-const initialAbsence = absenceFields.reduce((acc, f) => ({ ...acc, [f.name]: "" }), {});
+const initialResidence = residenceFields.reduce(
+  (acc, f) => ({ ...acc, [f.name]: "" }),
+  {}
+);
+const initialAbsence = absenceFields.reduce(
+  (acc, f) => ({ ...acc, [f.name]: "" }),
+  {}
+);
 
 export default function RequestTamTruVang() {
   const { user } = useAuthStore();
@@ -184,7 +84,13 @@ export default function RequestTamTruVang() {
   const absenceFieldsWithOptions = useMemo(() => {
     return absenceFields.map((f) =>
       f.name === "memberId"
-        ? { ...f, options: members.map((m) => ({ value: m._id, label: `${m.name} (${m.userCardID || ""})` })) }
+        ? {
+            ...f,
+            options: members.map((m) => ({
+              value: m._id,
+              label: `${m.name} (${m.userCardID || ""})`,
+            })),
+          }
         : f
     );
   }, [members]);
@@ -197,7 +103,10 @@ export default function RequestTamTruVang() {
   };
 
   const validateFields = (fields, data) => {
-    return fields.every((f) => !f.required || (data[f.name] && data[f.name].toString().trim() !== ""));
+    return fields.every(
+      (f) =>
+        !f.required || (data[f.name] && data[f.name].toString().trim() !== "")
+    );
   };
 
   const handleSubmit = async () => {
@@ -289,7 +198,9 @@ export default function RequestTamTruVang() {
   };
 
   const isResidence = mode === "TEMPORARY_RESIDENCE";
-  const currentFields = isResidence ? residenceFields : absenceFieldsWithOptions;
+  const currentFields = isResidence
+    ? residenceFields
+    : absenceFieldsWithOptions;
   const currentData = isResidence ? residenceData : absenceData;
   const currentSetter = isResidence ? setResidenceData : setAbsenceData;
 
@@ -335,12 +246,15 @@ export default function RequestTamTruVang() {
       </Grid>
 
       <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 3, gap: 2 }}>
-        <Button variant="outlined" onClick={() => {
-          setResidenceData(initialResidence);
-          setAbsenceData(initialAbsence);
-          setError(null);
-          setSuccess(null);
-        }}>
+        <Button
+          variant="outlined"
+          onClick={() => {
+            setResidenceData(initialResidence);
+            setAbsenceData(initialAbsence);
+            setError(null);
+            setSuccess(null);
+          }}
+        >
           Xóa form
         </Button>
         <Button variant="contained" onClick={handleSubmit} disabled={loading}>

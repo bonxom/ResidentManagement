@@ -1,22 +1,22 @@
-import api from './axiosInstance'; // Import file thật
+import api from "./axiosInstance"; // Import file thật
 
 export const authAPI = {
   // Đăng nhập
   signIn: async (credentials) => {
-    const response = await api.post('/auth/login', credentials)
-    return response.data
+    const response = await api.post("/auth/login", credentials);
+    return response.data;
   },
 
   // Đăng ký
   signUp: async (userData) => {
-    const response = await api.post('/auth/register', userData)
-    return response.data
+    const response = await api.post("/auth/register", userData);
+    return response.data;
   },
 
   // Verify token
   verifyToken: async () => {
-    const response = await api.get('/auth/me')
-    return response.data
+    const response = await api.get("/auth/me");
+    return response.data;
   },
 
   // Đăng xuất
@@ -26,22 +26,22 @@ export const authAPI = {
   },
   // Refresh token (nếu backend hỗ trợ)
   refreshToken: async (refreshToken) => {
-    return Promise.reject("Chưa hỗ trợ"); 
+    return Promise.reject("Chưa hỗ trợ");
   },
-}
+};
 
 // ============= USER API =============
 export const userAPI = {
   // Lấy tất cả users
   getAll: async (params = {}) => {
-    const response = await api.get('/users', { params })
-    return response.data
+    const response = await api.get("/users", { params });
+    return response.data;
   },
 
   // Lấy user theo ID
   getById: async (id) => {
-    const response = await api.get(`/users/${id}`)
-    return response.data
+    const response = await api.get(`/users/${id}`);
+    return response.data;
   },
 
   // Tạo user mới
@@ -52,19 +52,19 @@ export const userAPI = {
 
   // Cập nhật user
   update: async (id, userData) => {
-    const response = await api.put(`/users/${id}`, userData)
-    return response.data
+    const response = await api.put(`/users/${id}`, userData);
+    return response.data;
   },
 
   // Xóa user
   delete: async (id) => {
-    const response = await api.delete(`/users/${id}`)
-    return response.data
+    const response = await api.delete(`/users/${id}`);
+    return response.data;
   },
 
   // Lấy profile (API này không tồn tại, ta dùng /auth/me)
   getProfile: async () => {
-    const response = await api.get('/auth/me'); // Sửa
+    const response = await api.get("/auth/me"); // Sửa
     return response.data;
   },
 
@@ -72,18 +72,17 @@ export const userAPI = {
   changePassword: async (userId, oldPassword, newPassword) => {
     const response = await api.patch(`/users/${userId}/password`, {
       oldPassword,
-      newPassword
+      newPassword,
     });
     return response.data;
   },
-
-}
+};
 
 // ============= HOUSEHOLD API =============
 export const householdAPI = {
   // CRUD
   getAll: async (params = {}) => {
-    const response = await api.get('/households', { params });
+    const response = await api.get("/households", { params });
     return response.data;
   },
 
@@ -93,7 +92,7 @@ export const householdAPI = {
   },
 
   create: async (householdData) => {
-    const response = await api.post('/households', householdData);
+    const response = await api.post("/households", householdData);
     return response.data;
   },
 
@@ -112,7 +111,7 @@ export const householdAPI = {
     return response.data;
   },
 
-  getMembersInfo: async(id) => {
+  getMembersInfo: async (id) => {
     const response = await api.get(`/households/${id}/members`);
     return response.data;
   },
@@ -123,40 +122,54 @@ export const householdAPI = {
   },
 
   removeMember: async (householdId, memberId) => {
-    const response = await api.delete(`/households/${householdId}/members/${memberId}`);
+    const response = await api.delete(
+      `/households/${householdId}/members/${memberId}`
+    );
     return response.data;
   },
 
   getResidentHistory: async (householdId) => {
-    const response = await api.get(`/households/${householdId}/resident-history`);
+    const response = await api.get(
+      `/households/${householdId}/resident-history`
+    );
     return response.data;
   },
 
   addTemporaryResident: async (householdId, residentData) => {
-    const response = await api.post(`/households/${householdId}/temporary-residents`, residentData);
+    const response = await api.post(
+      `/households/${householdId}/temporary-residents`,
+      residentData
+    );
     return response.data;
   },
 
   endTemporaryResident: async (householdId, data) => {
     // data = { userCardID, endDate }
-    const response = await api.put(`/households/${householdId}/temporary-residents/end`, data);
+    const response = await api.put(
+      `/households/${householdId}/temporary-residents/end`,
+      data
+    );
     return response.data;
   },
 
   //
   splitHousehold: async (splitData) => {
     // splitData = { userId, newHouseHoldID, newAddress }
-    const response = await api.post('/households/split', splitData);
+    const response = await api.post("/households/split", splitData);
     return response.data;
   },
 
   moveMember: async (moveData) => {
     // moveData = { userId, targetHouseholdId, relationship }
-    const response = await api.post('/households/move', moveData);
+    const response = await api.post("/households/move", moveData);
+    return response.data;
+  },
+  // Lấy chi tiết tạm trú/tạm vắng từ ResidentHistory
+  getTamTruVangDetails: async (householdId) => {
+    const response = await api.get(`/households/${householdId}/changes`);
     return response.data;
   },
 };
-
 
 // ==============FEE API===============
 
