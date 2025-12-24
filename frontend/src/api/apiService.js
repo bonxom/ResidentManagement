@@ -1,4 +1,4 @@
-import api from '../api/axiosInstance'; // Import file thật
+import api from './axiosInstance'; // Import file thật
 
 export const authAPI = {
   // Đăng nhập
@@ -9,7 +9,7 @@ export const authAPI = {
 
   // Đăng ký
   signUp: async (userData) => {
-    const response = await api.post('/users', userData)
+    const response = await api.post('/auth/register', userData)
     return response.data
   },
 
@@ -68,6 +68,15 @@ export const userAPI = {
     return response.data;
   },
 
+  // Đổi mật khẩu
+  changePassword: async (userId, oldPassword, newPassword) => {
+    const response = await api.patch(`/users/${userId}/password`, {
+      oldPassword,
+      newPassword
+    });
+    return response.data;
+  },
+
 }
 
 // ============= HOUSEHOLD API =============
@@ -99,6 +108,11 @@ export const householdAPI = {
   },
 
   getMembers: async (id) => {
+    const response = await api.get(`/households/${id}/members`);
+    return response.data;
+  },
+
+  getMembersInfo: async(id) => {
     const response = await api.get(`/households/${id}/members`);
     return response.data;
   },
@@ -187,5 +201,47 @@ export const feeAPI = {
   getHouseholdFeesByAdmin: async (householdId) => {
     const res = await api.get(`/fees/household/${householdId}`);
     return res.data;
+  },
+};
+
+// ============= REQUEST API =============
+export const requestAPI = {
+  // Cư dân gửi yêu cầu cập nhật thông tin
+  updateInfo: async (newData) => {
+    const response = await api.post("/requests/update-info", { newData });
+    return response.data;
+  },
+  // Cư dân khai báo tạm trú
+  createTemporaryResidence: async (payload) => {
+    const response = await api.post("/requests/temporary-residence", payload);
+    return response.data;
+  },
+  // Cư dân khai báo tạm vắng
+  createTemporaryAbsence: async (payload) => {
+    const response = await api.post("/requests/temporary-absence", payload);
+    return response.data;
+  },
+  // Lấy danh sách yêu cầu
+  getRequests: async (params = {}) => {
+    const response = await api.get("/requests", { params });
+    return response.data;
+  },
+  // Tổ trưởng duyệt/từ chối yêu cầu
+  reviewRequest: async (id, status, leaderComment = "") => {
+    const response = await api.put(`/requests/${id}/review`, {
+      status,
+      leaderComment,
+    });
+    return response.data;
+  },
+  // Báo sinh
+  createBirthReport: async (payload) => {
+    const response = await api.post("/requests/birth", payload);
+    return response.data;
+  },
+  // Báo tử
+  createDeathReport: async (payload) => {
+    const response = await api.post("/requests/death", payload);
+    return response.data;
   },
 };

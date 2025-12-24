@@ -17,8 +17,7 @@ import {
   Pagination,
 } from "@mui/material";
 import { Search, Filter, ChevronDown } from "lucide-react";
-import MainLayoutForUser from "../../layout/MainLayoutForUser";
-import AddProfileModal from "../../feature/profile/AddProfile";
+import AddProfileModal from "../../../feature/profile/AddProfile";
 
 /* ================== DATA ẢO ================== */
 
@@ -138,22 +137,20 @@ export default function LichSuPheDuyet() {
   const [history, setHistory] = useState(mockHistory);
 
   return (
-    <MainLayoutForUser>
-      <Box sx={{ padding: "24px 32px" }}>
-        <Typography sx={{ fontSize: 26, fontWeight: 600, mb: 3 }}>
-          Lịch sử thêm / xóa thành viên hộ dân
-        </Typography>
+    <Box sx={{ padding: "24px 32px" }}>
+      <Typography sx={{ fontSize: 26, fontWeight: 600, mb: 3 }}>
+        Lịch sử thêm / xóa thành viên hộ dân
+      </Typography>
 
-        <Box
-          sx={{
-            backgroundColor: "white",
-            borderRadius: "16px",
-            boxShadow: "0px 3px 12px rgba(0,0,0,0.1)",
-            p: 2,
-          }}
-        >
-          <HistoryTable history={history} />
-        </Box>
+      <Box
+        sx={{
+          backgroundColor: "white",
+          borderRadius: "16px",
+          boxShadow: "0px 3px 12px rgba(0,0,0,0.1)",
+          p: 2,
+        }}
+      >
+        <HistoryTable history={history} />
       </Box>
 
       <AddProfileModal
@@ -162,6 +159,6 @@ export default function LichSuPheDuyet() {
         currentData={{}}
         onSubmit={() => {}}
       />
-    </MainLayoutForUser>
+    </Box>
   );
 }

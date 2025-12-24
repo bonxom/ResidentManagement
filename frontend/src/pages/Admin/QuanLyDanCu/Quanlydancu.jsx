@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -7,7 +7,6 @@ import {
   InputAdornment,
   Select,
   MenuItem,
-  Menu,
   Table,
   TableBody,
   TableCell,
@@ -17,69 +16,24 @@ import {
   Checkbox,
   Paper,
   Pagination,
+  CircularProgress,
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
-import { Search, Filter, ChevronDown } from "lucide-react";
-import MainLayout from "../../../layout/MainLayout";
-import { useNavigate } from "react-router-dom";
+import { Search, Filter, ChevronDown, Trash2 } from "lucide-react";
+import { useRoleNavigation } from "../../../hooks/useRoleNavigation";
 import AddProfileModal from "../../../feature/profile/AddProfile";
-
-// ===== DỮ LIỆU ẢO: DANH SÁCH HỘ DÂN =====
-const households = [
-  {
-    id: 1,
-    householdCode: "HK001",
-    headName: "Nguyễn Văn A",
-    createdAt: "01/01/2024",
-    membersCount: 4,
-  },
-  {
-    id: 2,
-    householdCode: "HK002",
-    headName: "Trần Thị B",
-    createdAt: "15/02/2024",
-    membersCount: 3,
-  },
-  {
-    id: 3,
-    householdCode: "HK003",
-    headName: "Nguyễn Văn C",
-    createdAt: "20/03/2024",
-    membersCount: 5,
-  },
-];
+import ThemHoDan from "../../../feature/admin/QuanLyHoKhau/ThemHoDan";
+import { householdAPI } from "../../../api/apiService";
 
 // ===== COMPONENT BẢNG HỘ DÂN =====
-function ResidentsTable({ selected, setSelected }) {
+function ResidentsTable({ selected, setSelected, households, loading, onDelete, onViewDetail }) {
   const ROWS_PER_PAGE = 10;
   const [page, setPage] = useState(1);
-  const [anchorEl, setAnchorEl] = useState(null);
-  const [selectedRow, setSelectedRow] = useState(null);
-  const navigate = useNavigate();
-
-  const handleMenuOpen = (event, row) => {
-    setAnchorEl(event.currentTarget);
-    setSelectedRow(row);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-    setSelectedRow(null);
-  };
-
-  const handleViewDetail = () => {
-    if (selectedRow) {
-      navigate(`/ThongTinHoDanAdmin`);
-    }
-    handleMenuClose();
-  };
-
-  const handleDelete = () => {
-    if (selectedRow) {
-      console.log('Xóa hộ dân:', selectedRow);
-      // TODO: Implement delete logic
-    }
-    handleMenuClose();
-  };
+  const { navigateWithRole } = useRoleNavigation();
 
   const pageCount = Math.ceil(households.length / ROWS_PER_PAGE) || 1;
   const start = (page - 1) * ROWS_PER_PAGE;
@@ -93,7 +47,7 @@ function ResidentsTable({ selected, setSelected }) {
 
   const handleSelectAll = (e) => {
     if (e.target.checked) {
-      const idsOnPage = visibleRows.map((r) => r.id);
+      const idsOnPage = visibleRows.map((r) => r._id);
       setSelected(idsOnPage);
     } else {
       setSelected([]);
@@ -102,7 +56,32 @@ function ResidentsTable({ selected, setSelected }) {
 
   const isAllSelectedOnPage =
     visibleRows.length > 0 &&
-    visibleRows.every((row) => selected.includes(row.id));
+    visibleRows.every((row) => selected.includes(row._id));
+
+  // Format date helper
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    const date = new Date(dateString);
+    return date.toLocaleDateString('vi-VN');
+  };
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 8 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (households.length === 0) {
+    return (
+      <Box sx={{ textAlign: 'center', py: 8 }}>
+        <Typography sx={{ color: '#666', fontSize: '16px' }}>
+          Chưa có hộ dân nào
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box>
@@ -132,11 +111,11 @@ function ResidentsTable({ selected, setSelected }) {
 
           <TableBody>
             {visibleRows.map((row) => {
-              const checked = selected.includes(row.id);
+              const checked = selected.includes(row._id);
 
               return (
                 <TableRow
-                  key={row.id}
+                  key={row._id}
                   hover
                   selected={checked}
                   sx={{ cursor: "pointer" }}
@@ -145,35 +124,43 @@ function ResidentsTable({ selected, setSelected }) {
                   <TableCell padding="checkbox">
                     <Checkbox
                       checked={checked}
-                      onChange={() => handleSelectRow(row.id)}
+                      onChange={() => handleSelectRow(row._id)}
                     />
                   </TableCell>
 
-                  <TableCell>{row.householdCode}</TableCell>
-                  <TableCell>{row.headName}</TableCell>
-                  <TableCell>{row.createdAt}</TableCell>
-                  <TableCell>{row.membersCount}</TableCell>
+                  <TableCell>{row.houseHoldID}</TableCell>
+                  <TableCell>{row.leader?.name || "N/A"}</TableCell>
+                  <TableCell>{formatDate(row.createdAt)}</TableCell>
+                  <TableCell>{row.members?.length || 0}</TableCell>
 
                   <TableCell>
-                    <Button
-                      onClick={(e) => handleMenuOpen(e, row)}
-                      sx={{
-                        minWidth: 36,
-                        width: 36,
-                        height: 36,
-                        borderRadius: '50%',
-                        padding: 0,
-                        backgroundColor: '#eff6ff',
-                        color: '#3b82f6',
-                        fontSize: '20px',
-                        fontWeight: 'bold',
-                        '&:hover': {
-                          backgroundColor: '#dbeafe',
-                        },
-                      }}
-                    >
-                      ⋯
-                    </Button>
+                    <Box sx={{ display: "flex", gap: 1 }}>
+                      <Button
+                        variant="contained"
+                        size="small"
+                        onClick={() => onViewDetail(row)}
+                        sx={{ 
+                          textTransform: "none",
+                          minWidth: "60px",
+                          fontSize: "13px"
+                        }}
+                      >
+                        Xem
+                      </Button>
+                      <Button
+                        // variant="outlined"
+                        color="error"
+                        size="small"
+                        onClick={() => onDelete(row)}
+                        sx={{ 
+                          textTransform: "none",
+                          minWidth: "40px",
+                          padding: "4px 8px"
+                        }}
+                      >
+                        <Trash2 size={16} />
+                      </Button>
+                    </Box>
                   </TableCell>
                 </TableRow>
               );
@@ -181,57 +168,6 @@ function ResidentsTable({ selected, setSelected }) {
           </TableBody>
         </Table>
       </TableContainer>
-
-      {/* Menu dropdown cho 3-dot button */}
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleMenuClose}
-        PaperProps={{
-          elevation: 3,
-          sx: {
-            mt: 1.5,
-            minWidth: 160,
-            borderRadius: 2,
-            overflow: "hidden",
-            boxShadow: "0 8px 24px rgba(0, 0, 0, 0.15)",
-          },
-        }}
-      >
-        <MenuItem
-          onClick={handleViewDetail}
-          sx={{
-            py: 1.5,
-            px: 2.5,
-            fontSize: "14px",
-            fontWeight: 500,
-            transition: "all 0.2s ease",
-            "&:hover": {
-              backgroundColor: "#f0f9ff",
-              color: "#2563eb",
-            },
-          }}
-        >
-          Xem chi tiết
-        </MenuItem>
-        <MenuItem
-          onClick={handleDelete}
-          sx={{
-            py: 1.5,
-            px: 2.5,
-            fontSize: "14px",
-            fontWeight: 500,
-            color: "#6b7280",
-            transition: "all 0.2s ease",
-            "&:hover": {
-              backgroundColor: "#fef2f2",
-              color: "#ef4444",
-            },
-          }}
-        >
-          Xóa
-        </MenuItem>
-      </Menu>
 
       <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
         <Pagination
@@ -248,8 +184,38 @@ function ResidentsTable({ selected, setSelected }) {
 // ===== PAGE CHÍNH =====
 export default function Quanlydancu() {
   const [openAddProfileModal, setOpenAddProfileModal] = useState(false);
+  const [openThemHoDan, setOpenThemHoDan] = useState(false);
   const [userInfo, setUserInfo] = useState({});
   const [selected, setSelected] = useState([]);
+  const [households, setHouseholds] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [batchDeleteDialogOpen, setBatchDeleteDialogOpen] = useState(false);
+  const [householdToDelete, setHouseholdToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterType, setFilterType] = useState("");
+  const { navigateWithRole } = useRoleNavigation();
+
+  // Fetch households on component mount
+  useEffect(() => {
+    fetchHouseholds();
+  }, []);
+
+  const fetchHouseholds = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const data = await householdAPI.getAll();
+      setHouseholds(data);
+    } catch (err) {
+      console.error("Failed to fetch households:", err);
+      setError("Không thể tải danh sách hộ dân. Vui lòng thử lại.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleAddRequest = (formData) => {
     console.log("Yêu cầu thêm thành viên:", formData);
@@ -264,8 +230,109 @@ export default function Quanlydancu() {
     setOpenAddProfileModal(true);
   };
 
+  // Bấm nút "Thêm hộ dân" -> mở form ThemHoDan
+  const handleOpenThemHoDan = () => {
+    setOpenThemHoDan(true);
+  };
+
+  // Callback khi thêm hộ dân thành công
+  const handleHouseholdAdded = () => {
+    // Refresh danh sách hộ dân
+    fetchHouseholds();
+  };
+
+  // Xử lý xóa hộ dân (single)
+  const handleDeleteSingle = (household) => {
+    setHouseholdToDelete(household);
+    setDeleteDialogOpen(true);
+  };
+
+  // Xử lý xem chi tiết
+  const handleViewDetail = (household) => {
+    navigateWithRole('/ThongTinHoDanAdmin', { state: { householdId: household._id } });
+  };
+
+  // Xử lý xóa nhiều hộ dân (batch)
+  const handleDeleteBatch = () => {
+    if (selected.length === 0) return;
+    setBatchDeleteDialogOpen(true);
+  };
+
+  // Xác nhận xóa hàng loạt
+  const handleConfirmBatchDelete = async () => {
+    setIsDeleting(true);
+    setError("");
+
+    try {
+      // Xóa từng hộ dân được chọn
+      await Promise.all(
+        selected.map(id => householdAPI.delete(id))
+      );
+
+      // Refresh danh sách
+      await fetchHouseholds();
+      setSelected([]);
+      setBatchDeleteDialogOpen(false);
+      alert(`Đã xóa thành công ${selected.length} hộ dân`);
+    } catch (err) {
+      console.error("Failed to delete households:", err);
+      setError(err.message || "Không thể xóa hộ dân. Vui lòng thử lại.");
+      setBatchDeleteDialogOpen(false);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  // Hủy xóa hàng loạt
+  const handleCancelBatchDelete = () => {
+    setBatchDeleteDialogOpen(false);
+  };
+
+  // Xác nhận xóa từ dialog
+  const handleConfirmDelete = async () => {
+    if (!householdToDelete) return;
+
+    setIsDeleting(true);
+    setError("");
+
+    try {
+      await householdAPI.delete(householdToDelete._id);
+      await fetchHouseholds();
+      setDeleteDialogOpen(false);
+      setHouseholdToDelete(null);
+      alert("Đã xóa hộ dân thành công");
+    } catch (err) {
+      console.error("Failed to delete household:", err);
+      setError(err.message || "Không thể xóa hộ dân. Vui lòng thử lại.");
+      setDeleteDialogOpen(false);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  // Hủy xóa
+  const handleCancelDelete = () => {
+    setDeleteDialogOpen(false);
+    setHouseholdToDelete(null);
+  };
+
+  // Filter and search logic
+  const filteredHouseholds = households.filter(household => {
+    const matchesSearch = 
+      household.houseHoldID?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      household.leader?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      household.address?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    return matchesSearch;
+  });
+
+  const handleSearch = () => {
+    // Search is already reactive through filteredHouseholds
+    // This function can be used for additional actions if needed
+  };
+
   return (
-    <MainLayout>
+    <>
       <Box sx={{ padding: "24px 32px" }}>
         {/* TITLE + BUTTON */}
         <Box
@@ -288,8 +355,8 @@ export default function Quanlydancu() {
           >
             <Button
               variant="contained"
-              onClick={handleOpenAddMember}
-              disabled={selected.length === 0}
+              onClick={handleDeleteBatch}
+              disabled={selected.length === 0 || isDeleting}
               sx={{
                 backgroundColor: selected.length === 0 ? "#fca5a5" : "#ef4444",
                 borderRadius: "8px",
@@ -307,12 +374,12 @@ export default function Quanlydancu() {
                 },
               }}
             >
-              Xóa hộ dân
+              {isDeleting ? "Đang xóa..." : `Xóa hộ dân${selected.length > 0 ? ` (${selected.length})` : ""}`}
             </Button>
 
             <Button
               variant="contained"
-              onClick={handleOpenAddMember}
+              onClick={handleOpenThemHoDan}
               sx={{
                 backgroundColor: "#2D66F5",
                 borderRadius: "8px",
@@ -328,6 +395,17 @@ export default function Quanlydancu() {
             </Button>
           </Box>
         </Box>
+
+        {/* Error Alert */}
+        {error && (
+          <Alert 
+            severity="error" 
+            sx={{ mb: 3 }} 
+            onClose={() => setError("")}
+          >
+            {error}
+          </Alert>
+        )}
 
         {/* SEARCH BOX */}
         <Box
@@ -348,6 +426,8 @@ export default function Quanlydancu() {
             <TextField
               fullWidth
               placeholder="Nhập mã hộ dân, tên chủ hộ..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -396,6 +476,8 @@ export default function Quanlydancu() {
                 displayEmpty
                 variant="standard"
                 disableUnderline
+                value={filterType}
+                onChange={(e) => setFilterType(e.target.value)}
                 IconComponent={() => (
                   <ChevronDown size={18} style={{ marginRight: 2 }} />
                 )}
@@ -420,6 +502,7 @@ export default function Quanlydancu() {
           {/* SEARCH BUTTON */}
           <Button
             variant="contained"
+            onClick={handleSearch}
             sx={{
               backgroundColor: "#2D66F5",
               borderRadius: "8px",
@@ -444,7 +527,14 @@ export default function Quanlydancu() {
             p: 2,
           }}
         >
-          <ResidentsTable selected={selected} setSelected={setSelected} />
+          <ResidentsTable 
+            selected={selected} 
+            setSelected={setSelected} 
+            households={filteredHouseholds}
+            loading={loading}
+            onDelete={handleDeleteSingle}
+            onViewDetail={handleViewDetail}
+          />
         </Box>
       </Box>
 
@@ -455,6 +545,111 @@ export default function Quanlydancu() {
         currentData={userInfo}
         onSubmit={handleAddRequest}
       />
-    </MainLayout>
+
+      {/* MODAL THÊM HỘ DÂN */}
+      <ThemHoDan
+        open={openThemHoDan}
+        onClose={() => setOpenThemHoDan(false)}
+        onSuccess={handleHouseholdAdded}
+      />
+
+      {/* DELETE CONFIRMATION DIALOG */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleCancelDelete}
+        PaperProps={{
+          sx: {
+            borderRadius: "12px",
+            padding: "8px"
+          }
+        }}
+      >
+        <DialogTitle sx={{ fontSize: "18px", fontWeight: "600" }}>
+          Xác nhận xóa hộ dân
+        </DialogTitle>
+        <DialogContent>
+          <Typography>
+            Bạn có chắc chắn muốn xóa hộ dân <strong>{householdToDelete?.houseHoldID}</strong> (Chủ hộ: <strong>{householdToDelete?.leader?.name}</strong>) không?
+          </Typography>
+          <Typography sx={{ mt: 2, color: "#d32f2f", fontSize: "14px" }}>
+            <strong>Cảnh báo:</strong> Hành động này không thể hoàn tác!
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button
+            onClick={handleCancelDelete}
+            disabled={isDeleting}
+            sx={{
+              textTransform: "none",
+              color: "#666",
+              fontSize: "14px"
+            }}
+          >
+            Hủy
+          </Button>
+          <Button
+            onClick={handleConfirmDelete}
+            variant="contained"
+            color="error"
+            disabled={isDeleting}
+            sx={{
+              textTransform: "none",
+              fontSize: "14px"
+            }}
+          >
+            {isDeleting ? "Đang xóa..." : "Xác nhận xóa"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* BATCH DELETE CONFIRMATION DIALOG */}
+      <Dialog
+        open={batchDeleteDialogOpen}
+        onClose={handleCancelBatchDelete}
+        PaperProps={{
+          sx: {
+            borderRadius: "12px",
+            padding: "8px"
+          }
+        }}
+      >
+        <DialogTitle sx={{ fontSize: "18px", fontWeight: "600" }}>
+          Xác nhận xóa nhiều hộ dân
+        </DialogTitle>
+        <DialogContent>
+          <Typography>
+            Bạn có chắc chắn muốn xóa <strong>{selected.length} hộ dân</strong> đã chọn không?
+          </Typography>
+          <Typography sx={{ mt: 2, color: "#d32f2f", fontSize: "14px" }}>
+            <strong>Cảnh báo:</strong> Hành động này không thể hoàn tác!
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button
+            onClick={handleCancelBatchDelete}
+            disabled={isDeleting}
+            sx={{
+              textTransform: "none",
+              color: "#666",
+              fontSize: "14px"
+            }}
+          >
+            Hủy
+          </Button>
+          <Button
+            onClick={handleConfirmBatchDelete}
+            variant="contained"
+            color="error"
+            disabled={isDeleting}
+            sx={{
+              textTransform: "none",
+              fontSize: "14px"
+            }}
+          >
+            {isDeleting ? "Đang xóa..." : "Xác nhận xóa"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 }

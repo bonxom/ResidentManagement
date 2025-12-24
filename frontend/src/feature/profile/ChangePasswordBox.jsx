@@ -1,8 +1,11 @@
-import { Box, Typography, TextField, Button, Grid, IconButton, InputAdornment } from "@mui/material";
+import { Box, Typography, TextField, Button, Grid, IconButton, InputAdornment, Alert } from "@mui/material";
 import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
+import { userAPI } from "../../api/apiService";
+import useAuthStore from "../../store/authStore";
 
 export default function ChangePasswordBox() {
+    const { user } = useAuthStore();
     const [passwordData, setPasswordData] = useState({
         currentPassword: "",
         newPassword: "",
@@ -16,6 +19,9 @@ export default function ChangePasswordBox() {
     });
 
     const [errors, setErrors] = useState({});
+    const [successMessage, setSuccessMessage] = useState("");
+    const [errorMessage, setErrorMessage] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleChange = (e) => {
         setPasswordData({
@@ -65,11 +71,21 @@ export default function ChangePasswordBox() {
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleSubmit = () => {
-        if (validateForm()) {
-            console.log("Đổi mật khẩu:", passwordData);
-            // TODO: Gửi yêu cầu đổi mật khẩu đến backend
-            alert("Yêu cầu đổi mật khẩu đã được gửi!");
+    const handleSubmit = async () => {
+        if (!validateForm()) return;
+
+        setIsLoading(true);
+        setSuccessMessage("");
+        setErrorMessage("");
+
+        try {
+            await userAPI.changePassword(
+                user._id,
+                passwordData.currentPassword,
+                passwordData.newPassword
+            );
+
+            setSuccessMessage("Đổi mật khẩu thành công!");
             
             // Reset form
             setPasswordData({
@@ -77,6 +93,17 @@ export default function ChangePasswordBox() {
                 newPassword: "",
                 confirmPassword: ""
             });
+
+            // Auto dismiss success message after 5s
+            setTimeout(() => setSuccessMessage(""), 5000);
+        } catch (error) {
+            const message = error.message || "Đổi mật khẩu thất bại. Vui lòng kiểm tra lại mật khẩu hiện tại.";
+            setErrorMessage(message);
+            
+            // Auto dismiss error message after 5s
+            setTimeout(() => setErrorMessage(""), 5000);
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -94,6 +121,18 @@ export default function ChangePasswordBox() {
             <Typography sx={{ fontSize: "18px", fontWeight: "600", mb: 3, color: "#333" }}>
                 Đổi mật khẩu
             </Typography>
+
+            {/* Success/Error Messages */}
+            {successMessage && (
+                <Alert severity="success" sx={{ mb: 3, width: "100%" }} onClose={() => setSuccessMessage("")}>
+                    {successMessage}
+                </Alert>
+            )}
+            {errorMessage && (
+                <Alert severity="error" sx={{ mb: 3, width: "100%" }} onClose={() => setErrorMessage("")}>
+                    {errorMessage}
+                </Alert>
+            )}
 
             <Grid container spacing={3}>
                 {/* Mật khẩu hiện tại */}
@@ -261,6 +300,7 @@ export default function ChangePasswordBox() {
                 <Button
                     variant="contained"
                     onClick={handleSubmit}
+                    disabled={isLoading}
                     sx={{
                         backgroundColor: "#2D66F5",
                         borderRadius: "8px",
@@ -269,10 +309,11 @@ export default function ChangePasswordBox() {
                         py: 1.2,
                         fontSize: "14px",
                         fontWeight: "500",
-                        "&:hover": { backgroundColor: "#1E54D4" }
+                        "&:hover": { backgroundColor: "#1E54D4" },
+                        "&:disabled": { backgroundColor: "#B0BEC5" }
                     }}
                 >
-                    Đổi mật khẩu
+                    {isLoading ? "Đang xử lý..." : "Đổi mật khẩu"}
                 </Button>
             </Box>
         </Box>

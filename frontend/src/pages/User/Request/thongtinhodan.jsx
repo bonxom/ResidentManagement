@@ -18,9 +18,8 @@ import {
   Pagination,
 } from "@mui/material";
 import { Search, Filter, ChevronDown } from "lucide-react";
-import MainLayoutForUser from "../../layout/MainLayoutForUser";
-import { useNavigate } from "react-router-dom";
-import AddProfileModal from "../../feature/profile/AddProfile";
+import { useRoleNavigation } from "../../../hooks/useRoleNavigation";
+import AddProfileModal from "../../../feature/profile/AddProfile";
 
 // ===== DỮ LIỆU ẢO (3 dòng để test) =====
 const residents = [
@@ -33,7 +32,7 @@ const residents = [
 function ResidentsTable({ residents, selected, setSelected }) {
   const ROWS_PER_PAGE = 10;
   const [page, setPage] = useState(1);
-  const navigate = useNavigate();
+  const { navigateWithRole } = useRoleNavigation();
 
   const pageCount = Math.ceil(residents.length / ROWS_PER_PAGE) || 1;
   const start = (page - 1) * ROWS_PER_PAGE;
@@ -112,7 +111,7 @@ function ResidentsTable({ residents, selected, setSelected }) {
                         color: "#1E54D4",
                         "&:hover": { textDecoration: "underline" },
                       }}
-                      onClick={() => navigate(`/ThongTinChiTiet`)}
+                      onClick={() => navigateWithRole('/ThongTinChiTiet')}
                     >
                       Xem chi tiết
                     </Button>
@@ -171,7 +170,7 @@ export default function ThongTinHoDan() {
   };
 
   return (
-    <MainLayoutForUser>
+    <>
       <Box sx={{ padding: "24px 32px" }}>
         <Box
           sx={{
@@ -197,7 +196,11 @@ export default function ThongTinHoDan() {
             {/* ✅ NÚT XÓA: bấm sẽ xóa các dòng đã tick */}
             <Button
               variant="contained"
-              onClick={handleDeleteSelected}
+
+              onClick={handleOpenAddMember}
+
+//               onClick={handleDeleteSelected}
+
               sx={{
                 backgroundColor: "#2D66F5",
                 borderRadius: "8px",
@@ -347,6 +350,6 @@ export default function ThongTinHoDan() {
         currentData={userInfo}
         onSubmit={handleAddRequest}
       />
-    </MainLayoutForUser>
+    </>
   );
 }

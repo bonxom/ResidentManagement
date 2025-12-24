@@ -54,31 +54,62 @@ const INIT_PERMISSIONS = {
 const INIT_ROLES = {
   "HAMLET LEADER": [
     // User
-    "CREATE USER", "DELETE USER", "EDIT USER", "VIEW USER LIST", "VIEW USER",
-    "DEACTIVATE USER", "VERIFY USER", "RESET USER PASSWORD", "ASSIGN ROLES",
-    "CREATE ACCOUNT", "MANAGE USER PERMISSIONS",
+    "CREATE USER",
+    "DELETE USER",
+    "EDIT USER",
+    "VIEW USER LIST",
+    "VIEW USER",
+    "DEACTIVATE USER",
+    "VERIFY USER",
+    "RESET USER PASSWORD",
+    "ASSIGN ROLES",
+    "CREATE ACCOUNT",
+    "MANAGE USER PERMISSIONS",
     // Permission
-    "VIEW PERMISSIONS", "CREATE PERMISSION", "EDIT PERMISSION", "DELETE PERMISSION",
+    "VIEW PERMISSIONS",
+    "CREATE PERMISSION",
+    "EDIT PERMISSION",
+    "DELETE PERMISSION",
     // Role
-    "VIEW ROLES", "CREATE ROLE", "EDIT ROLE", "DELETE ROLE",
+    "VIEW ROLES",
+    "CREATE ROLE",
+    "EDIT ROLE",
+    "DELETE ROLE",
     // Household
-    "CHANGE HOUSEHOLD LEADER", "VIEW HOUSEHOLD LIST", "VIEW HOUSEHOLD",
-    "CREATE HOUSEHOLD", "EDIT HOUSEHOLD", "DELETE HOUSEHOLD",
+    "CHANGE HOUSEHOLD LEADER",
+    "VIEW HOUSEHOLD LIST",
+    "VIEW HOUSEHOLD",
+    "CREATE HOUSEHOLD",
+    "EDIT HOUSEHOLD",
+    "DELETE HOUSEHOLD",
     // Fee
-    "VIEW FEES", "CREATE FEE", "EDIT FEE", "DELETE FEE",
-    "CALCULATE FEE", "RECORD PAYMENT", "VIEW FEE STATS",
+    "VIEW FEES",
+    "CREATE FEE",
+    "EDIT FEE",
+    "DELETE FEE",
+    "CALCULATE FEE",
+    "RECORD PAYMENT",
+    "VIEW FEE STATS",
     // Request (QUAN TRỌNG: Để duyệt đơn đăng ký/sửa đổi)
-    "READ REQUESTS LIST", "REJECT REQUEST", "APPROVE REQUEST",
+    "READ REQUESTS LIST",
+    "REJECT REQUEST",
+    "APPROVE REQUEST",
   ],
 
-  "ACCOUNTANT": [
-    "VIEW USER LIST", "VIEW USER",
-    "VIEW PERMISSIONS", "VIEW ROLES",
-    "VIEW HOUSEHOLD LIST", "VIEW HOUSEHOLD",
+  ACCOUNTANT: [
+    "VIEW USER LIST",
+    "VIEW USER",
+    "VIEW PERMISSIONS",
+    "VIEW ROLES",
+    "VIEW HOUSEHOLD LIST",
+    "VIEW HOUSEHOLD",
     // Fee focus
-    "VIEW FEES", "CALCULATE FEE", "RECORD PAYMENT", "VIEW FEE STATS",
-    "READ REQUESTS LIST", 
-    "APPROVE REQUEST"
+    "VIEW FEES",
+    "CALCULATE FEE",
+    "RECORD PAYMENT",
+    "VIEW FEE STATS",
+    "READ REQUESTS LIST",
+    "APPROVE REQUEST",
   ],
 
   // Cư dân đã có hộ khẩu
@@ -88,13 +119,13 @@ const INIT_ROLES = {
   ],
 
   // Cư dân vãng lai / Mới đăng ký (Chưa vào hộ)
-  "MEMBER": [
+  MEMBER: [
     "VIEW USER", // Chỉ xem được profile bản thân
   ],
 };
 
 const SEED_USERS_DATA = {
-  "ACCOUNTANT": [
+  ACCOUNTANT: [
     {
       email: "accountant@resident.test",
       userCardID: 689123456002,
@@ -126,7 +157,7 @@ const SEED_USERS_DATA = {
       phoneNumber: "0938456123",
     },
   ],
-  "HOUSE MEMBER": [
+  "MEMBER": [
     {
       email: "member@resident.test",
       userCardID: 689123456004,
@@ -222,7 +253,9 @@ const initSeedUsers = async () => {
   for (const [roleName, users] of Object.entries(SEED_USERS_DATA)) {
     const role = await Role.findByName(roleName);
     if (!role) {
-      console.warn(`[seed] Missing role "${roleName}". Skipping user seeds for this role.`);
+      console.warn(
+        `[seed] Missing role "${roleName}". Skipping user seeds for this role.`
+      );
       continue;
     }
 
@@ -284,7 +317,9 @@ const initAdmin = async () => {
     console.log("INIT admin");
     const hamletRole = await Role.findByName("HAMLET LEADER");
     if (!hamletRole) {
-      console.warn('[seed] Missing role "HAMLET LEADER". Seed roles before initAdmin().');
+      console.warn(
+        '[seed] Missing role "HAMLET LEADER". Seed roles before initAdmin().'
+      );
       return;
     }
 
@@ -299,8 +334,8 @@ const initAdmin = async () => {
 
     console.log(
       "INIT_ADMIN: Create admin account\n" +
-      "email: admin@res.com\npassword: 123456\n" +
-      "Please change admin's password to secure your system"
+        "email: admin@res.com\npassword: 123456\n" +
+        "Please change admin's password to secure your system"
     );
   }
 };

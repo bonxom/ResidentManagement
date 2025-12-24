@@ -3,8 +3,9 @@ import User from "../models/User.js";
 import Fee from "../models/Fee.js";
 import Transaction from "../models/Transaction.js";
 import ResidentHistory from "../models/ResidentHistory.js";
-import Role from "../models/Role.js";
 import Household from "../models/Household.js";
+import mongoose from "mongoose";
+import { getMemberRoleId } from "../utils/roleUtils.js";
 
 // @desc    Gửi yêu cầu cập nhật thông tin (Dành cho Người dân)
 // @route   POST /api/requests/update-info
@@ -90,18 +91,35 @@ export const createPaymentRequest = async (req, res) => {
 // 3. Đăng ký Tạm Trú (Người nơi khác đến)
 export const createTemporaryResidenceRequest = async (req, res) => {
   try {
-    const { name, userCardID, dob, job, reason, startDate, endDate } = req.body;
+    const { name, userCardID, dob, job, reason, startDate, endDate, sex, birthLocation, ethnic, phoneNumber } = req.body;
     const user = req.user;
 
     if (!user.household) return res.status(400).json({ message: "Bạn chưa có hộ khẩu." });
-    if (!name || !userCardID || !startDate) return res.status(400).json({ message: "Thiếu thông tin người tạm trú." });
+    if (!name || !userCardID || !dob || !sex || !birthLocation || !ethnic || !phoneNumber || !job || !reason || !startDate || !endDate) {
+      return res.status(400).json({ message: "Thiếu thông tin người tạm trú." });
+    }
+    // Tạm thời tránh trùng CCCD với user hiện có
+    const existingUserCard = await User.findOne({ userCardID });
+    if (existingUserCard) {
+      return res.status(400).json({ message: "CCCD/ID đã tồn tại trong hệ thống." });
+    }
 
     const request = await Request.create({
       requester: user._id,
       type: "TEMPORARY_RESIDENCE",
       requestData: {
         householdId: user.household,
-        name, userCardID, dob, job, reason, startDate, endDate
+        name,
+        userCardID,
+        dob,
+        sex,
+        birthLocation,
+        ethnic,
+        phoneNumber,
+        job,
+        reason,
+        startDate,
+        endDate,
       }
     });
     res.status(201).json(request);
@@ -117,7 +135,10 @@ export const createTemporaryAbsenceRequest = async (req, res) => {
     const requester = req.user;
 
     if (!requester.household) return res.status(400).json({ message: "Bạn chưa có hộ khẩu." });
-    
+    if (!userId || !fromDate || !toDate || !reason || !temporaryAddress) {
+      return res.status(400).json({ message: "Thiếu thông tin tạm vắng." });
+    }
+
     // Kiểm tra thành viên có thuộc hộ không
     const absentUser = await User.findById(userId);
     if (!absentUser || absentUser.household?.toString() !== requester.household.toString()) {
@@ -142,11 +163,13 @@ export const createTemporaryAbsenceRequest = async (req, res) => {
 // 5. Khai Sinh (Bé mới sinh)
 export const createBirthRequest = async (req, res) => {
   try {
-    const { name, dob, sex, birthLocation, ethnic, relationshipWithHead, birthCertificateNumber } = req.body;
+    const { name, dob, sex, birthLocation, ethnic, birthCertificateNumber } = req.body;
     const user = req.user;
 
     if (!user.household) return res.status(400).json({ message: "Bạn chưa có hộ khẩu." });
-    if (!birthCertificateNumber) return res.status(400).json({ message: "Cần số giấy khai sinh." });
+    if (!name || !dob || !sex || !birthLocation || !ethnic || !birthCertificateNumber) {
+      return res.status(400).json({ message: "Thiếu thông tin khai sinh." });
+    }
 
     // Check xem số khai sinh đã tồn tại chưa (tránh trùng lặp)
     const exist = await User.findOne({ userCardID: birthCertificateNumber });
@@ -157,8 +180,12 @@ export const createBirthRequest = async (req, res) => {
       type: "BIRTH_REPORT",
       requestData: {
         householdId: user.household,
-        name, dob, sex, birthLocation, ethnic, relationshipWithHead,
-        userCardID: birthCertificateNumber // Dùng số khai sinh làm ID tạm
+        name,
+        dob,
+        sex,
+        birthLocation,
+        ethnic,
+        birthCertificateNumber,
       }
     });
     res.status(201).json(request);
@@ -174,6 +201,9 @@ export const createDeathRequest = async (req, res) => {
     const requester = req.user;
 
     if (!requester.household) return res.status(400).json({ message: "Bạn chưa có hộ khẩu." });
+    if (!userId || !dateOfDeath || !reason || !deathCertificateUrl) {
+      return res.status(400).json({ message: "Thiếu thông tin khai tử." });
+    }
 
     const deceasedUser = await User.findById(userId);
     if (!deceasedUser) return res.status(404).json({ message: "Không tìm thấy thành viên này" });
@@ -205,9 +235,56 @@ export const getAllRequests = async (req, res) => {
     if (status) filter.status = status;
     if (type) filter.type = type;
 
-    const requests = await Request.find(filter)
-      .populate("requester", "name email userCardID household") // Hiện tên người gửi
+    let requests = await Request.find(filter)
+      .populate({
+        path: "requester",
+        select:
+          "name email userCardID household role dob sex phoneNumber job ethnic birthLocation relationshipWithHead status",
+        populate: [
+          { path: "role", select: "role_name" },
+          { path: "household", select: "houseHoldID address" },
+        ],
+      }) // Hiện tên người gửi + thông tin cần hiển thị
       .sort({ createdAt: -1 }); // Mới nhất lên đầu
+
+    // Enrich TEMPORARY_ABSENT with absent user info
+    const absentIds = requests
+      .filter((r) => r.type === "TEMPORARY_ABSENT" && r.requestData?.absentUserId)
+      .map((r) => r.requestData.absentUserId)
+      .filter(Boolean);
+    const deceasedIds = requests
+      .filter((r) => r.type === "DEATH_REPORT" && r.requestData?.deceasedUserId)
+      .map((r) => r.requestData.deceasedUserId)
+      .filter(Boolean);
+
+    if (absentIds.length || deceasedIds.length) {
+      const ids = [...absentIds, ...deceasedIds];
+      const users = await User.find({ _id: { $in: ids } }).select("name userCardID");
+      const userMap = new Map(users.map((u) => [u._id.toString(), u]));
+      requests = requests.map((r) => {
+        if (r.type === "TEMPORARY_ABSENT" && r.requestData?.absentUserId) {
+          const u = userMap.get(r.requestData.absentUserId.toString());
+          if (u) {
+            r.requestData = {
+              ...r.requestData,
+              absentUserName: u.name,
+              absentUserCardID: u.userCardID,
+            };
+          }
+        }
+        if (r.type === "DEATH_REPORT" && r.requestData?.deceasedUserId) {
+          const u = userMap.get(r.requestData.deceasedUserId.toString());
+          if (u) {
+            r.requestData = {
+              ...r.requestData,
+              deceasedUserName: u.name,
+              deceasedUserCardID: u.userCardID,
+            };
+          }
+        }
+        return r;
+      });
+    }
 
     res.status(200).json(requests);
   } catch (error) {
@@ -299,6 +376,10 @@ export const reviewRequest = async (req, res) => {
                 name: data.name,
                 userCardID: data.userCardID,
                 dob: data.dob,
+                sex: data.sex,
+                birthLocation: data.birthLocation,
+                ethnic: data.ethnic,
+                phoneNumber: data.phoneNumber,
                 job: data.job,
                 reason: data.reason,
                 startDate: data.startDate,
@@ -327,6 +408,14 @@ export const reviewRequest = async (req, res) => {
             // Cách cũ: Tạo User -> Lỗi vì thiếu Email
             // Cách mới: Lưu vào ResidentHistory
             
+            if (!data.householdId || !mongoose.Types.ObjectId.isValid(data.householdId)) {
+                return res.status(400).json({ message: "Invalid household for birth record" });
+            }
+            const birthHousehold = await Household.findById(data.householdId);
+            if (!birthHousehold) {
+                return res.status(404).json({ message: "Household not found for birth record" });
+            }
+
             // 1. Tìm hoặc tạo lịch sử cư trú cho hộ này
             let histBirth = await ResidentHistory.findOne({ houseHoldId: data.householdId });
             if (!histBirth) {
@@ -340,9 +429,7 @@ export const reviewRequest = async (req, res) => {
                 sex: data.sex,
                 birthLocation: data.birthLocation,
                 ethnic: data.ethnic,
-                // Trong createBirthRequest ta lưu số khai sinh vào userCardID, giờ lấy ra dùng
-                birthCertificateNumber: data.userCardID, 
-                relationshipWithHead: data.relationshipWithHead
+                birthCertificateNumber: data.birthCertificateNumber, 
             });
 
             await histBirth.save();
@@ -352,21 +439,42 @@ export const reviewRequest = async (req, res) => {
 
         // [New] Xử lý KHAI TỬ
         case "DEATH_REPORT":
+            if (!data.householdId || !mongoose.Types.ObjectId.isValid(data.householdId)) {
+                return res.status(400).json({ message: "Invalid household for death record" });
+            }
             const household = await Household.findById(data.householdId);
+            if (!household) {
+                return res.status(404).json({ message: "Household not found for death record" });
+            }
             // Nếu người mất là chủ hộ -> Chặn
             if (household.leader.toString() === data.deceasedUserId) {
                 return res.status(400).json({ message: "Không thể duyệt báo tử cho Chủ hộ. Hãy yêu cầu đổi chủ hộ trước." });
             }
+            const memberRoleId = await getMemberRoleId();
             // Update User thành DECEASED, Rời hộ
             await User.findByIdAndUpdate(data.deceasedUserId, {
                 status: "DECEASED",
                 household: null,
-                relationshipWithHead: null
+                relationshipWithHead: null,
+                role: memberRoleId,
             });
             // Rút tên khỏi Household
             await Household.findByIdAndUpdate(data.householdId, {
                 $pull: { members: data.deceasedUserId }
             });
+
+            // Ghi lại lịch sử khai tử
+            let histDeath = await ResidentHistory.findOne({ houseHoldId: data.householdId });
+            if (!histDeath) histDeath = await ResidentHistory.create({ houseHoldId: data.householdId });
+            histDeath.deaths.push({
+                user: data.deceasedUserId,
+                name: data.deceasedUserName,
+                userCardID: data.deceasedUserCardID,
+                dateOfDeath: data.dateOfDeath,
+                reason: data.reason,
+                deathCertificateUrl: data.deathCertificateUrl,
+            });
+            await histDeath.save();
             break;
         default:
           break;

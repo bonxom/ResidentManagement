@@ -54,7 +54,7 @@ householdSchema.post("save", async function (doc) {
     
     // Nếu household chưa có historyID thì tạo ResidentHistory mới
     if (!doc.historyID) {
-      const newHistory = await ResidentHistory.create({ household: doc._id });
+      const newHistory = await ResidentHistory.create({ houseHoldId: doc._id });
       
       // Cập nhật historyID vào household (dùng updateOne để tránh trigger lại post-save)
       await mongoose.model("Household").updateOne(
@@ -66,13 +66,13 @@ householdSchema.post("save", async function (doc) {
       const existingHistory = await ResidentHistory.findById(doc.historyID);
       if (!existingHistory) {
         // Nếu không tồn tại, tạo mới
-        const newHistory = await ResidentHistory.create({ household: doc._id });
+        const newHistory = await ResidentHistory.create({ houseHoldId: doc._id });
         await mongoose.model("Household").updateOne(
           { _id: doc._id },
           { $set: { historyID: newHistory._id } }
         );
-      } else if (!existingHistory.household) {
-        existingHistory.household = doc._id;
+      } else if (!existingHistory.houseHoldId) {
+        existingHistory.houseHoldId = doc._id;
         await existingHistory.save();
       }
     }

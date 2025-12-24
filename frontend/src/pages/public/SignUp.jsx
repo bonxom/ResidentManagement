@@ -1,20 +1,18 @@
 import { useState } from "react";
 import { useNavigate, Link as RouterLink } from "react-router-dom";
 import {
-  Container,
   Box,
-  Card,
-  CardContent,
   TextField,
   Button,
   Typography,
   Link,
   Alert,
   InputAdornment,
+  IconButton,
 } from "@mui/material";
-import { IdCard, Phone, Mail, User, MapPin, Lock, Users } from "lucide-react";
-import { userAPI } from "../../services/apiService";
-import { signUpSchema } from "../../utils/validation";
+import { IdCard, Phone, Mail, User, MapPin, Lock, Users, Home, Briefcase, Globe } from "lucide-react";
+import { authAPI } from "../../api/apiService";
+import { signUpSchema } from "../../hooks/validation";
 import "./style/SignUp.css";
 
 function SignUp() {
@@ -25,10 +23,13 @@ function SignUp() {
     phoneNumber: "",
     userCardID: "",
     email: "",
-    location: "",
+    birthLocation: "",
     password: "",
     confirmPassword: "",
     dob: "",
+    sex: "",
+    job: "",
+    ethnic: "",
   });
 
   const [errors, setErrors] = useState({});
@@ -59,7 +60,7 @@ function SignUp() {
       setErrors({});
       setIsLoading(true);
 
-      await userAPI.create(formData);
+      await authAPI.signUp(formData);
 
       alert(
         "Đăng ký thành công!\n\n" +
@@ -86,27 +87,45 @@ function SignUp() {
 
 
   return (
-    <Container maxWidth="sm">
-      <Box className="signup-container">
-        <Card className="signup-card">
-          <CardContent className="signup-card-content">
-            <Box className="signup-header">
-              <Users size={48} color="#1976d2" className="signup-icon" />
-              <Typography variant="h4" component="h1" gutterBottom className="signup-title">
-                Đăng ký tài khoản
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Điền đầy đủ thông tin để gửi yêu cầu xác nhận
-              </Typography>
+    <Box className="signup-page">
+      {/* Home Button */}
+      <IconButton 
+        component={RouterLink}
+        to="/"
+        className="signup-home-btn"
+        aria-label="Go to home"
+      >
+        <Home size={24} />
+      </IconButton>
+
+      {/* Background Decoration */}
+      <Box className="signup-background">
+        <Box className="signup-bg-blur signup-bg-blur-1" />
+        <Box className="signup-bg-blur signup-bg-blur-2" />
+      </Box>
+
+      {/* Main Card */}
+      <Box className="signup-card-container">
+        <Box className="signup-form-content">
+          <Box className="signup-header">
+            <Box className="signup-icon-wrapper">
+              <Users size={48} />
             </Box>
+            <Typography variant="h4" className="signup-title">
+              Đăng ký tài khoản
+            </Typography>
+            <Typography className="signup-subtitle">
+              Điền đầy đủ thông tin để gửi yêu cầu xác nhận
+            </Typography>
+          </Box>
 
             {backendError && (
-              <Alert severity="error" className="signup-alert">
+              <Alert severity="error" sx={{ mb: 3 }}>
                 {backendError}
               </Alert>
             )}
 
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} className="signup-form">
               <TextField
                 fullWidth
                 label="Họ và tên"
@@ -115,7 +134,6 @@ function SignUp() {
                 onChange={handleChange}
                 error={!!errors.name}
                 helperText={errors.name}
-                margin="normal"
                 placeholder="Nguyễn Văn A"
                 InputProps={{
                   startAdornment: (
@@ -124,8 +142,32 @@ function SignUp() {
                     </InputAdornment>
                   ),
                 }}
+                className="signup-input"
                 autoComplete="name"
               />
+
+              <TextField
+                fullWidth
+                select
+                label="Giới tính"
+                name="sex"
+                value={formData.sex}
+                onChange={handleChange}
+                error={!!errors.sex}
+                helperText={errors.sex}
+                SelectProps={{
+                  native: true,
+                }}
+                InputLabelProps={{
+                  shrink: true,
+                }}
+                className="signup-input"
+              >
+                <option value="" disabled>Chọn giới tính</option>
+                <option value="Nam">Nam</option>
+                <option value="Nữ">Nữ</option>
+                <option value="Khác">Khác</option>
+              </TextField>
 
               <TextField
                 fullWidth
@@ -136,7 +178,6 @@ function SignUp() {
                 onChange={handleChange}
                 error={!!errors.userCardID}
                 helperText={errors.userCardID}
-                margin="normal"
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -144,6 +185,7 @@ function SignUp() {
                     </InputAdornment>
                   ),
                 }}
+                className="signup-input"
                 autoComplete="idcard"
               />
 
@@ -154,8 +196,8 @@ function SignUp() {
                 value={formData.phoneNumber}
                 onChange={handleChange}
                 error={!!errors.phoneNumber}
-                helperText={errors.phoneNumber || "VD: 0912345678"}
-                margin="normal"
+                placeholder="0912345678"
+                helperText={errors.phoneNumber}
                 inputProps={{ maxLength: 10 }}
                 InputProps={{
                   startAdornment: (
@@ -164,6 +206,7 @@ function SignUp() {
                     </InputAdornment>
                   ),
                 }}
+                className="signup-input"
                 autoComplete="tel"
               />
 
@@ -176,7 +219,6 @@ function SignUp() {
                 onChange={handleChange}
                 error={!!errors.email}
                 helperText={errors.email}
-                margin="normal"
                 placeholder="example@gmail.com"
                 InputProps={{
                   startAdornment: (
@@ -185,28 +227,8 @@ function SignUp() {
                     </InputAdornment>
                   ),
                 }}
+                className="signup-input"
                 autoComplete="email"
-              />
-
-              <TextField
-                fullWidth
-                label="Địa chỉ thường trú"
-                name="location"
-                value={formData.location}
-                onChange={handleChange}
-                error={!!errors.location}
-                helperText={errors.location}
-                margin="normal"
-                placeholder="Số nhà, phường/xã, quận/huyện, tỉnh/thành phố"
-                multiline
-                rows={2}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start" className="signup-location-adornment">
-                      <MapPin size={20} />
-                    </InputAdornment>
-                  ),
-                }}
               />
 
               <TextField
@@ -218,8 +240,65 @@ function SignUp() {
                 onChange={handleChange}
                 error={!!errors.dob}
                 helperText={errors.dob}
-                margin="normal"
                 InputLabelProps={{ shrink: true }}
+                className="signup-input"
+              />
+
+              <TextField
+                fullWidth
+                label="Nơi sinh"
+                name="birthLocation"
+                value={formData.birthLocation}
+                onChange={handleChange}
+                error={!!errors.birthLocation}
+                helperText={errors.birthLocation}
+                placeholder="Tỉnh/Thành phố nơi sinh"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <MapPin size={20} />
+                    </InputAdornment>
+                  ),
+                }}
+                className="signup-input"
+              />
+
+              <TextField
+                fullWidth
+                label="Nghề nghiệp"
+                name="job"
+                value={formData.job}
+                onChange={handleChange}
+                error={!!errors.job}
+                helperText={errors.job}
+                placeholder="Kỹ sư, Giáo viên, Sinh viên..."
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Briefcase size={20} />
+                    </InputAdornment>
+                  ),
+                }}
+                className="signup-input"
+              />
+
+              <TextField
+                fullWidth
+                label="Dân tộc"
+                name="ethnic"
+                value={formData.ethnic}
+                onChange={handleChange}
+                error={!!errors.ethnic}
+                helperText={errors.ethnic}
+                placeholder="Kinh, Tày, Mường..."
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Globe size={20} />
+                    </InputAdornment>
+                  ),
+                }}
+                className="signup-input"
               />
 
               <TextField
@@ -230,8 +309,7 @@ function SignUp() {
                 value={formData.password}
                 onChange={handleChange}
                 error={!!errors.password}
-                helperText={errors.password || "Tối thiểu 6 ký tự"}
-                margin="normal"
+                helperText={errors.password || "Tối thiểu 8 ký tự"}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -239,6 +317,7 @@ function SignUp() {
                     </InputAdornment>
                   ),
                 }}
+                className="signup-input"
                 autoComplete="new-password"
               />
 
@@ -251,7 +330,6 @@ function SignUp() {
                 onChange={handleChange}
                 error={!!errors.confirmPassword}
                 helperText={errors.confirmPassword}
-                margin="normal"
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -259,6 +337,7 @@ function SignUp() {
                     </InputAdornment>
                   ),
                 }}
+                className="signup-input"
                 autoComplete="new-password"
               />
 
@@ -268,22 +347,22 @@ function SignUp() {
                 variant="contained"
                 size="large"
                 disabled={isLoading}
-                className="signup-button"
+                startIcon={<Users />}
+                className="signup-submit-btn"
               >
                 {isLoading ? "Đang gửi yêu cầu..." : "Gửi yêu cầu đăng ký"}
               </Button>
 
               <Typography variant="body2" className="signup-footer">
                 Đã có tài khoản?{" "}
-                <Link component={RouterLink} to="/signin" fontWeight="bold">
+                <Link component={RouterLink} to="/signin" className="signup-signin-link">
                   Đăng nhập
                 </Link>
               </Typography>
             </form>
-          </CardContent>
-        </Card>
+          </Box>
+        </Box>
       </Box>
-    </Container>
   );
 }
 

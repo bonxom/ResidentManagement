@@ -1,9 +1,9 @@
-import { AppError } from "../middleware/AppError.js";
-import { ERROR_CODE } from "../middleware/errorCode.js";
 import mongoose from "mongoose";
 import User from "../models/User.js";
 import Role from "../models/Role.js"; // Giả sử bạn có model Role
 import Household from "../models/Household.js";
+import { AppError } from "../middleware/AppError.js";
+import { ERROR_CODE } from "../middleware/errorCode.js";
 import Request from "../models/Request.js";
 
 // @desc    Tạo một User mới (Admin/Tổ trưởng tạo trực tiếp)
@@ -13,37 +13,17 @@ export const createUser = async (req, res) => {
     const { email, password, name, sex, dob,  phoneNumber, userCardID,
       job, ethnic, birthLocation, status } = // Cho phép nhận status hoặc tự set
       req.body;
+    const normalizedEmail = email?.toLowerCase();
 
     if (!userCardID || !email || !password || !name) {
       return res.status(400).json({ message: "Missing information, please fill all" });
     }
     
     // Check trùng lặp
-    const userExists = await User.findOne({ email });
+    const userExists = await User.findByEmail(normalizedEmail);
     if (userExists) return res.status(400).json({ message: "Email has existed" });
 
-//     // Kiểm tra xem email đã tồn tại chưa
-//     const userExists = await User.findByEmail(email);
-//     if (userExists) {
-//       // return res.status(400).json({ message: "Email đã tồn tại" });
-//       throw new AppError(ERROR_CODE.USER_EMAIL_EXISTED);
-//     }
-
-//     const userCardExists = await User.findByUserCardID(userCardID);
-//     if (userCardExists) {
-//       // return res.status(400).json({ message: "User card ID đã tồn tại" });
-//       throw new AppError(ERROR_CODE.USER_CARD_ID_EXISTED);
-//     }
-
-//     // Đảm bảo bạn đã có vai trò "Cư dân" trong database
-//     const defaultRole = await Role.findByName("HOUSE MEMBER");
-//     if (!defaultRole) {
-//       // Đây là lỗi nghiêm trọng của hệ thống
-//       // return res
-//       //   .status(500)
-//       //   .json({ message: "Lỗi: Không tìm thấy vai trò mặc định." });
-//       throw new AppError(ERROR_CODE.ROLE_NOT_EXISTED);
-    const cardExists = await User.findOne({ userCardID });
+    const cardExists = await User.findByUserCardID(userCardID);
     if (cardExists) return res.status(400).json({ message: "userCardID has existed" });
 
     const defaultRole = await Role.findByName("MEMBER"); 
@@ -52,7 +32,7 @@ export const createUser = async (req, res) => {
     }
 
     const user = await User.create({
-      email, password, name, sex, dob,
+      email: normalizedEmail, password, name, sex, dob,
       phoneNumber, userCardID,
       job, ethnic, birthLocation,
       role: defaultRole._id,
@@ -84,15 +64,16 @@ export const registerUser = async (req, res) => {
       phoneNumber, userCardID,
       job, ethnic, birthLocation } =
       req.body;
+    const normalizedEmail = email?.toLowerCase();
 
     if (!userCardID || !email || !password || !name) {
       return res.status(400).json({ message: "Missing information, please fill all" });
     }
     // Check trùng lặp
-    const userExists = await User.findOne({ email });
+    const userExists = await User.findByEmail(normalizedEmail);
     if (userExists) return res.status(400).json({ message: "Email has existed" });
 
-    const cardExists = await User.findOne({ userCardID });
+    const cardExists = await User.findByUserCardID(userCardID);
     if (cardExists) return res.status(400).json({ message: "userCardID has existed" });
 
     const defaultRole = await Role.findByName("MEMBER"); 
@@ -102,6 +83,7 @@ export const registerUser = async (req, res) => {
 
     const newUser = await User.create({
         ...req.body,
+        email: normalizedEmail,
         status: "PENDING", // Đảm bảo status là Pending
         role: defaultRole._id
     });
@@ -142,6 +124,13 @@ export const getAllUsers = async (req, res) => {
 // @route   GET /api/users/:id
 export const getUserById = async (req, res) => {
   try {
+    const isSelf = req.user?._id?.toString() === req.params.id;
+    const userPermissions = (req.user?.permissions || []).map(p => p.toUpperCase());
+    const canViewOthers = userPermissions.includes("VIEW USER LIST");
+    if (!isSelf && !canViewOthers) {
+      return res.status(403).json({ message: "You can only view your own profile" });
+    }
+
     const user = await User.findById(req.params.id)
       .populate("role")
       .populate("household", "houseHoldID address members"); 
@@ -173,6 +162,7 @@ export const updateUser = async (req, res) => {
     user.job = req.body.job || user.job;
     user.ethnic = req.body.ethnic || user.ethnic;
     user.birthLocation = req.body.birthLocation || user.birthLocation;
+    user.relationshipWithHead = req.body.relationshipWithHead || user.relationshipWithHead;
 
     // Xử lý Role (Cẩn trọng: Thường chỉ Admin mới được sửa quyền)
     if (req.body.roleName) {
@@ -195,24 +185,20 @@ export const updateUser = async (req, res) => {
 // @desc    Xóa User
 // @route   DELETE /api/users/:id
 export const deleteUser = async (req, res) => {
+  const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: "Invalid userID" });
+  }
+
+  // Ngăn tự xóa chính mình (nếu cần)
+  if (req.user && req.user._id.toString() === id) {
+    return res.status(400).json({ message: "Cannot delete yourself" });
+  }
+
   try {
-    const { id } = req.params;
-  if (!mongoose.Types.ObjectId.isValid(id))
-    // return res.status(400).json({ message: "Invalid user ID" });
-    throw new AppError(ERROR_CODE.USER_ID_INVALID);
-
-  if (req.user?._id?.toString() === id) {
-    // return res
-    //   .status(400)
-    //   .json({ message: "You cannot delete your own account" });
-    throw new AppError(ERROR_CODE.CANNOT_DELETE_OWN_ACCOUNT);
-  }
-
-  const user = await User.findByIdAndDelete(id);
-  if (!user) {
-    // return res.status(404).json({ message: "User not found" });
-    throw new AppError(ERROR_CODE.USER_NOT_FOUND);
-  }
+    const user = await User.findById(id);
+    if (!user) return res.status(404).json({ message: "User not found" });
 
     // 1. Nếu User này là CHỦ HỘ của một hộ nào đó -> Không cho xóa ngay
     const ledHousehold = await Household.findOne({ leader: id });
@@ -232,10 +218,10 @@ export const deleteUser = async (req, res) => {
     await user.deleteOne();
     return res.status(200).json({ message: "Delete sucessful" });
 
-  } catch(error) {
+  } catch (error) {
     res.status(500).json({ message: error.message });
-  }}
-;
+  }
+};
 
 // @desc    Thay đổi mật khẩu User
 // @route   PATCH /users/:id/password
@@ -245,6 +231,7 @@ export const changePassword = async (req, res, next) => {
     const { id } = req.params;
     const { oldPassword, newPassword } = req.body;
     const isSelfChange = req.user?._id?.toString() === id;
+    const userPermissions = (req.user?.permissions || []).map(p => p.toUpperCase());
 
     if (!newPassword) {
       throw new AppError(ERROR_CODE.USER_PASSWORD_REQUIRED);
@@ -252,6 +239,10 @@ export const changePassword = async (req, res, next) => {
 
     if (isSelfChange && !oldPassword) {
       throw new AppError(ERROR_CODE.USER_OLD_NEW_PASSWORD_REQUIRED);
+    }
+
+    if (!isSelfChange && !userPermissions.includes("RESET USER PASSWORD")) {
+      return res.status(403).json({ message: "You are not allowed to reset this password" });
     }
 
     const user = await User.findById(id).select("+password +userCardID");

@@ -1,38 +1,148 @@
-import { Box, Typography, Avatar, Button, Grid } from "@mui/material";
-import { useState } from "react";
-import MainLayout from "../layout/MainLayout";
+import { Box, Typography, Avatar, Button, Grid, CircularProgress, Alert } from "@mui/material";
+import { useEffect, useState } from "react";
 import ProfileInfoField from "../feature/profile/ProfileInfoField";
 import EditRequestModal from "../feature/profile/EditRequestModal";
 import ChangePasswordBox from "../feature/profile/ChangePasswordBox";
 import useAuthStore from "../store/authStore";
+import { requestAPI } from "../api/apiService";
 
 export default function Profile() {
-    const { user } = useAuthStore();
+    const { user, checkAuth } = useAuthStore();
     const [openEditModal, setOpenEditModal] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    const statusDisplay = (() => {
+        const map = {
+            PENDING: "Chờ duyệt",
+            VERIFIED: "Đã xác minh",
+            LOCKED: "Bị khóa",
+            DECEASED: "Đã qua đời",
+        };
+        return map[user?.status] || "Chưa cập nhật";
+    })();
+
+    const householdDisplay = (() => {
+        if (!user?.household) return "Chưa cập nhật";
+        if (typeof user.household === "object") {
+            return user.household.houseHoldID || user.household._id || "Đã liên kết";
+        }
+        return user.household;
+    })();
+
+    const roleDisplay = user?.role?.role_name || "Chưa cập nhật";
+
+    useEffect(() => {
+        const fetchProfile = async () => {
+            setIsLoading(true);
+            setError(null);
+            try {
+                const isValid = await checkAuth();
+                if (!isValid) {
+                    setError("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+                }
+            } catch (err) {
+                setError("Không thể tải thông tin người dùng.");
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchProfile();
+    }, [checkAuth]);
     
-    // Thông tin người dùng hiện tại (không thể sửa trực tiếp)
+    // Dữ liệu hiển thị
     const userInfo = {
-        fullName: user?.name || "Nguyễn Văn A",
-        dateOfBirth: "01/01/1990",
-        gender: "Nam",
-        nationality: "Việt Nam",
-        personalId: "001234567890",
-        permanentAddress: "123 Đường ABC, Phường XYZ, Quận 1, TP.HCM",
-        household: "HGĐ-001",
-        relationshipToHead: "Chủ hộ",
-        email: user?.email || "nguyenvana@gmail.com",
-        phoneNumber: "0123456789"
+        fullName: user?.name || "Chưa cập nhật",
+        dobDisplay: user?.dob ? new Date(user.dob).toLocaleDateString("vi-VN") : "Chưa cập nhật",
+        sex: user?.sex || "Chưa cập nhật",
+        personalId: user?.userCardID || "Chưa cập nhật",
+        birthLocation: user?.birthLocation || "Chưa cập nhật",
+        ethnic: user?.ethnic || "Chưa cập nhật",
+        job: user?.job || "Chưa cập nhật",
+        status: statusDisplay,
+        role: roleDisplay,
+        household: householdDisplay,
+        relationshipWithHead: user?.relationshipWithHead || "Chưa cập nhật",
+        email: user?.email || "Chưa cập nhật",
+        phoneNumber: user?.phoneNumber || "Chưa cập nhật"
     };
 
-    const handleEditRequest = (formData) => {
-        console.log("Yêu cầu chỉnh sửa:", formData);
-        // TODO: Gửi yêu cầu chỉnh sửa đến backend
-        alert("Yêu cầu chỉnh sửa đã được gửi!");
+    // Dữ liệu thô gửi lên form cập nhật
+    const editDefaults = {
+        name: user?.name || "",
+        dob: user?.dob ? new Date(user.dob).toISOString().slice(0, 10) : "",
+        sex: user?.sex || "",
+        birthLocation: user?.birthLocation || "",
+        ethnic: user?.ethnic || "",
+        job: user?.job || "",
+        relationshipWithHead: user?.relationshipWithHead || "",
+        email: user?.email || "",
+        phoneNumber: user?.phoneNumber || "",
     };
+
+    const handleEditRequest = async (formData) => {
+        if (!formData.reason || !formData.reason.trim()) {
+            setError("Vui lòng nhập lý do yêu cầu chỉnh sửa.");
+            return false;
+        }
+
+        // Chỉ gửi các trường thay đổi so với dữ liệu hiện tại
+        const allowedFields = [
+            "name",
+            "dob",
+            "sex",
+            "birthLocation",
+            "ethnic",
+            "job",
+            "relationshipWithHead",
+            "email",
+            "phoneNumber",
+        ];
+
+        const changes = allowedFields.reduce((acc, field) => {
+            const currentValue = editDefaults[field] ?? "";
+            const newValue = formData[field] ?? "";
+            const normalizedCurrent = typeof currentValue === "string" ? currentValue.trim() : currentValue;
+            const normalizedNew = typeof newValue === "string" ? newValue.trim() : newValue;
+
+            if (normalizedNew !== normalizedCurrent && normalizedNew !== "") {
+                acc[field] = normalizedNew;
+            }
+            return acc;
+        }, {});
+
+        if (Object.keys(changes).length === 0) {
+            setError("Không có thay đổi nào so với thông tin hiện tại.");
+            return false;
+        }
+
+        const payload = { ...changes, reason: formData.reason.trim() };
+
+        setError(null);
+        try {
+            await requestAPI.updateInfo(payload);
+            alert("Yêu cầu chỉnh sửa đã được gửi!");
+            setOpenEditModal(false);
+            return true;
+        } catch (err) {
+            console.error("Gửi yêu cầu chỉnh sửa thất bại:", err);
+            const message = err?.message || err?.customMessage || "Gửi yêu cầu chỉnh sửa thất bại.";
+            setError(message);
+            return false;
+        }
+    };
+
+    if (isLoading) {
+        return (
+            <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "60vh" }}>
+                <CircularProgress />
+            </Box>
+        );
+    }
 
     return (
-        <MainLayout>
-            {/* Profile Container */}
+        <>
             <Box
                 sx={{
                     backgroundColor: "white",
@@ -55,7 +165,7 @@ export default function Profile() {
                                 fontWeight: "600"
                             }}
                         >
-                            {userInfo.fullName.charAt(0)}
+                            {userInfo.fullName ? userInfo.fullName.charAt(0) : "?"}
                         </Avatar>
                         <Box>
                             <Typography sx={{ fontSize: "20px", fontWeight: "600", mb: 0.5 }}>
@@ -85,6 +195,12 @@ export default function Profile() {
                     </Button>
                 </Box>
 
+                {error && (
+                    <Alert severity="warning" sx={{ mb: 3 }}>
+                        {error}
+                    </Alert>
+                )}
+
                 {/* Thông tin cá nhân */}
                 <Typography sx={{ fontSize: "18px", fontWeight: "600", mb: 3, color: "#333" }}>
                     Thông tin cá nhân
@@ -95,25 +211,34 @@ export default function Profile() {
                         <ProfileInfoField label="Họ và tên" value={userInfo.fullName} />
                     </Grid>
                     <Grid item xs={12} sm={6}>
-                        <ProfileInfoField label="Ngày sinh" value={userInfo.dateOfBirth} />
+                        <ProfileInfoField label="Ngày sinh" value={userInfo.dobDisplay} />
                     </Grid>
                     <Grid item xs={12} sm={6}>
-                        <ProfileInfoField label="Giới tính" value={userInfo.gender} />
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                        <ProfileInfoField label="Quốc tịch" value={userInfo.nationality} />
+                        <ProfileInfoField label="Giới tính" value={userInfo.sex} />
                     </Grid>
                     <Grid item xs={12} sm={6}>
                         <ProfileInfoField label="Số định danh cá nhân" value={userInfo.personalId} />
                     </Grid>
                     <Grid item xs={12} sm={6}>
-                        <ProfileInfoField label="Địa chỉ thường trú" value={userInfo.permanentAddress} />
+                        <ProfileInfoField label="Nơi sinh" value={userInfo.birthLocation} />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                        <ProfileInfoField label="Dân tộc" value={userInfo.ethnic} />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                        <ProfileInfoField label="Nghề nghiệp" value={userInfo.job} />
                     </Grid>
                     <Grid item xs={12} sm={6}>
                         <ProfileInfoField label="Hộ gia đình" value={userInfo.household} />
                     </Grid>
                     <Grid item xs={12} sm={6}>
-                        <ProfileInfoField label="Quan hệ với chủ hộ" value={userInfo.relationshipToHead} />
+                        <ProfileInfoField label="Quan hệ với chủ hộ" value={userInfo.relationshipWithHead} />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                        <ProfileInfoField label="Trạng thái" value={userInfo.status} />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                        <ProfileInfoField label="Role" value={userInfo.role} />
                     </Grid>
                     <Grid item xs={12} sm={6}>
                         <ProfileInfoField label="Email" value={userInfo.email} />
@@ -127,13 +252,13 @@ export default function Profile() {
                 <EditRequestModal
                     open={openEditModal}
                     onClose={() => setOpenEditModal(false)}
-                    currentData={userInfo}
+                    currentData={editDefaults}
                     onSubmit={handleEditRequest}
                 />
             </Box>
 
             {/* Đổi mật khẩu */}
             <ChangePasswordBox />
-        </MainLayout>
+        </>
     );
 }
