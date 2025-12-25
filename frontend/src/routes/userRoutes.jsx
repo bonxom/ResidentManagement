@@ -8,8 +8,10 @@ import KhoanNop from "../pages/User/Request/khoannop";
 import RequestSinhTu from "../pages/User/Request/requestsinhtu";
 import RequestTamTruVang from "../pages/User/Request/requesttamtruvang";
 import YeuCauTamTruVang from "../pages/UserTemp";
-import LichSuPheDuyet from "../pages/User/LichSu/lichsuchinhsua";
+import LichSuThayDoi from "../pages/User/LichSu/lichsuthaydoi_ofuser";
 import Setting from "../feature/Setting";
+import Lichsugiaodich from "../pages/User/LichSu/Lichsugiaodich_ofuser";
+import Lichsupheduyet from "../pages/User/LichSu/Lichsupheduyet_ofuser";
 // Routes cho Dân cư (MEMBER)
 export const memberRoutes = (
   <Route path="member" element={<MainLayoutForUser />}>
@@ -22,7 +24,9 @@ export const memberRoutes = (
     <Route path="requestsinhtu" element={<RequestSinhTu />} />
     <Route path="requesttamtruvang" element={<RequestTamTruVang />} />
     <Route path="yeucau/tamtruvang" element={<YeuCauTamTruVang />} />
-    <Route path="lichsu/thaydoi" element={<LichSuPheDuyet />} />
+    <Route path="lichsuthaydoi" element={<LichSuThayDoi />} />
+    <Route path="lichsugiaodich" element={<Lichsugiaodich />} />
+    <Route path="lichsupheduyet" element={<Lichsupheduyet />} />
     <Route path="*" element={<Navigate to="dashboard" replace />} />
     <Route path="setting" element={<Setting />}/>
   </Route>

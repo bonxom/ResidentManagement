@@ -99,12 +99,12 @@ export function SidebarForAccountant({ user, onWidthChange }) {
         to="/accountant/dashboard"
         isExpanded={isExpanded}
       />
-      <MenuItem
+      {/* <MenuItem
         icon={<Users size={18} />}
         label="Thông tin thành viên"
         to="/accountant/ThongTinHoDan"
         isExpanded={isExpanded}
-      />
+      /> */}
       <MenuItem
         icon={<Wallet size={18} />}
         label="Thu phí"
@@ -120,7 +120,7 @@ export function SidebarForAccountant({ user, onWidthChange }) {
         to="/accountant/lichsugiaodich"
         isExpanded={isExpanded}
       />
-      <MenuItem
+      {/* <MenuItem
         icon={<CheckCircle size={18} />}
         label="Lịch sử phê duyệt"
         to="/accountant/lichsupheduyet"
@@ -131,7 +131,7 @@ export function SidebarForAccountant({ user, onWidthChange }) {
         label="Lịch sử thay đổi"
         to="/accountant/lichsuthaydoi"
         isExpanded={isExpanded}
-      />
+      /> */}
       {/* Logout Button */}
       <LogoutButton isExpanded={isExpanded} />
     </Box>

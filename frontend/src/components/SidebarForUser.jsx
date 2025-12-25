@@ -135,19 +135,19 @@ export function SidebarForUser({ user, onWidthChange }) {
       <MenuItem
         icon={<History size={18} />}
         label="Lịch sử giao dịch"
-        to="/member/lichsu/giaodich"
+        to="/member/lichsugiaodich"
         isExpanded={isExpanded}
       />
       <MenuItem
         icon={<CheckCircle size={18} />}
         label="Lịch sử phê duyệt"
-        to="/member/lichsu/pheduyet"
+        to="/member/lichsupheduyet"
         isExpanded={isExpanded}
       />
       <MenuItem
         icon={<Repeat size={18} />}
         label="Lịch sử thay đổi"
-        to="/member/lichsu/thaydoi"
+        to="/member/lichsuthaydoi"
         isExpanded={isExpanded}
       />
 
