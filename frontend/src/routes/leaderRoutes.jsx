@@ -17,8 +17,15 @@ import NhanKhau from "../pages/NhanKhau";
 import Setting from "../feature/Setting";
 import QuanLiTamTruVang from "../pages/Admin/DanhSachSauKhaiBaoTamTruVang/QuanLiTamTruVang";
 import ChiTietTamTruVangAdmin from "../pages/Admin/DanhSachSauKhaiBaoTamTruVang/ChiTietTamTruVangAdmin";
+import LichSuPheDuyetTaiKhoanHoDan from '../pages/Admin/LichSu/LichSuPheDuyet';
+import LichSuGiaoDichTheoHoDan from '../pages/Admin/LichSu/LichSuGiaoDich';
+import XemChiTietGiaoDichHoDan from '../pages/Admin/LichSu/LichSuChiTiet/LichSuGiaoDichChiTiet';
+import LichSuThayDoiTheoHoDan from '../pages/Admin/LichSu/LichSuThayDoi';
+import ChiTietLichSuThayDoiHoDan from '../pages/Admin/LichSu/LichSuChiTiet/LichSuThayDoiChiTiet';
+
 // Routes cho Tổ trưởng (HAMLET LEADER)
 export const leaderRoutes = (
+
   <Route path="leader" element={<MainLayout />}>
     <Route index element={<Navigate to="dashboard" replace />} />
     <Route path="dashboard" element={<Dashboard />} />
@@ -34,7 +41,14 @@ export const leaderRoutes = (
     <Route path="qlnkskKhaiBaoTamtruvang" element={<QuanLiTamTruVang />} />
     <Route path="housefee" element={<FeeHouseholdPage />} />
     <Route path="ChiTietTamTruVangAdmin" element={<ChiTietTamTruVangAdmin />} />
+    <Route path="lichsupheduyet" element={<LichSuPheDuyetTaiKhoanHoDan />} />
+    <Route path="lichsugiaodich" element={<LichSuGiaoDichTheoHoDan />} />
+    <Route path="lichsugiaodich/chi-tiet/:householdCode" element={<XemChiTietGiaoDichHoDan />} />
+    <Route path="lichsuthaydoi" element={<LichSuThayDoiTheoHoDan />} />
+    <Route path="lichsuthaydoi/chi-tiet/:householdCode" element={<ChiTietLichSuThayDoiHoDan />} />
+
     {/* <Route path="ThongTinChiTietadmin" element={<ThongTinChiTietAdmin />} /> */}
+
     <Route path="ThongTinHoDanadmin" element={<ThongTinHoDanAdmin />} />
     <Route path="ThongTinChiTietMember" element={<ThongTinChiTietMember />} />
     <Route path="*" element={<Navigate to="dashboard" replace />} />

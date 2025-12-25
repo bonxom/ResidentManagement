@@ -191,16 +191,19 @@ export function Sidebar({ user, onWidthChange }) {
       <MenuItem
         icon={<History size={18} />}
         label="Lịch sử giao dịch"
+        to={`${rolePrefix}/lichsugiaodich`}
         isExpanded={isExpanded}
       />
       <MenuItem
         icon={<CheckCircle size={18} />}
         label="Lịch sử phê duyệt"
+        to={`${rolePrefix}/lichsupheduyet`}
         isExpanded={isExpanded}
       />
       <MenuItem
         icon={<Repeat size={18} />}
         label="Lịch sử thay đổi"
+        to={`${rolePrefix}/lichsuthaydoi`}
         isExpanded={isExpanded}
       />
 
