@@ -130,7 +130,7 @@ function HistoryTable({ history }) {
 
 /* ================== PAGE ================== */
 
-export default function LichSuPheDuyet() {
+export default function LichSuThayDoi() {
   const [openAddProfileModal, setOpenAddProfileModal] = useState(false);
 
   // ✅ GẮN DATA ẢO TRỰC TIẾP VÀO STATE
