@@ -133,7 +133,7 @@ export function Sidebar({ user, onWidthChange }) {
       />
       <MenuItem
         icon={<Users size={18} />}
-        label="Quản lý nhân khẩu sau khi báo tạm trú/vắng"
+        label="Quản lý tạm trú/vắng"
         to={`${rolePrefix}/qlnkskKhaiBaoTamtruvang`}
         isExpanded={isExpanded}
       />

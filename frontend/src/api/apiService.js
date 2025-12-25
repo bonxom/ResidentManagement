@@ -135,23 +135,6 @@ export const householdAPI = {
     return response.data;
   },
 
-  addTemporaryResident: async (householdId, residentData) => {
-    const response = await api.post(
-      `/households/${householdId}/temporary-residents`,
-      residentData
-    );
-    return response.data;
-  },
-
-  endTemporaryResident: async (householdId, data) => {
-    // data = { userCardID, endDate }
-    const response = await api.put(
-      `/households/${householdId}/temporary-residents/end`,
-      data
-    );
-    return response.data;
-  },
-
   //
   splitHousehold: async (splitData) => {
     // splitData = { userId, newHouseHoldID, newAddress }
@@ -164,11 +147,35 @@ export const householdAPI = {
     const response = await api.post("/households/move", moveData);
     return response.data;
   },
-  // Lấy chi tiết tạm trú/tạm vắng từ ResidentHistory
+  // Lấy chi tiết tạm trú/tạm vắng từ ResidentHistory 
   getTamTruVangDetails: async (householdId) => {
     const response = await api.get(`/households/${householdId}/changes`);
     return response.data;
   },
+
+  addTemporaryResident: async (householdId, residentData) => {
+    const response = await api.post(
+      `/households/${householdId}/temporary-residents`,
+      residentData
+    );
+    return response.data;
+  },
+
+  completeResidentHistory: async (householdId, data) => {
+    const response = await api.put(
+      `/households/${householdId}/resident-history/complete`,
+      data
+    );
+    return response.data;
+  },
+
+  updateResidentHistory: async (householdId, historyData) => {
+    const response = await api.put(
+      `/households/${householdId}/resident-history`,
+      historyData
+    );
+    return response.data;
+  }
 };
 
 // ==============FEE API===============

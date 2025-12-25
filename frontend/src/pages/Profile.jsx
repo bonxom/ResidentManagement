@@ -82,11 +82,6 @@ export default function Profile() {
     };
 
     const handleEditRequest = async (formData) => {
-        if (!formData.reason || !formData.reason.trim()) {
-            setError("Vui lòng nhập lý do yêu cầu chỉnh sửa.");
-            return false;
-        }
-
         // Chỉ gửi các trường thay đổi so với dữ liệu hiện tại
         const allowedFields = [
             "name",
@@ -112,11 +107,6 @@ export default function Profile() {
             return acc;
         }, {});
 
-        if (Object.keys(changes).length === 0) {
-            setError("Không có thay đổi nào so với thông tin hiện tại.");
-            return false;
-        }
-
         const payload = { ...changes, reason: formData.reason.trim() };
 
         setError(null);
@@ -128,8 +118,8 @@ export default function Profile() {
         } catch (err) {
             console.error("Gửi yêu cầu chỉnh sửa thất bại:", err);
             const message = err?.message || err?.customMessage || "Gửi yêu cầu chỉnh sửa thất bại.";
-            setError(message);
-            return false;
+            // Throw error so modal can catch and display it
+            throw new Error(message);
         }
     };
 

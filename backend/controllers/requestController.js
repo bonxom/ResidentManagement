@@ -91,11 +91,11 @@ export const createPaymentRequest = async (req, res) => {
 // 3. Đăng ký Tạm Trú (Người nơi khác đến)
 export const createTemporaryResidenceRequest = async (req, res) => {
   try {
-    const { name, userCardID, dob, job, reason, startDate, endDate, sex, birthLocation, ethnic, phoneNumber } = req.body;
+    const { name, userCardID, dob, job, reason, startDate, endDate, sex, birthLocation, ethnic, phoneNumber, permanentAddress } = req.body;
     const user = req.user;
 
     if (!user.household) return res.status(400).json({ message: "Bạn chưa có hộ khẩu." });
-    if (!name || !userCardID || !dob || !sex || !birthLocation || !ethnic || !phoneNumber || !job || !reason || !startDate || !endDate) {
+    if (!name || !userCardID || !dob || !sex || !birthLocation || !ethnic || !phoneNumber || !job || !reason || !startDate || !endDate || !permanentAddress) {
       return res.status(400).json({ message: "Thiếu thông tin người tạm trú." });
     }
     // Tạm thời tránh trùng CCCD với user hiện có
@@ -117,9 +117,11 @@ export const createTemporaryResidenceRequest = async (req, res) => {
         ethnic,
         phoneNumber,
         job,
+        permanentAddress,
         reason,
         startDate,
         endDate,
+        isActive: true,
       }
     });
     res.status(201).json(request);
@@ -151,7 +153,8 @@ export const createTemporaryAbsenceRequest = async (req, res) => {
       requestData: {
         householdId: requester.household,
         absentUserId: userId,
-        fromDate, toDate, reason, temporaryAddress
+        fromDate, toDate, reason, temporaryAddress,
+        isActive: true,
       }
     });
     res.status(201).json(request);
@@ -381,6 +384,7 @@ export const reviewRequest = async (req, res) => {
                 ethnic: data.ethnic,
                 phoneNumber: data.phoneNumber,
                 job: data.job,
+                permanentAddress: data.permanentAddress,
                 reason: data.reason,
                 startDate: data.startDate,
                 endDate: data.endDate
@@ -400,6 +404,7 @@ export const reviewRequest = async (req, res) => {
                 reason: data.reason,
                 temporaryAddress: data.temporaryAddress
             });
+            console.log("conchophucdu");
             await hist2.save();
             break;
 

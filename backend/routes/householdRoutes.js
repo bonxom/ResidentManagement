@@ -11,7 +11,9 @@ import {
   splitHousehold,
   moveMember,
   getHouseholdChanges,
-  getHouseholdMemberSummaries
+  getHouseholdMemberSummaries,
+  updateResidentHistory,
+  completeResidentHistory
 } from "../controllers/householdController.js";
 
 import { protect, authorizePermission, authorize } from "../middleware/authMiddleware.js";
@@ -35,4 +37,7 @@ router.post("/move", protect, authorizePermission("EDIT HOUSEHOLD"), moveMember)
 
 // Route xem biến động
 router.get("/:id/changes", protect, authorizePermission("VIEW HOUSEHOLD"), getHouseholdChanges);
+// Route tạm trú/vắng
+router.put("/:id/resident-history", protect, authorizePermission("EDIT HOUSEHOLD"), updateResidentHistory);
+router.put("/:id/resident-history/complete", protect, authorizePermission("EDIT HOUSEHOLD"), completeResidentHistory);
 export default router;

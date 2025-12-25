@@ -538,3 +538,74 @@ export const getHouseholdChanges = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+// @desc chỉnh sửa thông tin người tạm trú/vắng
+// @route PUT /api/households/:id/resident-history
+export const updateResidentHistory = async (req, res) => {
+    const { id } = req.params;
+    const { temporaryResidents, temporaryAbsents } = req.body;
+
+    try {
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: "Invalid household ID" });
+        }
+        const householdObjectId = new mongoose.Types.ObjectId(id);
+
+        let resHistory = await ResidentHistory.findOne({ houseHoldId: householdObjectId });
+        if (!resHistory) {
+          return res.status(404).json({ message: "Resident history not found for this household" });
+        }
+        resHistory.temporaryResidents = temporaryResidents || resHistory.temporaryResidents;
+        resHistory.temporaryAbsent = temporaryAbsents || resHistory.temporaryAbsent;
+
+        await resHistory.save();
+        res.status(200).json(resHistory);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};    
+
+
+// @desc Kết thúc tạm trú/tạm vắng
+// @route PUT /api/households/:id/resident-history/complete
+export const completeResidentHistory = async (req, res) => {
+    const { id } = req.params;
+    const { recordType, recordId } = req.body; // recordType: "temporaryResident" | "temporaryAbsent"
+    try {
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: "Invalid household ID" });
+        }
+        const householdObjectId = new mongoose.Types.ObjectId(id);
+
+        let resHistory = await ResidentHistory.findOne({ houseHoldId: householdObjectId });
+        if (!resHistory) {
+          return res.status(404).json({ message: "Resident history not found for this household" });
+        }
+
+        switch (recordType) {
+            case "temporaryResident":
+                resHistory.temporaryResidents = resHistory.temporaryResidents.map(record => {
+                    if (record._id.toString() === recordId) {
+                        return { ...record.toObject(), isActive: false };
+                    }
+                    return record;
+                });
+                break;
+            case "temporaryAbsent":
+                resHistory.temporaryAbsent = resHistory.temporaryAbsent.map(record => {
+                    if (record._id.toString() === recordId) {
+                        return { ...record.toObject(), isActive: false };
+                    }
+                    return record;
+                });
+                break;
+            default:
+                return res.status(400).json({ message: "Invalid record type" });
+        }
+
+        await resHistory.save();
+        res.status(200).json(resHistory);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}

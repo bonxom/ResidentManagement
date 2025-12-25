@@ -17,6 +17,8 @@ import NhanKhau from "../pages/NhanKhau";
 import Setting from "../feature/Setting";
 import QuanLiTamTruVang from "../pages/Admin/DanhSachSauKhaiBaoTamTruVang/QuanLiTamTruVang";
 import ChiTietTamTruVangAdmin from "../pages/Admin/DanhSachSauKhaiBaoTamTruVang/ChiTietTamTruVangAdmin";
+import ThongTinNguoiTamTru from "../pages/Admin/DanhSachSauKhaiBaoTamTruVang/ThongTinNguoiTamTru";
+import ThongTinNguoiTamVang from "../pages/Admin/DanhSachSauKhaiBaoTamTruVang/ThongTinNguoiTamVang";
 import LichSuPheDuyetTaiKhoanHoDan from '../pages/Admin/LichSu/LichSuPheDuyet';
 import LichSuGiaoDichTheoHoDan from '../pages/Admin/LichSu/LichSuGiaoDich';
 import XemChiTietGiaoDichHoDan from '../pages/Admin/LichSu/LichSuChiTiet/LichSuGiaoDichChiTiet';
@@ -51,6 +53,8 @@ export const leaderRoutes = (
 
     <Route path="ThongTinHoDanadmin" element={<ThongTinHoDanAdmin />} />
     <Route path="ThongTinChiTietMember" element={<ThongTinChiTietMember />} />
+    <Route path="ThongTinNguoiTamTru" element={<ThongTinNguoiTamTru />} />
+    <Route path="ThongTinNguoiTamVang" element={<ThongTinNguoiTamVang />} />
     <Route path="*" element={<Navigate to="dashboard" replace />} />
     <Route path="setting" element={<Setting />} />
   </Route>

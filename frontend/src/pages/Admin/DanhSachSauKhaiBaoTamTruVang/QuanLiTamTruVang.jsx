@@ -16,12 +16,10 @@ import {
   Paper,
   Pagination,
   CircularProgress,
-  Alert,
 } from "@mui/material";
-import { Search, Filter, ChevronDown, Eye } from "lucide-react";
+import { Search, Eye } from "lucide-react";
 import { useRoleNavigation } from "../../../hooks/useRoleNavigation";
-import { householdAPI } from "../../../api/apiService"; // Giả định dùng chung API hộ dân hoặc bạn đổi sang API riêng
-import api from "../../../api/axiosInstance";
+import { householdAPI } from "../../../api/apiService";
 // ===== COMPONENT BẢNG TẠM TRÚ TẠM VẮNG =====
 function TamTruVangTable({ households, loading, onViewDetail }) {
   const ROWS_PER_PAGE = 10;
@@ -177,10 +175,20 @@ export default function QuanLiTamTruVang() {
   };
 
   const filteredData = households.filter((item) => {
+    // Filter theo search term
     const matchesSearch =
       item.houseHoldID?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.leader?.name?.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesSearch;
+
+    // Filter theo type (tamtru/tamvang/all)
+    let matchesFilter = true;
+    if (filterType === "tamtru") {
+      matchesFilter = (item.tamTruCount || 0) > 0;
+    } else if (filterType === "tamvang") {
+      matchesFilter = (item.tamVangCount || 0) > 0;
+    }
+
+    return matchesSearch && matchesFilter;
   });
 
   return (
@@ -246,19 +254,6 @@ export default function QuanLiTamTruVang() {
             <MenuItem value="tamvang">Có người tạm vắng</MenuItem>
           </Select>
         </Box>
-
-        <Button
-          variant="contained"
-          sx={{
-            backgroundColor: "#2D66F5",
-            borderRadius: "8px",
-            height: "40px",
-            px: 4,
-            textTransform: "none",
-          }}
-        >
-          Lọc
-        </Button>
       </Box>
 
       {/* BẢNG DỮ LIỆU */}

@@ -8,7 +8,8 @@ import {
     Grid,
     IconButton,
     Typography,
-    Box
+    Box,
+    Alert
 } from "@mui/material";
 import { X } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -26,6 +27,7 @@ export default function EditRequestModal({ open, onClose, currentData, onSubmit 
         phoneNumber: "",
         reason: ""
     });
+    const [error, setError] = useState("");
 
     // Update form data when modal opens or currentData changes
     useEffect(() => {
@@ -42,6 +44,7 @@ export default function EditRequestModal({ open, onClose, currentData, onSubmit 
                 phoneNumber: currentData.phoneNumber || "",
                 reason: ""
             });
+            setError("");
         }
     }, [open, currentData]);
 
@@ -53,6 +56,46 @@ export default function EditRequestModal({ open, onClose, currentData, onSubmit 
     };
 
     const handleSubmit = async () => {
+        // Reset error
+        setError("");
+
+        // Validate reason
+        if (!formData.reason || !formData.reason.trim()) {
+            setError("Vui lòng nhập lý do yêu cầu chỉnh sửa.");
+            return;
+        }
+
+        // Validate changes - check if there are any changes
+        const allowedFields = [
+            "name",
+            "dob",
+            "sex",
+            "birthLocation",
+            "ethnic",
+            "job",
+            "relationshipWithHead",
+            "email",
+            "phoneNumber",
+        ];
+
+        const changes = allowedFields.reduce((acc, field) => {
+            const currentValue = currentData[field] ?? "";
+            const newValue = formData[field] ?? "";
+            const normalizedCurrent = typeof currentValue === "string" ? currentValue.trim() : currentValue;
+            const normalizedNew = typeof newValue === "string" ? newValue.trim() : newValue;
+
+            if (normalizedNew !== normalizedCurrent && normalizedNew !== "") {
+                acc[field] = normalizedNew;
+            }
+            return acc;
+        }, {});
+
+        if (Object.keys(changes).length === 0) {
+            setError("Không có thay đổi nào so với thông tin hiện tại.");
+            return;
+        }
+
+        // If validation passes, call onSubmit
         try {
             const success = await onSubmit(formData);
             if (success) {
@@ -60,6 +103,8 @@ export default function EditRequestModal({ open, onClose, currentData, onSubmit 
             }
         } catch (error) {
             console.error("Submit update-info failed", error);
+            const message = error?.message || error?.customMessage || "Gửi yêu cầu chỉnh sửa thất bại.";
+            setError(message);
         }
     };
 
@@ -76,6 +121,7 @@ export default function EditRequestModal({ open, onClose, currentData, onSubmit 
             phoneNumber: "",
             reason: ""
         });
+        setError("");
         onClose();
     };
 
@@ -104,6 +150,11 @@ export default function EditRequestModal({ open, onClose, currentData, onSubmit 
             </DialogTitle>
 
             <DialogContent>
+                {error && (
+                    <Alert severity="warning" sx={{ mb: 2 }} onClose={() => setError("")}>
+                        {error}
+                    </Alert>
+                )}
                 <Grid container spacing={2.5} sx={{ mt: 0.5 }}>
                     {/* Họ và tên */}
                     <Grid item xs={12} sm={6}>

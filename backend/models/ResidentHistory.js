@@ -13,10 +13,16 @@ const residentHistorySchema = new mongoose.Schema(
         name: String,
         userCardID: String,
         dob: Date,
+        sex: String,
+        birthLocation: String,
+        ethnic: String,
+        phoneNumber: String,
         job: String,
+        permanentAddress: String,
         reason: String,
         startDate: Date,
         endDate: Date,
+        isActive: { type: Boolean, default: true },
       }
     ],
     // ... giữ nguyên temporaryAbsent
@@ -27,6 +33,7 @@ const residentHistorySchema = new mongoose.Schema(
         endDate: Date,
         reason: String,
         temporaryAddress: String,
+        isActive: { type: Boolean, default: true },
       }
     ],
     

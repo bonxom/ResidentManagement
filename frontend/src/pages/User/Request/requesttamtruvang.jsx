@@ -18,6 +18,7 @@ import useAuthStore from "../../../store/authStore";
 const residenceFields = [
   { name: "name", label: "Họ và tên", required: true },
   { name: "userCardID", label: "CCCD/ID", required: true },
+  { name: "dob", label: "Ngày sinh", required: true, type: "date" },
   {
     name: "sex",
     label: "Giới tính",
@@ -25,13 +26,13 @@ const residenceFields = [
     select: true,
     options: ["Nam", "Nữ", "Khác"],
   },
-  { name: "dob", label: "Ngày sinh", required: true, type: "date" },
   { name: "birthLocation", label: "Nơi sinh", required: true },
   { name: "ethnic", label: "Dân tộc", required: true },
   { name: "phoneNumber", label: "Số điện thoại", required: true },
   { name: "job", label: "Nghề nghiệp", required: true },
   { name: "startDate", label: "Bắt đầu", required: true, type: "date" },
   { name: "endDate", label: "Kết thúc", required: true, type: "date" },
+  { name: "permanentAddress", label: "Địa chỉ thường trú", required: true, multiline: true },
   { name: "reason", label: "Lý do", required: true, multiline: true },
 ];
 
@@ -133,6 +134,7 @@ export default function RequestTamTruVang() {
           fromDate: absenceData.fromDate,
           toDate: absenceData.toDate,
           temporaryAddress: absenceData.temporaryAddress,
+          permanentAddress: absenceData.permanentAddress,
           reason: absenceData.reason,
         };
         await requestAPI.createTemporaryAbsence(payload);
