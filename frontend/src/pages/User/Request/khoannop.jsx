@@ -1,12 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Box,
   Typography,
   Button,
   TextField,
-  InputAdornment,
-  Select,
-  MenuItem,
   Table,
   TableBody,
   TableCell,
@@ -14,250 +11,226 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Pagination,
+  Chip,
+  Alert,
+  CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
-import { Search, Filter, ChevronDown } from "lucide-react";
-import { useRoleNavigation } from "../../../hooks/useRoleNavigation";
-import AddProfileModal from "../../../feature/profile/AddProfile";
+import { feeAPI, requestAPI } from "../../../api/apiService";
 
-// ===== DỮ LIỆU ẢO (KHOẢN NỘP) =====
-const payments = [
-  {
-    id: 1,
-    name: "Phí vệ sinh môi trường tháng 12",
-    amount: "50.000đ",
-    status: "Đã nộp",
-  },
-  {
-    id: 2,
-    name: "Quỹ khuyến học năm 2025",
-    amount: "200.000đ",
-    status: "Chưa nộp",
-  },
-  {
-    id: 3,
-    name: "Phí bảo trì thang máy",
-    amount: "150.000đ",
-    status: "Đang xử lý",
-  },
-];
+const statusMap = {
+  UNPAID: { label: "Chưa nộp", color: "error" },
+  PARTIAL: { label: "Đóng thiếu", color: "warning" },
+  COMPLETED: { label: "Đã đủ", color: "success" },
+  CONTRIBUTED: { label: "Đã đóng góp", color: "success" },
+  NO_CONTRIBUTION: { label: "Chưa đóng góp", color: "default" },
+};
 
-// ===== TABLE =====
-function PaymentsTable() {
-  const ROWS_PER_PAGE = 10;
-  const [page, setPage] = useState(1);
-  const { navigateWithRole } = useRoleNavigation();
+function StatusChip({ status }) {
+  const { label, color } = statusMap[status] || { label: status || "N/A", color: "default" };
+  return <Chip size="small" label={label} color={color} />;
+}
 
-  const pageCount = Math.ceil(payments.length / ROWS_PER_PAGE) || 1;
-  const start = (page - 1) * ROWS_PER_PAGE;
-  const visibleRows = payments.slice(start, start + ROWS_PER_PAGE);
+export default function KhoanNop() {
+  const [fees, setFees] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
 
-  const getStatusColor = (status) => {
-    if (status === "Đã nộp") return "#27AE60";
-    if (status === "Chưa nộp") return "#E74C3C";
-    return "#F39C12";
+  const [searchText, setSearchText] = useState("");
+
+  const [payDialogOpen, setPayDialogOpen] = useState(false);
+  const [selectedFee, setSelectedFee] = useState(null);
+  const [amount, setAmount] = useState("");
+  const [note, setNote] = useState("");
+  const [payLoading, setPayLoading] = useState(false);
+
+  const fetchFees = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await feeAPI.getMyHouseholdFees();
+      setFees(data || []);
+    } catch (err) {
+      const msg = err?.message || err?.customMessage || "Không thể tải danh sách khoản thu.";
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchFees();
+  }, []);
+
+  const filteredFees = useMemo(() => {
+    if (!searchText.trim()) return fees;
+    const q = searchText.toLowerCase();
+    return fees.filter((fee) => fee.name?.toLowerCase().includes(q));
+  }, [fees, searchText]);
+
+  const openPayDialog = (fee) => {
+    setSelectedFee(fee);
+    const remaining = fee.remainingAmount ?? fee.remaining ?? "";
+    setAmount(remaining > 0 ? remaining.toString() : "");
+    setNote("");
+    setPayDialogOpen(true);
+    setSuccess(null);
+    setError(null);
+  };
+
+  const handleSubmitPayment = async () => {
+    if (!selectedFee) return;
+    const value = Number(amount);
+    if (!Number.isFinite(value) || value <= 0) {
+      setError("Số tiền không hợp lệ.");
+      return;
+    }
+    setPayLoading(true);
+    setError(null);
+    try {
+      await requestAPI.createPayment({
+        feeId: selectedFee.feeId || selectedFee._id,
+        amount: value,
+        note: note || undefined,
+      });
+      setSuccess("Đã gửi yêu cầu thanh toán. Chờ tổ trưởng duyệt.");
+      setPayDialogOpen(false);
+    } catch (err) {
+      const msg = err?.message || err?.customMessage || "Gửi yêu cầu thất bại.";
+      setError(msg);
+    } finally {
+      setPayLoading(false);
+    }
   };
 
   return (
-    <Box>
-      <TableContainer
-        component={Paper}
-        sx={{ borderRadius: 3, boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}
-      >
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Tên khoản nộp</TableCell>
-              <TableCell>Số tiền</TableCell>
-              <TableCell>Trạng thái</TableCell>
-              <TableCell align="center">Chi tiết</TableCell>
-            </TableRow>
-          </TableHead>
+    <Box sx={{ padding: "24px 32px" }}>
+      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+        <Typography sx={{ fontSize: 26, fontWeight: 600 }}>
+          Khoản thu của hộ gia đình
+        </Typography>
+        <Button variant="contained" onClick={fetchFees}>
+          Làm mới
+        </Button>
+      </Box>
 
-          <TableBody>
-            {visibleRows.map((row) => (
-              <TableRow key={row.id} hover sx={{ cursor: "pointer" }}>
-                <TableCell>{row.name}</TableCell>
-                <TableCell>{row.amount}</TableCell>
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
+      {success && (
+        <Alert severity="success" sx={{ mb: 2 }}>
+          {success}
+        </Alert>
+      )}
 
-                <TableCell>
-                  <Box
-                    sx={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      px: 1.5,
-                      py: 0.5,
-                      borderRadius: "999px",
-                      fontSize: "12px",
-                      fontWeight: 500,
-                      color: "white",
-                      backgroundColor: getStatusColor(row.status),
-                    }}
-                  >
-                    {row.status}
-                  </Box>
-                </TableCell>
-
-                <TableCell align="center">
-                  <Button
-                    variant="text"
-                    sx={{
-                      textTransform: "none",
-                      fontSize: "14px",
-                      color: "#1E54D4",
-                      "&:hover": { textDecoration: "underline" },
-                    }}
-                    onClick={() => navigateWithRole(`/payment-detail/${row.id}`)}
-                  >
-                    Chi tiết
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-
-        </Table>
-      </TableContainer>
-
-      <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
-        <Pagination
-          count={pageCount}
-          page={page}
-          onChange={(e, value) => setPage(value)}
-          shape="rounded"
+      <Box sx={{ backgroundColor: "white", borderRadius: "12px", p: 2, mb: 3 }}>
+        <TextField
+          fullWidth
+          size="small"
+          label="Tìm kiếm khoản thu"
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
         />
       </Box>
-    </Box>
-  );
-}
 
-// ===== PAGE =====
-export default function KhoanNop() {
-  return (
-    <Box sx={{ padding: "24px 32px" }}>
-        {/* TITLE */}
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "flex-start",
-            alignItems: "center",
-            mb: 3,
-          }}
-        >
-          <Typography sx={{ fontSize: "26px", fontWeight: "600" }}>
-            Thông tin khoản nộp
-          </Typography>
+      {loading ? (
+        <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+          <CircularProgress />
         </Box>
+      ) : (
+        <TableContainer component={Paper} sx={{ borderRadius: 3 }}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Tên khoản thu</TableCell>
+                <TableCell>Loại</TableCell>
+                <TableCell align="right">Định mức</TableCell>
+                <TableCell align="right">Đã nộp</TableCell>
+                <TableCell align="right">Còn thiếu</TableCell>
+                <TableCell>Trạng thái</TableCell>
+                <TableCell align="center">Thao tác</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {filteredFees.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} align="center">
+                    Hộ gia đình của bạn chưa có khoản thu nào.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredFees.map((fee) => (
+                  <TableRow key={fee.feeId || fee._id}>
+                    <TableCell>{fee.name}</TableCell>
+                    <TableCell>{fee.type === "MANDATORY" ? "Bắt buộc" : "Tự nguyện"}</TableCell>
+                    <TableCell align="right">
+                      {fee.requiredAmount ? fee.requiredAmount.toLocaleString() + " VND" : "-"}
+                    </TableCell>
+                    <TableCell align="right">
+                      {fee.paidAmount ? fee.paidAmount.toLocaleString() + " VND" : "0"}
+                    </TableCell>
+                    <TableCell align="right">
+                      {fee.remainingAmount ? fee.remainingAmount.toLocaleString() + " VND" : "0"}
+                    </TableCell>
+                    <TableCell>
+                      <StatusChip status={fee.status} />
+                    </TableCell>
+                    <TableCell align="center">
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={() => openPayDialog(fee)}
+                        disabled={fee.status === "COMPLETED"}
+                      >
+                        Thanh toán
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
 
-        {/* SEARCH AREA */}
-        <Box
-          sx={{
-            display: "flex",
-            gap: 2,
-            backgroundColor: "white",
-            padding: "22px",
-            borderRadius: "12px",
-            boxShadow: "0 2px 10px rgba(0,0,0,0.05)",
-            alignItems: "center",
-            mb: 4,
-          }}
-        >
-          <Box sx={{ flex: 1 }}>
-            <Typography sx={{ fontSize: "13px", mb: 1 }}>Tìm kiếm</Typography>
-            <TextField
-              fullWidth
-              placeholder="Nhập tên khoản nộp..."
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Search size={18} color="#777" />
-                  </InputAdornment>
-                ),
-                sx: {
-                  background: "#F1F3F6",
-                  borderRadius: "8px",
-                  height: "40px",
-                  "& .MuiInputBase-input": {
-                    padding: "10px 0px",
-                  },
-                },
-              }}
-            />
-          </Box>
-
-          {/* FILTER */}
-          <Box sx={{ width: "220px" }}>
-            <Typography sx={{ fontSize: "13px", mb: 1 }}>
-              Lọc theo trạng thái
-            </Typography>
-
-            <Box
-              sx={{
-                backgroundColor: "#F1F3F6",
-                height: "40px",
-                borderRadius: "8px",
-                display: "flex",
-                alignItems: "center",
-                px: 1,
-                overflow: "hidden",
-                border: "1px solid #bec0c5ff",
-                "&:hover": { borderColor: "#000000ff" },
-              }}
-            >
-              <Filter size={18} color="#555" style={{ marginLeft: 8, marginRight: 6 }} />
-
-              <Select
-                fullWidth
-                displayEmpty
-                variant="standard"
-                disableUnderline
-                IconComponent={() => <ChevronDown size={18} style={{ marginRight: 2 }} />}
-                sx={{
-                  flex: 1,
-                  fontSize: "14px",
-                  backgroundColor: "transparent",
-                  "& .MuiSelect-select": {
-                    backgroundColor: "transparent !important",
-                    paddingY: "10px",
-                    paddingLeft: "6px",
-                  },
-                }}
-              >
-                <MenuItem value="">Tất cả</MenuItem>
-                <MenuItem value="paid">Đã nộp</MenuItem>
-                <MenuItem value="unpaid">Chưa nộp</MenuItem>
-                <MenuItem value="processing">Đang xử lý</MenuItem>
-              </Select>
-            </Box>
-          </Box>
-
-          <Button
-            variant="contained"
-            sx={{
-              backgroundColor: "#2D66F5",
-              borderRadius: "8px",
-              textTransform: "none",
-              height: "40px",
-              width: "120px",
-              "&:hover": { backgroundColor: "#1E54D4" },
-              mt: "26px",
+      <Dialog open={payDialogOpen} onClose={() => setPayDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Gửi yêu cầu thanh toán</DialogTitle>
+        <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
+          <Typography fontWeight={600}>{selectedFee?.name}</Typography>
+          <TextField
+            label="Số tiền muốn nộp"
+            value={amount}
+            onChange={(e) => {
+              const v = e.target.value;
+              if (v === "" || /^\d*$/.test(v)) setAmount(v);
             }}
-          >
-            Tìm kiếm
+            fullWidth
+            size="small"
+            InputProps={{ endAdornment: <span style={{ color: "#666", fontSize: 12 }}>VND</span> }}
+          />
+          <TextField
+            label="Ghi chú (tuỳ chọn)"
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            fullWidth
+            size="small"
+            multiline
+            minRows={2}
+          />
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setPayDialogOpen(false)}>Hủy</Button>
+          <Button variant="contained" onClick={handleSubmitPayment} disabled={payLoading}>
+            {payLoading ? <CircularProgress size={20} /> : "Gửi yêu cầu"}
           </Button>
-        </Box>
-
-        {/* TABLE */}
-        <Box
-          sx={{
-            backgroundColor: "white",
-            borderRadius: "16px",
-            boxShadow: "0px 3px 12px rgba(0, 0, 0, 0.1)",
-            p: 2,
-          }}
-        >
-          <PaymentsTable />
-        </Box>
-      </Box>
+        </DialogActions>
+      </Dialog>
+    </Box>
   );
 }

@@ -211,6 +211,11 @@ export const requestAPI = {
     const response = await api.post("/requests/update-info", { newData });
     return response.data;
   },
+  // Cư dân gửi yêu cầu thanh toán khoản thu
+  createPayment: async (payload) => {
+    const response = await api.post("/requests/payment", payload);
+    return response.data;
+  },
   // Cư dân khai báo tạm trú
   createTemporaryResidence: async (payload) => {
     const response = await api.post("/requests/temporary-residence", payload);
