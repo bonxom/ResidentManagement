@@ -131,6 +131,12 @@ export function Sidebar({ user, onWidthChange }) {
         to={`${rolePrefix}/qldc`}
         isExpanded={isExpanded}
       />
+      <MenuItem
+        icon={<Users size={18} />}
+        label="Quản lý nhân khẩu sau khi báo tạm trú/vắng"
+        to={`${rolePrefix}/qlnkskKhaiBaoTamtruvang`}
+        isExpanded={isExpanded}
+      />
 
       {/* ACTION */}
       {isExpanded && <SectionTitle text="Action" />}
