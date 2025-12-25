@@ -3,24 +3,24 @@ import { Dialog, DialogContent, DialogActions, Button, Box, Typography, Grid } f
 function InfoField({ label, value }) {
   return (
     <Box>
-      <Typography 
-        sx={{ 
-          fontSize: "13px", 
-          fontWeight: "500", 
-          mb: 1, 
-          color: "#666" 
+      <Typography
+        sx={{
+          fontSize: "13px",
+          fontWeight: "500",
+          mb: 1,
+          color: "#666",
         }}
       >
         {label}
       </Typography>
-      <Typography 
-        sx={{ 
-          fontSize: "15px", 
-          fontWeight: "400", 
+      <Typography
+        sx={{
+          fontSize: "15px",
+          fontWeight: "400",
           color: "#333",
           backgroundColor: "#F5F7FA",
           padding: "12px 14px",
-          borderRadius: "8px"
+          borderRadius: "8px",
         }}
       >
         {value || "Chưa cập nhật"}
@@ -29,14 +29,18 @@ function InfoField({ label, value }) {
   );
 }
 
-export default function ThuTienForm({ open, onClose, item, onApprove, onReject }) {
-  if (!item) return null;
+export default function ThuTienForm({ open, onClose, request, onApprove, onReject }) {
+  if (!request) return null;
+
+  const requester = request.requester || {};
+  const data = request.requestData || {};
+  const householdCode = requester.household?.houseHoldID || requester.household || "Chưa cập nhật";
 
   return (
     <Dialog
       open={open}
       onClose={onClose}
-      maxWidth="md"
+      maxWidth="sm"
       fullWidth
       PaperProps={{
         sx: {
@@ -46,7 +50,6 @@ export default function ThuTienForm({ open, onClose, item, onApprove, onReject }
       }}
     >
       <DialogContent sx={{ padding: "24px 32px" }}>
-        {/* Title */}
         <Typography
           sx={{
             fontSize: "20px",
@@ -55,34 +58,26 @@ export default function ThuTienForm({ open, onClose, item, onApprove, onReject }
             color: "#333",
           }}
         >
-          Thông tin thu tiền
+          Yêu cầu thanh toán
         </Typography>
 
-        {/* Form Fields */}
         <Grid container spacing={3}>
-          <Grid item xs={12}>
-            <InfoField label="Tên sự kiện" value={item.event} />
+          <Grid item xs={12} sm={6}>
+            <InfoField label="Chủ hộ" value={requester.name} />
           </Grid>
           <Grid item xs={12} sm={6}>
-            <InfoField label="Mã hộ gia đình" value={item.houseHoldID} />
+            <InfoField label="Mã hộ" value={householdCode} />
           </Grid>
           <Grid item xs={12} sm={6}>
-            <InfoField label="Tên chủ hộ" value={item.chuHo} />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <InfoField label="Số tiền quyên góp" value={`${item.soTien.toLocaleString()} đ`} />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <InfoField label="Ngày tổ chức" value={item.eventDate} />
-          </Grid>
-          <Grid item xs={12}>
-            <InfoField label="Địa điểm" value={item.eventLocation} />
+            <InfoField
+              label="Số tiền"
+              value={
+                data.amount ? Number(data.amount).toLocaleString() + " VND" : "Chưa cập nhật"
+              }
+            />
           </Grid>
           <Grid item xs={12}>
-            <InfoField label="Ban tổ chức" value={item.organizer} />
-          </Grid>
-          <Grid item xs={12}>
-            <InfoField label="Mô tả" value={item.description} />
+            <InfoField label="Ghi chú" value={data.note} />
           </Grid>
         </Grid>
       </DialogContent>

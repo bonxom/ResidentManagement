@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Table,
   TableBody,
@@ -8,354 +8,201 @@ import {
   TableRow,
   Paper,
   Box,
+  Button,
+  TextField,
+  Typography,
+  Chip,
+  Alert,
+  CircularProgress,
 } from "@mui/material";
 import ThuTienForm from "../../../feature/admin/Form/ThuTienForm";
+import { requestAPI } from "../../../api/apiService";
+
+const statusMap = {
+  PENDING: { label: "Chờ duyệt", color: "warning" },
+  APPROVED: { label: "Đã duyệt", color: "success" },
+  REJECTED: { label: "Từ chối", color: "error" },
+};
+
+function StatusChip({ status }) {
+  const { label, color } = statusMap[status] || { label: status || "N/A", color: "default" };
+  return <Chip size="small" label={label} color={color} />;
+}
 
 export default function DanhSachThuTien() {
-  // Dữ liệu mẫu
-  const fullData = [
-    {
-      event: "Tết Trung Thu",
-      houseHoldID: "HH001",
-      chuHo: "Nguyễn Văn Chủ",
-      soTien: 500000,
-      status: "Phê duyệt",
-      eventDate: "15/09/2024",
-      eventLocation: "Sân vận động",
-      organizer: "Ban quản lý",
-      description: "Sự kiện kỷ niệm Tết Trung Thu",
-    },
-    {
-      event: "Tết Trung Thu",
-      houseHoldID: "HH002",
-      chuHo: "Nguyễn Văn Hộ",
-      soTien: 500000,
-      status: "",
-      eventDate: "15/09/2024",
-      eventLocation: "Sân vận động",
-      organizer: "Ban quản lý",
-      description: "Sự kiện kỷ niệm Tết Trung Thu",
-    },
-    {
-      event: "Lễ Quốc Khánh",
-      houseHoldID: "HH003",
-      chuHo: "Nguyễn Văn Hộ",
-      soTien: 300000,
-      status: "Không phê duyệt",
-      eventDate: "02/09/2024",
-      eventLocation: "Trưng tâm cộng đồng",
-      organizer: "Ban quản lý",
-      description: "Lễ kỷ niệm ngày Quốc khánh",
-    },
-    {
-      event: "Lễ Quốc Khánh",
-      houseHoldID: "HH001",
-      chuHo: "Nguyễn Văn Chủ",
-      soTien: 300000,
-      status: "",
-      eventDate: "02/09/2024",
-      eventLocation: "Trưng tâm cộng đồng",
-      organizer: "Ban quản lý",
-      description: "Lễ kỷ niệm ngày Quốc khánh",
-    },
-  ];
-
-  const [data, setData] = useState(fullData);
+  const [requests, setRequests] = useState([]);
   const [searchText, setSearchText] = useState("");
-  const [filterRole, setFilterRole] = useState("Tất cả");
-  const [openModal, setOpenModal] = useState(false);
-  const [selectedItem, setSelectedItem] = useState(null);
-  const [selectedIndex, setSelectedIndex] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [selectedRequest, setSelectedRequest] = useState(null);
+  const [processingId, setProcessingId] = useState(null);
 
-  // Lọc chỉ người chưa đỗng tiền
-  const handleFilterChuaDuyet = () => {
-    setData((prev) => prev.filter((item) => item.status === ""));
+  const fetchRequests = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await requestAPI.getRequests({ type: "PAYMENT", status: "PENDING" });
+      setRequests(res || []);
+    } catch (err) {
+      const msg = err?.message || err?.customMessage || "Không thể tải danh sách yêu cầu thanh toán";
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Tìm kiếm
-  const handleSearch = () => {
-    let filtered = fullData;
+  useEffect(() => {
+    fetchRequests();
+  }, []);
 
-    if (searchText.trim() !== "") {
-      filtered = filtered.filter(
-        (item) =>
-          item.houseHoldID.toLowerCase().includes(searchText.toLowerCase()) ||
-          item.chuHo.toLowerCase().includes(searchText.toLowerCase()) ||
-          item.event.toLowerCase().includes(searchText.toLowerCase())
+  const filtered = useMemo(() => {
+    if (!searchText.trim()) return requests;
+    const q = searchText.toLowerCase();
+    return requests.filter((r) => {
+      const requester = r.requester || {};
+      const householdCode = requester.household?.houseHoldID || requester.household || "";
+      return (
+        requester.name?.toLowerCase().includes(q) ||
+        householdCode.toLowerCase().includes(q) ||
+        r.requestData?.note?.toLowerCase().includes(q)
       );
+    });
+  }, [requests, searchText]);
+
+  const handleReview = async (request, status) => {
+    setProcessingId(request._id);
+    setError(null);
+    try {
+      await requestAPI.reviewRequest(request._id, status);
+      setRequests((prev) => prev.filter((r) => r._id !== request._id));
+      if (selectedRequest?._id === request._id) setSelectedRequest(null);
+    } catch (err) {
+      const msg = err?.message || err?.customMessage || "Xử lý yêu cầu thất bại";
+      setError(msg);
+    } finally {
+      setProcessingId(null);
     }
-
-    setData(filtered);
-  };
-
-  // Cập nhật trạng thái
-  const updateStatus = (index, newStatus) => {
-    const newData = [...data];
-    newData[index].status = newStatus;
-    setData(newData);
-  };
-
-  // Mở modal khi click vào '...'
-  const handleOpenModal = (item, index) => {
-    setSelectedItem(item);
-    setSelectedIndex(index);
-    setOpenModal(true);
-  };
-
-  // Đóng modal
-  const handleCloseModal = () => {
-    setOpenModal(false);
-    setSelectedItem(null);
-    setSelectedIndex(null);
-  };
-
-  // Cập nhật trạng thái từ modal
-  const handleStatusChange = (newStatus) => {
-    if (selectedIndex !== null) {
-      updateStatus(selectedIndex, newStatus);
-    }
-    handleCloseModal();
   };
 
   return (
     <div style={{ padding: "20px" }}>
-        {/* Header */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <h1 style={{ margin: 0 }}>Danh sách thu tiền hoạt động xã hội</h1>
+      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+        <Typography variant="h5" sx={{ fontWeight: 700 }}>
+          Yêu cầu thanh toán
+        </Typography>
+        <Box sx={{ display: "flex", gap: 1 }}>
+          <Button variant="outlined" onClick={() => setSearchText("")}>
+            Xóa tìm kiếm
+          </Button>
+          <Button variant="contained" onClick={fetchRequests}>
+            Làm mới
+          </Button>
+        </Box>
+      </Box>
 
-          <button
-            onClick={handleFilterChuaDuyet}
-            style={{
-              background: "#2962ff",
-              color: "white",
-              fontSize: "18px",
-              padding: "10px 20px",
-              borderRadius: "8px",
-              border: "none",
-              cursor: "pointer",
-            }}
-          >
-            Xác nhận phê duyệt
-          </button>
-        </div>
+      <Box sx={{ background: "#f7f9fc", p: 2, borderRadius: 2, mb: 2 }}>
+        <TextField
+          fullWidth
+          size="small"
+          label="Tìm kiếm (Tên chủ hộ / Mã hộ / Ghi chú)"
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+        />
+      </Box>
 
-        {/* Khung tìm kiếm */}
-        <div
-          style={{
-            marginTop: "20px",
-            background: "#f1f3f6",
-            padding: "20px",
-            borderRadius: "12px",
-            display: "flex",
-            gap: "20px",
-            alignItems: "center",
-          }}
-        >
-          <div style={{ flex: 1 }}>
-            <p style={{ fontWeight: "bold", marginBottom: 5 }}>
-              Tìm kiếm (Mã hộ / Tên chủ hộ / Sự kiện)
-            </p>
-            <input
-              type="text"
-              placeholder="🔍 Nhập nội dung..."
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              style={{
-                width: "100%",
-                padding: "12px",
-                borderRadius: "8px",
-                border: "1px solid #ccc",
-              }}
-            />
-          </div>
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
 
-          <button
-            onClick={handleSearch}
-            style={{
-              height: "45px",
-              padding: "0 20px",
-              background: "#2962ff",
-              color: "white",
-              borderRadius: "8px",
-              border: "none",
-              alignSelf: "flex-end",
-              cursor: "pointer",
-            }}
-          >
-            Tìm kiếm
-          </button>
-        </div>
-
-        {/* Bảng danh sách */}
-        <TableContainer
-          component={Paper}
-          style={{
-            marginTop: "30px",
-            borderRadius: "12px",
-          }}
-        >
+      {loading ? (
+        <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
+          <CircularProgress />
+        </Box>
+      ) : (
+        <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
           <Table>
             <TableHead sx={{ backgroundColor: "#f5f5f5" }}>
               <TableRow>
-                <TableCell sx={{ fontWeight: "bold", padding: "16px" }}>
-                  Tên sự kiện
-                </TableCell>
-                <TableCell sx={{ fontWeight: "bold", padding: "16px" }}>
-                  Mã hộ gia đình
-                </TableCell>
-                <TableCell sx={{ fontWeight: "bold", padding: "16px" }}>
-                  Tên chủ hộ
-                </TableCell>
-                <TableCell sx={{ fontWeight: "bold", padding: "16px" }}>
-                  Số tiền quyên góp
-                </TableCell>
-                <TableCell sx={{ fontWeight: "bold", padding: "16px" }}>
-                  Trạng thái thanh toán
-                </TableCell>
+                <TableCell>Chủ hộ</TableCell>
+                <TableCell>Mã hộ</TableCell>
+                <TableCell>Số tiền</TableCell>
+                <TableCell>Ghi chú</TableCell>
+                <TableCell>Trạng thái</TableCell>
+                <TableCell align="center">Thao tác</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {data.map((item, index) => (
-                <TableRow
-                  key={index}
-                  sx={{ borderBottom: "1px solid #e0e0e0" }}
-                >
-                  <TableCell sx={{ padding: "16px" }}>{item.event}</TableCell>
-                  <TableCell sx={{ padding: "16px" }}>
-                    {item.houseHoldID}
-                  </TableCell>
-                  <TableCell sx={{ padding: "16px" }}>{item.chuHo}</TableCell>
-                  <TableCell sx={{ padding: "16px" }}>
-                    {item.soTien.toLocaleString()} đ
-                  </TableCell>
-                  <TableCell sx={{ padding: "16px" }}>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        gap: "8px",
-                        alignItems: "center",
-                      }}
-                    >
-                      {/* Nút Phê duyệt */}
-                      <button
-                        onClick={() => updateStatus(index, "Phê duyệt")}
-                        style={{
-                          padding: "8px",
-                          color: "#10b981",
-                          backgroundColor: item.status === "Phê duyệt" ? "#a9f5c0" : "transparent",
-                          border: "none",
-                          borderRadius: "50%",
-                          width: "36px",
-                          height: "36px",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          cursor: "pointer",
-                          transition: "background-color 0.2s",
-                        }}
-                        onMouseEnter={(e) => {
-                          if (item.status !== "Phê duyệt") {
-                            e.currentTarget.style.backgroundColor = "#f0fdf4";
-                          }
-                        }}
-                        onMouseLeave={(e) => {
-                          if (item.status !== "Phê duyệt") {
-                            e.currentTarget.style.backgroundColor = "transparent";
-                          }
-                        }}
-                        title="Phê duyệt"
-                      >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                      </button>
-
-                      {/* Nút Từ chối */}
-                      <button
-                        onClick={() => updateStatus(index, "Không phê duyệt")}
-                        style={{
-                          padding: "8px",
-                          color: "#f97316",
-                          backgroundColor: item.status === "Không phê duyệt" ? "#ffcb8a" : "transparent",
-                          border: "none",
-                          borderRadius: "50%",
-                          width: "36px",
-                          height: "36px",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          cursor: "pointer",
-                          transition: "background-color 0.2s",
-                        }}
-                        onMouseEnter={(e) => {
-                          if (item.status !== "Không phê duyệt") {
-                            e.currentTarget.style.backgroundColor = "#fff7ed";
-                          }
-                        }}
-                        onMouseLeave={(e) => {
-                          if (item.status !== "Không phê duyệt") {
-                            e.currentTarget.style.backgroundColor = "transparent";
-                          }
-                        }}
-                        title="Từ chối"
-                      >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                          <line x1="18" y1="6" x2="6" y2="18"></line>
-                          <line x1="6" y1="6" x2="18" y2="18"></line>
-                        </svg>
-                      </button>
-
-                      {/* Dấu ... - Mở modal */}
-                      <button
-                        onClick={() => handleOpenModal(item, index)}
-                        style={{
-                          padding: "8px",
-                          color: "#3b82f6",
-                          backgroundColor: "#eff6ff",
-                          border: "none",
-                          borderRadius: "50%",
-                          width: "36px",
-                          height: "36px",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          cursor: "pointer",
-                          transition: "background-color 0.2s",
-                          fontSize: "18px",
-                          fontWeight: "bold",
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = "#dbeafe";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = "#eff6ff";
-                        }}
-                        title="Xem chi tiết"
-                      >
-                        ...
-                      </button>
-                    </Box>
+              {filtered.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} align="center">
+                    Không có yêu cầu nào.
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                filtered.map((req) => {
+                  const requester = req.requester || {};
+                  const householdCode = requester.household?.houseHoldID || requester.household || "—";
+                  return (
+                    <TableRow key={req._id}>
+                      <TableCell>{requester.name || "—"}</TableCell>
+                      <TableCell>{householdCode}</TableCell>
+                      <TableCell>
+                        {req.requestData?.amount
+                          ? Number(req.requestData.amount).toLocaleString() + " VND"
+                          : "—"}
+                      </TableCell>
+                      <TableCell>{req.requestData?.note || "—"}</TableCell>
+                      <TableCell>
+                        <StatusChip status={req.status} />
+                      </TableCell>
+                      <TableCell align="center">
+                        <Box sx={{ display: "flex", gap: 1, justifyContent: "center" }}>
+                          <Button
+                            variant="outlined"
+                            color="success"
+                            size="small"
+                            disabled={processingId === req._id}
+                            onClick={() => handleReview(req, "APPROVED")}
+                          >
+                            Duyệt
+                          </Button>
+                          <Button
+                            variant="outlined"
+                            color="error"
+                            size="small"
+                            disabled={processingId === req._id}
+                            onClick={() => handleReview(req, "REJECTED")}
+                          >
+                            Từ chối
+                          </Button>
+                          <Button
+                            variant="contained"
+                            size="small"
+                            onClick={() => setSelectedRequest(req)}
+                            sx={{ textTransform: "none" }}
+                          >
+                            Xem
+                          </Button>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              )}
             </TableBody>
           </Table>
         </TableContainer>
+      )}
 
-        {/* Modal hiển thị thông tin sự kiện */}
-        <ThuTienForm
-          open={openModal}
-          onClose={handleCloseModal}
-          item={selectedItem}
-          onApprove={() => handleStatusChange("Phê duyệt")}
-          onReject={() => handleStatusChange("Không phê duyệt")}
-        />
-      </div>
+      <ThuTienForm
+        open={!!selectedRequest}
+        onClose={() => setSelectedRequest(null)}
+        request={selectedRequest}
+        onApprove={() => selectedRequest && handleReview(selectedRequest, "APPROVED")}
+        onReject={() => selectedRequest && handleReview(selectedRequest, "REJECTED")}
+      />
+    </div>
   );
 }
