@@ -15,7 +15,6 @@ import {
   Alert,
   CircularProgress,
 } from "@mui/material";
-import ThuTienForm from "../../../feature/admin/Form/ThuTienForm";
 import { requestAPI } from "../../../api/apiService";
 
 const statusMap = {
@@ -34,7 +33,6 @@ export default function DanhSachThuTien() {
   const [searchText, setSearchText] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [selectedRequest, setSelectedRequest] = useState(null);
   const [processingId, setProcessingId] = useState(null);
 
   const fetchRequests = async () => {
@@ -61,10 +59,14 @@ export default function DanhSachThuTien() {
     return requests.filter((r) => {
       const requester = r.requester || {};
       const householdCode = requester.household?.houseHoldID || requester.household || "";
+      const requesterName = requester.name || "";
+      const feeName = r.requestData?.feeName || "";
+      const note = r.requestData?.note || "";
       return (
-        requester.name?.toLowerCase().includes(q) ||
+        requesterName.toLowerCase().includes(q) ||
         householdCode.toLowerCase().includes(q) ||
-        r.requestData?.note?.toLowerCase().includes(q)
+        feeName.toLowerCase().includes(q) ||
+        note.toLowerCase().includes(q)
       );
     });
   }, [requests, searchText]);
@@ -75,7 +77,6 @@ export default function DanhSachThuTien() {
     try {
       await requestAPI.reviewRequest(request._id, status);
       setRequests((prev) => prev.filter((r) => r._id !== request._id));
-      if (selectedRequest?._id === request._id) setSelectedRequest(null);
     } catch (err) {
       const msg = err?.message || err?.customMessage || "Xử lý yêu cầu thất bại";
       setError(msg);
@@ -104,7 +105,7 @@ export default function DanhSachThuTien() {
         <TextField
           fullWidth
           size="small"
-          label="Tìm kiếm (Tên chủ hộ / Mã hộ / Ghi chú)"
+          label="Tìm kiếm (Tên chủ hộ / Mã hộ / Khoản thu / Ghi chú)"
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
         />
@@ -127,6 +128,7 @@ export default function DanhSachThuTien() {
               <TableRow>
                 <TableCell>Chủ hộ</TableCell>
                 <TableCell>Mã hộ</TableCell>
+                <TableCell>Khoản thu</TableCell>
                 <TableCell>Số tiền</TableCell>
                 <TableCell>Ghi chú</TableCell>
                 <TableCell>Trạng thái</TableCell>
@@ -136,7 +138,7 @@ export default function DanhSachThuTien() {
             <TableBody>
               {filtered.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} align="center">
+                  <TableCell colSpan={7} align="center">
                     Không có yêu cầu nào.
                   </TableCell>
                 </TableRow>
@@ -148,6 +150,7 @@ export default function DanhSachThuTien() {
                     <TableRow key={req._id}>
                       <TableCell>{requester.name || "—"}</TableCell>
                       <TableCell>{householdCode}</TableCell>
+                      <TableCell>{req.requestData?.feeName || "—"}</TableCell>
                       <TableCell>
                         {req.requestData?.amount
                           ? Number(req.requestData.amount).toLocaleString() + " VND"
@@ -177,14 +180,6 @@ export default function DanhSachThuTien() {
                           >
                             Từ chối
                           </Button>
-                          <Button
-                            variant="contained"
-                            size="small"
-                            onClick={() => setSelectedRequest(req)}
-                            sx={{ textTransform: "none" }}
-                          >
-                            Xem
-                          </Button>
                         </Box>
                       </TableCell>
                     </TableRow>
@@ -195,14 +190,6 @@ export default function DanhSachThuTien() {
           </Table>
         </TableContainer>
       )}
-
-      <ThuTienForm
-        open={!!selectedRequest}
-        onClose={() => setSelectedRequest(null)}
-        request={selectedRequest}
-        onApprove={() => selectedRequest && handleReview(selectedRequest, "APPROVED")}
-        onReject={() => selectedRequest && handleReview(selectedRequest, "REJECTED")}
-      />
     </div>
   );
 }

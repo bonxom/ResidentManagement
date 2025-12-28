@@ -145,6 +145,8 @@ function FeeManagement() {
   const handleChange = (e) => {
     const { name, value } = e.target;
 
+    if (isEdit && name === "type") return;
+
     if (name === "unitPrice") {
       if (value && !/^\d*$/.test(value)) return;
     }
@@ -182,9 +184,12 @@ function FeeManagement() {
 
       const payload = {
         name: formData.name.trim(),
-        type: formData.type,
         description: formData.description.trim(),
       };
+
+      if (!isEdit) {
+        payload.type = formData.type;
+      }
 
       if (formData.type === "MANDATORY") {
         payload.unitPrice = Number(formData.unitPrice);
@@ -403,22 +408,24 @@ function FeeManagement() {
                 placeholder="VD: Phí quản lý chung cư"
               />
 
-              <TextField
-                select
-                label="Loại khoản thu"
-                name="type"
-                fullWidth
-                margin="normal"
-                value={formData.type}
-                onChange={handleChange}
-                required
-              >
-                {feeTypes.map((t) => (
-                  <MenuItem key={t.value} value={t.value}>
-                    {t.label}
-                  </MenuItem>
-                ))}
-              </TextField>
+              {!isEdit && (
+                <TextField
+                  select
+                  label="Loại khoản thu"
+                  name="type"
+                  fullWidth
+                  margin="normal"
+                  value={formData.type}
+                  onChange={handleChange}
+                  required
+                >
+                  {feeTypes.map((t) => (
+                    <MenuItem key={t.value} value={t.value}>
+                      {t.label}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              )}
 
               <TextField
                 label="Đơn giá (VND)"

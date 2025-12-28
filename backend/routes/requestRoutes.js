@@ -7,6 +7,8 @@ import {
   createBirthRequest,
   createDeathRequest,         
   getAllRequests,
+  getMyHouseholdRequests,
+  getMyHouseholdPaymentRequests,
   reviewRequest,
 } from "../controllers/requestController.js";
 // SỬA: Import đúng middleware authorizePermission
@@ -21,6 +23,8 @@ router.post("/temporary-residence", protect, createTemporaryResidenceRequest);
 router.post("/temporary-absence", protect, createTemporaryAbsenceRequest);
 router.post("/birth", protect, createBirthRequest);
 router.post("/death", protect, createDeathRequest);
+router.get("/my-household", protect, getMyHouseholdRequests);
+router.get("/my-household/payments", protect, getMyHouseholdPaymentRequests);
 // --- KHU VỰC DÀNH RIÊNG CHO TỔ TRƯỞNG ---
 
 // Xem danh sách: Yêu cầu quyền READ REQUESTS LIST (đã define trong initialize.js)

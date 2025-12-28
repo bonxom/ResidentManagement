@@ -15,6 +15,7 @@ import {
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import LogoutButton from "../feature/admin/LogoutButton";
+import useAuthStore from "../store/authStore";
 
 export const drawerWidthExpanded = 304;
 export const drawerWidthCollapsed = 80;
@@ -22,7 +23,12 @@ export const drawerWidth = drawerWidthExpanded; // For backward compatibility
 
 export function SidebarForUser({ user, onWidthChange }) {
   const navigate = useNavigate();
-  const appTitle = user?.ten ? `Xin chào, ${user.ten}` : "DÂN CƯ SỐ";
+  const { user: authUser } = useAuthStore();
+  const resolvedUser = user || authUser;
+  const displayName = resolvedUser?.name || resolvedUser?.ten;
+  const appTitle = displayName ? `Xin chào, ${displayName}` : "DÂN CƯ SỐ";
+  const userRole = resolvedUser?.role?.role_name;
+  const isHouseMember = userRole === "HOUSE MEMBER";
   const [isExpanded, setIsExpanded] = useState(false);
 
   const currentDrawerWidth = isExpanded
@@ -99,57 +105,65 @@ export function SidebarForUser({ user, onWidthChange }) {
         to="/member/dashboard"
         isExpanded={isExpanded}
       />
-      <MenuItem
-        icon={<Users size={18} />}
-        label="Thông tin thành viên"
-        to="/member/ThongTinHoDan"
-        isExpanded={isExpanded}
-      />
-      <MenuItem
-        icon={<Wallet size={18} />}
-        label="Các khoản nộp"
-        to="/member/feeuser"
-        isExpanded={isExpanded}
-      />
-      <MenuItem
-        icon={<Wallet size={18} />}
-        label="Khai báo sinh tử"
-        to="/member/requestsinhtu"
-        isExpanded={isExpanded}
-      />
-      <MenuItem
-        icon={<Wallet size={18} />}
-        label="Khai báo tạm trú tạm vắng"
-        to="/member/requesttamtruvang"
-        isExpanded={isExpanded}
-      />
-      <MenuItem
-        icon={<PlusCircle size={18} />}
-        label="Yêu cầu tạm trú/vắng nhanh"
-        to="/member/yeucau/tamtruvang"
-        isExpanded={isExpanded}
-      />
+      {isHouseMember && (
+        <>
+          <MenuItem
+            icon={<Users size={18} />}
+            label="Thông tin thành viên"
+            to="/member/ThongTinHoDan"
+            isExpanded={isExpanded}
+          />
+          <MenuItem
+            icon={<Wallet size={18} />}
+            label="Các khoản nộp"
+            to="/member/feeuser"
+            isExpanded={isExpanded}
+          />
+          <MenuItem
+            icon={<Wallet size={18} />}
+            label="Khai báo sinh tử"
+            to="/member/requestsinhtu"
+            isExpanded={isExpanded}
+          />
+          <MenuItem
+            icon={<Wallet size={18} />}
+            label="Khai báo tạm trú tạm vắng"
+            to="/member/requesttamtruvang"
+            isExpanded={isExpanded}
+          />
+          <MenuItem
+            icon={<PlusCircle size={18} />}
+            label="Yêu cầu tạm trú/vắng nhanh"
+            to="/member/yeucau/tamtruvang"
+            isExpanded={isExpanded}
+          />
+        </>
+      )}
 
       {/* HISTORY */}
-      {isExpanded && <SectionTitle text="History" />}
-      <MenuItem
-        icon={<History size={18} />}
-        label="Lịch sử giao dịch"
-        to="/member/lichsugiaodich"
-        isExpanded={isExpanded}
-      />
-      <MenuItem
-        icon={<CheckCircle size={18} />}
-        label="Lịch sử phê duyệt"
-        to="/member/lichsupheduyet"
-        isExpanded={isExpanded}
-      />
-      <MenuItem
-        icon={<Repeat size={18} />}
-        label="Lịch sử thay đổi"
-        to="/member/lichsuthaydoi"
-        isExpanded={isExpanded}
-      />
+      {isHouseMember && isExpanded && <SectionTitle text="History" />}
+      {isHouseMember && (
+        <>
+          <MenuItem
+            icon={<History size={18} />}
+            label="Lịch sử giao dịch"
+            to="/member/lichsugiaodich"
+            isExpanded={isExpanded}
+          />
+          <MenuItem
+            icon={<CheckCircle size={18} />}
+            label="Lịch sử phê duyệt"
+            to="/member/lichsupheduyet"
+            isExpanded={isExpanded}
+          />
+          <MenuItem
+            icon={<Repeat size={18} />}
+            label="Lịch sử thay đổi"
+            to="/member/lichsuthaydoi"
+            isExpanded={isExpanded}
+          />
+        </>
+      )}
 
       {/* Logout Button */}
       <LogoutButton isExpanded={isExpanded} />

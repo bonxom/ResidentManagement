@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import useAuthStore from "../store/authStore";
 import { Box, CircularProgress, Typography } from "@mui/material";
 
-function ProtectedRoute({ allowedRoles = [] }) {
+function ProtectedRoute({ allowedRoles = [], redirectTo = null }) {
   const { token, user, checkAuth } = useAuthStore();
   const [isChecking, setIsChecking] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -57,7 +57,11 @@ function ProtectedRoute({ allowedRoles = [] }) {
   if (allowedRoles.length === 0 || allowedRoles.includes(userRole)) {
     return <Outlet />;
   }
-  
+
+  if (redirectTo) {
+    return <Navigate to={redirectTo} replace />;
+  }
+
   // Nếu role không được phép, return null thay vì hiển thị lỗi
   // Điều này cho phép React Router tiếp tục tìm route khác
   return null;

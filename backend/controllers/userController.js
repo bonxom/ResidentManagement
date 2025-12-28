@@ -10,8 +10,8 @@ import Request from "../models/Request.js";
 // @route   POST /api/users
 export const createUser = async (req, res) => {
   try {
-    const { email, password, name, sex, dob,  phoneNumber, userCardID,
-      job, ethnic, birthLocation, status } = // Cho phép nhận status hoặc tự set
+    const { email, password, name, sex, dob, phoneNumber, userCardID,
+      job, ethnic, birthLocation, status, roleName, roleId, role } = // Cho phép nhận status hoặc tự set
       req.body;
     const normalizedEmail = email?.toLowerCase();
 
@@ -26,16 +26,29 @@ export const createUser = async (req, res) => {
     const cardExists = await User.findByUserCardID(userCardID);
     if (cardExists) return res.status(400).json({ message: "userCardID has existed" });
 
-    const defaultRole = await Role.findByName("MEMBER"); 
-    if (!defaultRole) {
-      return res.status(500).json({ message: "Role: \"MEMBER\" not found" });
+    let assignedRole = null;
+    if (roleId || role) {
+      assignedRole = await Role.findById(roleId || role);
+      if (!assignedRole) {
+        return res.status(400).json({ message: "Role not found" });
+      }
+    } else if (roleName) {
+      assignedRole = await Role.findByName(roleName);
+      if (!assignedRole) {
+        return res.status(400).json({ message: "Role not found" });
+      }
+    } else {
+      assignedRole = await Role.findByName("MEMBER");
+      if (!assignedRole) {
+        return res.status(500).json({ message: "Role: \"MEMBER\" not found" });
+      }
     }
 
     const user = await User.create({
       email: normalizedEmail, password, name, sex, dob,
       phoneNumber, userCardID,
       job, ethnic, birthLocation,
-      role: defaultRole._id,
+      role: assignedRole._id,
       household: null,
       relationshipWithHead: null,
       status: status || "VERIFIED" 
@@ -46,7 +59,7 @@ export const createUser = async (req, res) => {
         _id: user._id,
         name: user.name,
         email: user.email,
-        role: defaultRole.role_name,
+        role: assignedRole.role_name,
         status: user.status // Trả về status để admin biết
       });
     } else {
@@ -153,6 +166,19 @@ export const updateUser = async (req, res) => {
     if (!user) return res.status(404).json({ message: "Không tìm thấy người dùng" });
 
     // Cập nhật thông tin (Chỉ cập nhật nếu có gửi lên)
+    if (req.body.email && typeof req.body.email === "string") {
+      const normalizedEmail = req.body.email.toLowerCase().trim();
+      if (normalizedEmail && normalizedEmail !== user.email) {
+        const emailExists = await User.findOne({
+          email: normalizedEmail,
+          _id: { $ne: user._id },
+        });
+        if (emailExists) {
+          return res.status(400).json({ message: "Email has existed" });
+        }
+        user.email = normalizedEmail;
+      }
+    }
     user.name = req.body.name || user.name;
     user.sex = req.body.sex || user.sex;
     user.dob = req.body.dob || user.dob;
@@ -165,11 +191,18 @@ export const updateUser = async (req, res) => {
     user.relationshipWithHead = req.body.relationshipWithHead || user.relationshipWithHead;
 
     // Xử lý Role (Cẩn trọng: Thường chỉ Admin mới được sửa quyền)
-    if (req.body.roleName) {
-      const newRole = await Role.findOne({ role_name: req.body.roleName });
-      if (newRole) {
-        user.role = newRole._id;
+    if (req.body.roleId || req.body.role) {
+      const newRole = await Role.findById(req.body.roleId || req.body.role);
+      if (!newRole) {
+        return res.status(400).json({ message: "Role not found" });
       }
+      user.role = newRole._id;
+    } else if (req.body.roleName) {
+      const newRole = await Role.findOne({ role_name: req.body.roleName });
+      if (!newRole) {
+        return res.status(400).json({ message: "Role not found" });
+      }
+      user.role = newRole._id;
     }
     const updatedUser = await user.save();
     const responseUser = updatedUser.toObject();

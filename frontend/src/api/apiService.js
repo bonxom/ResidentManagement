@@ -112,7 +112,7 @@ export const householdAPI = {
   },
 
   getMembersInfo: async (id) => {
-    const response = await api.get(`/households/${id}/members`);
+    const response = await api.get(`/households/${id}/members-info`);
     return response.data;
   },
 
@@ -249,6 +249,16 @@ export const requestAPI = {
   // Lấy danh sách yêu cầu
   getRequests: async (params = {}) => {
     const response = await api.get("/requests", { params });
+    return response.data;
+  },
+  // Cư dân xem lịch sử yêu cầu nộp tiền của hộ mình
+  getMyHouseholdPaymentRequests: async (params = {}) => {
+    const response = await api.get("/requests/my-household/payments", { params });
+    return response.data;
+  },
+  // Cư dân xem lịch sử yêu cầu của hộ mình
+  getMyHouseholdRequests: async (params = {}) => {
+    const response = await api.get("/requests/my-household", { params });
     return response.data;
   },
   // Tổ trưởng duyệt/từ chối yêu cầu

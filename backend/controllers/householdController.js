@@ -319,12 +319,20 @@ export const removeMember = async (req, res) => {
 export const getHouseholdMemberSummaries = async (req, res) => {
   const { householdId } = req.params;
   try {
+    const isOwnHousehold = req.user?.household?.toString() === householdId;
+    const userPermissions = (req.user?.permissions || []).map((p) => p.toUpperCase());
+    const canViewAll = userPermissions.includes("VIEW HOUSEHOLD LIST");
+    if (!isOwnHousehold && !canViewAll) {
+      return res.status(403).json({ message: "You can only view members of your household" });
+    }
+
     const household = await Household.findById(householdId);
     if (!household) {
       return res.status(404).json({ message: "Household not found" });
     }
+
     const members = await User.find({ _id: { $in: household.members } })
-      .select("userCardID name relationshipWithHead dateOfBirth");
+      .select("-password");
     res.status(200).json(members);
   } catch (error) { 
     res.status(500).json({ message: error.message });

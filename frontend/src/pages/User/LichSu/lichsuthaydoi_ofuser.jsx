@@ -1,164 +1,322 @@
-import React, { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Box,
   Typography,
-  Button,
-  TextField,
-  InputAdornment,
-  Select,
-  MenuItem,
+  Paper,
+  Alert,
+  CircularProgress,
+  Divider,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
-  Pagination,
+  Chip,
 } from "@mui/material";
-import { Search, Filter, ChevronDown } from "lucide-react";
-import AddProfileModal from "../../../feature/profile/AddProfile";
+import useAuthStore from "../../../store/authStore";
+import { householdAPI } from "../../../api/apiService";
 
-/* ================== DATA ẢO ================== */
+const formatDate = (value) =>
+  value ? new Date(value).toLocaleDateString("vi-VN") : "-";
 
-// Thành viên hiện tại
-const residents = [
-  { id: 1, cccd: "012345678901", fullName: "Nguyễn Văn A", relation: "Chủ hộ", dob: "12/03/1980" },
-  { id: 2, cccd: "012345678902", fullName: "Trần Thị B", relation: "Vợ", dob: "20/11/1985" },
-  { id: 3, cccd: "012345678903", fullName: "Nguyễn Văn C", relation: "Con", dob: "05/04/2010" },
-];
+const formatDateTime = (value) =>
+  value ? new Date(value).toLocaleString("vi-VN") : "-";
 
-// 🔥 LỊCH SỬ THÊM / XÓA (DATA ẢO)
-const mockHistory = [
-  {
-    logId: "log_001",
-    time: "15/12/2025 08:30",
-    action: "ADD",
-    cccd: "012345678904",
-    fullName: "Lê Văn D",
-    relation: "Anh trai",
-    dob: "15/06/1978",
-  },
-  {
-    logId: "log_002",
-    time: "15/12/2025 09:10",
-    action: "DELETE",
-    cccd: "012345678903",
-    fullName: "Nguyễn Văn C",
-    relation: "Con",
-    dob: "05/04/2010",
-  },
-  {
-    logId: "log_003",
-    time: "16/12/2025 14:05",
-    action: "ADD",
-    cccd: "012345678905",
-    fullName: "Phạm Thị E",
-    relation: "Cháu",
-    dob: "22/08/2015",
-  },
-  {
-    logId: "log_004",
-    time: "16/12/2025 16:40",
-    action: "DELETE",
-    cccd: "012345678902",
-    fullName: "Trần Thị B",
-    relation: "Vợ",
-    dob: "20/11/1985",
-  },
-];
+const sortByDateDesc = (items, key) =>
+  [...items].sort((a, b) => {
+    const aTime = a?.[key] ? new Date(a[key]).getTime() : 0;
+    const bTime = b?.[key] ? new Date(b[key]).getTime() : 0;
+    return bTime - aTime;
+  });
 
-/* ================== BẢNG LỊCH SỬ ================== */
+const StatusChip = ({ active }) => (
+  <Chip
+    size="small"
+    label={active ? "Đang hiệu lực" : "Đã kết thúc"}
+    color={active ? "success" : "default"}
+  />
+);
 
-function HistoryTable({ history }) {
-  const ROWS_PER_PAGE = 10;
-  const [page, setPage] = useState(1);
-
-  const pageCount = Math.ceil(history.length / ROWS_PER_PAGE) || 1;
-  const visibleRows = history.slice(
-    (page - 1) * ROWS_PER_PAGE,
-    page * ROWS_PER_PAGE
-  );
-
+function TemporaryResidentsTable({ rows }) {
   return (
-    <Box>
-      <TableContainer component={Paper} sx={{ borderRadius: 3 }}>
-        <Table>
-          <TableHead>
+    <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
+      <Table>
+        <TableHead sx={{ backgroundColor: "#f5f5f5" }}>
+          <TableRow>
+            <TableCell>Họ tên</TableCell>
+            <TableCell>CCCD</TableCell>
+            <TableCell>Từ ngày</TableCell>
+            <TableCell>Đến ngày</TableCell>
+            <TableCell>Lý do</TableCell>
+            <TableCell>Trạng thái</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {rows.length === 0 ? (
             <TableRow>
-              <TableCell>Thời gian</TableCell>
-              <TableCell>Hành động</TableCell>
-              <TableCell>Số CCCD</TableCell>
-              <TableCell>Họ và tên</TableCell>
-              <TableCell>Quan hệ</TableCell>
-              <TableCell>Ngày sinh</TableCell>
+              <TableCell colSpan={6} align="center">
+                Không có dữ liệu.
+              </TableCell>
             </TableRow>
-          </TableHead>
-
-          <TableBody>
-            {visibleRows.map((row) => (
-              <TableRow key={row.logId} hover>
-                <TableCell>{row.time}</TableCell>
-                <TableCell
-                  sx={{
-                    fontWeight: 600,
-                    color: row.action === "ADD" ? "#2e7d32" : "#d32f2f",
-                  }}
-                >
-                  {row.action === "ADD" ? "Thêm thành viên" : "Xóa thành viên"}
+          ) : (
+            rows.map((row) => (
+              <TableRow key={row._id} hover>
+                <TableCell>{row.name || "-"}</TableCell>
+                <TableCell>{row.userCardID || "-"}</TableCell>
+                <TableCell>{formatDate(row.startDate)}</TableCell>
+                <TableCell>{formatDate(row.endDate)}</TableCell>
+                <TableCell>{row.reason || "-"}</TableCell>
+                <TableCell>
+                  <StatusChip active={row.isActive !== false} />
                 </TableCell>
-                <TableCell>{row.cccd}</TableCell>
-                <TableCell>{row.fullName}</TableCell>
-                <TableCell>{row.relation}</TableCell>
-                <TableCell>{row.dob}</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-
-      <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
-        <Pagination
-          count={pageCount}
-          page={page}
-          onChange={(e, value) => setPage(value)}
-        />
-      </Box>
-    </Box>
+            ))
+          )}
+        </TableBody>
+      </Table>
+    </TableContainer>
   );
 }
 
-/* ================== PAGE ================== */
+function TemporaryAbsentTable({ rows }) {
+  return (
+    <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
+      <Table>
+        <TableHead sx={{ backgroundColor: "#f5f5f5" }}>
+          <TableRow>
+            <TableCell>Họ tên</TableCell>
+            <TableCell>Từ ngày</TableCell>
+            <TableCell>Đến ngày</TableCell>
+            <TableCell>Lý do</TableCell>
+            <TableCell>Địa chỉ tạm trú</TableCell>
+            <TableCell>Trạng thái</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {rows.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={6} align="center">
+                Không có dữ liệu.
+              </TableCell>
+            </TableRow>
+          ) : (
+            rows.map((row) => (
+              <TableRow key={row._id} hover>
+                <TableCell>{row.user?.name || "-"}</TableCell>
+                <TableCell>{formatDate(row.startDate)}</TableCell>
+                <TableCell>{formatDate(row.endDate)}</TableCell>
+                <TableCell>{row.reason || "-"}</TableCell>
+                <TableCell>{row.temporaryAddress || "-"}</TableCell>
+                <TableCell>
+                  <StatusChip active={row.isActive !== false} />
+                </TableCell>
+              </TableRow>
+            ))
+          )}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
+}
+
+function BirthTable({ rows }) {
+  return (
+    <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
+      <Table>
+        <TableHead sx={{ backgroundColor: "#f5f5f5" }}>
+          <TableRow>
+            <TableCell>Họ tên</TableCell>
+            <TableCell>Ngày sinh</TableCell>
+            <TableCell>Giới tính</TableCell>
+            <TableCell>Nơi sinh</TableCell>
+            <TableCell>Số giấy khai sinh</TableCell>
+            <TableCell>Ngày ghi nhận</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {rows.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={6} align="center">
+                Không có dữ liệu.
+              </TableCell>
+            </TableRow>
+          ) : (
+            rows.map((row) => (
+              <TableRow key={row._id} hover>
+                <TableCell>{row.name || "-"}</TableCell>
+                <TableCell>{formatDate(row.dob)}</TableCell>
+                <TableCell>{row.sex || "-"}</TableCell>
+                <TableCell>{row.birthLocation || "-"}</TableCell>
+                <TableCell>{row.birthCertificateNumber || "-"}</TableCell>
+                <TableCell>{formatDateTime(row.createdAt)}</TableCell>
+              </TableRow>
+            ))
+          )}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
+}
+
+function DeathTable({ rows }) {
+  return (
+    <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
+      <Table>
+        <TableHead sx={{ backgroundColor: "#f5f5f5" }}>
+          <TableRow>
+            <TableCell>Họ tên</TableCell>
+            <TableCell>CCCD</TableCell>
+            <TableCell>Ngày mất</TableCell>
+            <TableCell>Lý do</TableCell>
+            <TableCell>Ngày ghi nhận</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {rows.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={5} align="center">
+                Không có dữ liệu.
+              </TableCell>
+            </TableRow>
+          ) : (
+            rows.map((row) => (
+              <TableRow key={row._id} hover>
+                <TableCell>{row.name || "-"}</TableCell>
+                <TableCell>{row.userCardID || "-"}</TableCell>
+                <TableCell>{formatDate(row.dateOfDeath)}</TableCell>
+                <TableCell>{row.reason || "-"}</TableCell>
+                <TableCell>{formatDateTime(row.createdAt)}</TableCell>
+              </TableRow>
+            ))
+          )}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
+}
 
 export default function LichSuThayDoi() {
-  const [openAddProfileModal, setOpenAddProfileModal] = useState(false);
+  const { user } = useAuthStore();
+  const householdId =
+    typeof user?.household === "string" ? user.household : user?.household?._id;
 
-  // ✅ GẮN DATA ẢO TRỰC TIẾP VÀO STATE
-  const [history, setHistory] = useState(mockHistory);
+  const [household, setHousehold] = useState(null);
+  const [history, setHistory] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const fetchHistory = async () => {
+    if (!householdId) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const [householdRes, changeRes] = await Promise.all([
+        householdAPI.getById(householdId),
+        householdAPI.getTamTruVangDetails(householdId),
+      ]);
+      setHousehold(householdRes || null);
+      setHistory(changeRes?.temporaryHistory || null);
+    } catch (err) {
+      const msg =
+        err?.message || err?.customMessage || "Không thể tải lịch sử thay đổi";
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (householdId) {
+      fetchHistory();
+    }
+  }, [householdId]);
+
+  const temporaryResidents = useMemo(
+    () => sortByDateDesc(history?.temporaryResidents || [], "startDate"),
+    [history]
+  );
+  const temporaryAbsent = useMemo(
+    () => sortByDateDesc(history?.temporaryAbsent || [], "startDate"),
+    [history]
+  );
+  const births = useMemo(
+    () => sortByDateDesc(history?.births || [], "createdAt"),
+    [history]
+  );
+  const deaths = useMemo(
+    () => sortByDateDesc(history?.deaths || [], "createdAt"),
+    [history]
+  );
 
   return (
     <Box sx={{ padding: "24px 32px" }}>
       <Typography sx={{ fontSize: 26, fontWeight: 600, mb: 3 }}>
-        Lịch sử thêm / xóa thành viên hộ dân
+        Lịch sử thay đổi của hộ dân
       </Typography>
 
-      <Box
-        sx={{
-          backgroundColor: "white",
-          borderRadius: "16px",
-          boxShadow: "0px 3px 12px rgba(0,0,0,0.1)",
-          p: 2,
-        }}
-      >
-        <HistoryTable history={history} />
-      </Box>
+      {!householdId && (
+        <Alert severity="warning">
+          Bạn chưa thuộc hộ khẩu nào nên không xem được lịch sử thay đổi.
+        </Alert>
+      )}
 
-      <AddProfileModal
-        open={openAddProfileModal}
-        onClose={() => setOpenAddProfileModal(false)}
-        currentData={{}}
-        onSubmit={() => {}}
-      />
+      {error && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          {error}
+        </Alert>
+      )}
+
+      {loading ? (
+        <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+          <CircularProgress />
+        </Box>
+      ) : householdId ? (
+        <>
+          {household && (
+            <Paper sx={{ p: 2, mb: 3, borderRadius: 2 }}>
+              <Typography sx={{ fontWeight: 700 }}>
+                Mã hộ: {household.houseHoldID}
+              </Typography>
+              <Typography sx={{ color: "#475569" }}>
+                Địa chỉ: {household.address || "-"}
+              </Typography>
+              <Typography sx={{ color: "#0F172A" }}>
+                Chủ hộ: {household.leader?.name || "-"}{" "}
+                {household.leader?.userCardID
+                  ? `(${household.leader.userCardID})`
+                  : ""}
+              </Typography>
+            </Paper>
+          )}
+
+          <Typography sx={{ fontSize: 18, fontWeight: 700, mb: 1 }}>
+            Tạm trú
+          </Typography>
+          <TemporaryResidentsTable rows={temporaryResidents} />
+
+          <Divider sx={{ my: 3 }} />
+
+          <Typography sx={{ fontSize: 18, fontWeight: 700, mb: 1 }}>
+            Tạm vắng
+          </Typography>
+          <TemporaryAbsentTable rows={temporaryAbsent} />
+
+          <Divider sx={{ my: 3 }} />
+
+          <Typography sx={{ fontSize: 18, fontWeight: 700, mb: 1 }}>
+            Khai sinh
+          </Typography>
+          <BirthTable rows={births} />
+
+          <Divider sx={{ my: 3 }} />
+
+          <Typography sx={{ fontSize: 18, fontWeight: 700, mb: 1 }}>
+            Khai tử
+          </Typography>
+          <DeathTable rows={deaths} />
+        </>
+      ) : null}
     </Box>
   );
 }

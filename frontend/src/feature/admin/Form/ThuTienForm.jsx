@@ -69,6 +69,9 @@ export default function ThuTienForm({ open, onClose, request, onApprove, onRejec
             <InfoField label="Mã hộ" value={householdCode} />
           </Grid>
           <Grid item xs={12} sm={6}>
+            <InfoField label="Khoản thu" value={data.feeName} />
+          </Grid>
+          <Grid item xs={12} sm={6}>
             <InfoField
               label="Số tiền"
               value={
