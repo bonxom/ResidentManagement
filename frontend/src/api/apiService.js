@@ -270,3 +270,12 @@ export const requestAPI = {
     return response.data;
   },
 };
+
+// ============= STATS API =============
+export const statsAPI = {
+  // Lấy số liệu tổng quan cho Dashboard
+  getDashboard: async () => {
+    const response = await api.get('/stats/dashboard');
+    return response.data;
+  },
+};
