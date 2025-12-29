@@ -250,7 +250,7 @@ export const getAllRequests = async (req, res) => {
       }) // Hiện tên người gửi + thông tin cần hiển thị
       .sort({ createdAt: -1 }); // Mới nhất lên đầu
 
-    // Enrich TEMPORARY_ABSENT with absent user info
+    // Enrich requests with related info
     const absentIds = requests
       .filter((r) => r.type === "TEMPORARY_ABSENT" && r.requestData?.absentUserId)
       .map((r) => r.requestData.absentUserId)
@@ -259,13 +259,31 @@ export const getAllRequests = async (req, res) => {
       .filter((r) => r.type === "DEATH_REPORT" && r.requestData?.deceasedUserId)
       .map((r) => r.requestData.deceasedUserId)
       .filter(Boolean);
+    const paymentFeeIds = requests
+      .filter((r) => r.type === "PAYMENT" && r.requestData?.feeId)
+      .map((r) => r.requestData.feeId)
+      .filter(Boolean);
 
-    if (absentIds.length || deceasedIds.length) {
-      const ids = [...absentIds, ...deceasedIds];
+    const shouldEnrichUsers = absentIds.length || deceasedIds.length;
+    const shouldEnrichFees = paymentFeeIds.length;
+
+    let userMap = null;
+    if (shouldEnrichUsers) {
+      const ids = [...new Set([...absentIds, ...deceasedIds].map((id) => id.toString()))];
       const users = await User.find({ _id: { $in: ids } }).select("name userCardID");
-      const userMap = new Map(users.map((u) => [u._id.toString(), u]));
+      userMap = new Map(users.map((u) => [u._id.toString(), u]));
+    }
+
+    let feeMap = null;
+    if (shouldEnrichFees) {
+      const feeIds = [...new Set(paymentFeeIds.map((id) => id.toString()))];
+      const fees = await Fee.find({ _id: { $in: feeIds } }).select("name");
+      feeMap = new Map(fees.map((fee) => [fee._id.toString(), fee]));
+    }
+
+    if (shouldEnrichUsers || shouldEnrichFees) {
       requests = requests.map((r) => {
-        if (r.type === "TEMPORARY_ABSENT" && r.requestData?.absentUserId) {
+        if (r.type === "TEMPORARY_ABSENT" && r.requestData?.absentUserId && userMap) {
           const u = userMap.get(r.requestData.absentUserId.toString());
           if (u) {
             r.requestData = {
@@ -275,13 +293,177 @@ export const getAllRequests = async (req, res) => {
             };
           }
         }
-        if (r.type === "DEATH_REPORT" && r.requestData?.deceasedUserId) {
+        if (r.type === "DEATH_REPORT" && r.requestData?.deceasedUserId && userMap) {
           const u = userMap.get(r.requestData.deceasedUserId.toString());
           if (u) {
             r.requestData = {
               ...r.requestData,
               deceasedUserName: u.name,
               deceasedUserCardID: u.userCardID,
+            };
+          }
+        }
+        if (r.type === "PAYMENT" && r.requestData?.feeId && feeMap) {
+          const fee = feeMap.get(r.requestData.feeId.toString());
+          if (fee) {
+            r.requestData = {
+              ...r.requestData,
+              feeName: fee.name,
+            };
+          }
+        }
+        return r;
+      });
+    }
+
+    res.status(200).json(requests);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Lấy danh sách yêu cầu nộp tiền của hộ mình (Dành cho Cư dân)
+// @route   GET /api/requests/my-household/payments
+export const getMyHouseholdPaymentRequests = async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user.household) {
+      return res.status(400).json({ message: "Bạn chưa thuộc hộ khẩu nào." });
+    }
+
+    const { status } = req.query;
+    const filter = {
+      type: "PAYMENT",
+      "requestData.householdId": user.household,
+    };
+    if (status) filter.status = status;
+
+    let requests = await Request.find(filter)
+      .populate({
+        path: "requester",
+        select: "name email userCardID household",
+        populate: [{ path: "household", select: "houseHoldID address" }],
+      })
+      .sort({ createdAt: -1 });
+
+    const feeIds = requests
+      .map((r) => r.requestData?.feeId)
+      .filter(Boolean)
+      .map((id) => id.toString());
+
+    if (feeIds.length) {
+      const uniqueFeeIds = [...new Set(feeIds)];
+      const fees = await Fee.find({ _id: { $in: uniqueFeeIds } }).select("name");
+      const feeMap = new Map(fees.map((fee) => [fee._id.toString(), fee]));
+
+      requests = requests.map((r) => {
+        if (r.requestData?.feeId) {
+          const fee = feeMap.get(r.requestData.feeId.toString());
+          if (fee) {
+            r.requestData = {
+              ...r.requestData,
+              feeName: fee.name,
+            };
+          }
+        }
+        return r;
+      });
+    }
+
+    res.status(200).json(requests);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Lấy danh sách yêu cầu của hộ mình (Dành cho Cư dân)
+// @route   GET /api/requests/my-household
+export const getMyHouseholdRequests = async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user.household) {
+      return res.status(400).json({ message: "Bạn chưa thuộc hộ khẩu nào." });
+    }
+
+    const { status, type } = req.query;
+    const filter = {
+      "requestData.householdId": user.household,
+    };
+    if (status) filter.status = status;
+
+    const rawTypes = Array.isArray(type)
+      ? type
+      : typeof type === "string"
+      ? type.split(",")
+      : [];
+    const types = rawTypes.map((t) => t.trim()).filter(Boolean);
+    if (types.length) {
+      filter.type = { $in: types };
+    }
+
+    let requests = await Request.find(filter)
+      .populate({
+        path: "requester",
+        select: "name email userCardID household",
+        populate: [{ path: "household", select: "houseHoldID address" }],
+      })
+      .sort({ createdAt: -1 });
+
+    const absentIds = requests
+      .filter((r) => r.type === "TEMPORARY_ABSENT" && r.requestData?.absentUserId)
+      .map((r) => r.requestData.absentUserId)
+      .filter(Boolean);
+    const deceasedIds = requests
+      .filter((r) => r.type === "DEATH_REPORT" && r.requestData?.deceasedUserId)
+      .map((r) => r.requestData.deceasedUserId)
+      .filter(Boolean);
+    const feeIds = requests
+      .filter((r) => r.type === "PAYMENT" && r.requestData?.feeId)
+      .map((r) => r.requestData.feeId)
+      .filter(Boolean);
+
+    let userMap = null;
+    if (absentIds.length || deceasedIds.length) {
+      const ids = [...new Set([...absentIds, ...deceasedIds].map((id) => id.toString()))];
+      const users = await User.find({ _id: { $in: ids } }).select("name userCardID");
+      userMap = new Map(users.map((u) => [u._id.toString(), u]));
+    }
+
+    let feeMap = null;
+    if (feeIds.length) {
+      const uniqueFeeIds = [...new Set(feeIds.map((id) => id.toString()))];
+      const fees = await Fee.find({ _id: { $in: uniqueFeeIds } }).select("name");
+      feeMap = new Map(fees.map((fee) => [fee._id.toString(), fee]));
+    }
+
+    if (userMap || feeMap) {
+      requests = requests.map((r) => {
+        if (r.type === "TEMPORARY_ABSENT" && r.requestData?.absentUserId && userMap) {
+          const u = userMap.get(r.requestData.absentUserId.toString());
+          if (u) {
+            r.requestData = {
+              ...r.requestData,
+              absentUserName: u.name,
+              absentUserCardID: u.userCardID,
+            };
+          }
+        }
+        if (r.type === "DEATH_REPORT" && r.requestData?.deceasedUserId && userMap) {
+          const u = userMap.get(r.requestData.deceasedUserId.toString());
+          if (u) {
+            r.requestData = {
+              ...r.requestData,
+              deceasedUserName: u.name,
+              deceasedUserCardID: u.userCardID,
+            };
+          }
+        }
+        if (r.type === "PAYMENT" && r.requestData?.feeId && feeMap) {
+          const fee = feeMap.get(r.requestData.feeId.toString());
+          if (fee) {
+            r.requestData = {
+              ...r.requestData,
+              feeName: fee.name,
             };
           }
         }

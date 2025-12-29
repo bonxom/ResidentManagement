@@ -112,7 +112,7 @@ export const householdAPI = {
   },
 
   getMembersInfo: async (id) => {
-    const response = await api.get(`/households/${id}/members`);
+    const response = await api.get(`/households/${id}/members-info`);
     return response.data;
   },
 
@@ -251,6 +251,16 @@ export const requestAPI = {
     const response = await api.get("/requests", { params });
     return response.data;
   },
+  // Cư dân xem lịch sử yêu cầu nộp tiền của hộ mình
+  getMyHouseholdPaymentRequests: async (params = {}) => {
+    const response = await api.get("/requests/my-household/payments", { params });
+    return response.data;
+  },
+  // Cư dân xem lịch sử yêu cầu của hộ mình
+  getMyHouseholdRequests: async (params = {}) => {
+    const response = await api.get("/requests/my-household", { params });
+    return response.data;
+  },
   // Tổ trưởng duyệt/từ chối yêu cầu
   reviewRequest: async (id, status, leaderComment = "") => {
     const response = await api.put(`/requests/${id}/review`, {
@@ -267,6 +277,15 @@ export const requestAPI = {
   // Báo tử
   createDeathReport: async (payload) => {
     const response = await api.post("/requests/death", payload);
+    return response.data;
+  },
+};
+
+// ============= STATS API =============
+export const statsAPI = {
+  // Lấy số liệu tổng quan cho Dashboard
+  getDashboard: async () => {
+    const response = await api.get('/stats/dashboard');
     return response.data;
   },
 };
