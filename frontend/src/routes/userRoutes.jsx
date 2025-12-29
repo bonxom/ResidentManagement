@@ -6,7 +6,7 @@ import Profile from "../pages/Profile";
 import ThongTinHoDan from "../pages/User/NhanKhau/thongtinhodan";
 import ThongTinChiTiet from "../pages/User/NhanKhau/thongtinchitiet";
 import ThongTinMember from "../pages/User/NhanKhau/ThongTinMember";
-import KhoanNop from "../pages/User/Request/khoannop";
+import KhoanNop from "../pages/User/ThuPhi/khoannop.jsx";
 import RequestSinhTu from "../pages/User/Request/requestsinhtu";
 import RequestTamTruVang from "../pages/User/Request/requesttamtruvang";
 import YeuCauTamTruVang from "../pages/UserTemp";
