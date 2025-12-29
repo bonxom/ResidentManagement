@@ -134,20 +134,20 @@ function ChangeLogTable({ logs }) {
                 },
               }}
             >
-              <TableCell sx={{ width: 170 }}>Thời gian</TableCell>
-              <TableCell sx={{ width: 120 }}>Hành động</TableCell>
-              <TableCell sx={{ width: 170 }}>CCCD</TableCell>
-              <TableCell sx={{ width: 220 }}>Họ và tên</TableCell>
-              <TableCell sx={{ width: 140 }}>Quan hệ</TableCell>
-              <TableCell sx={{ width: 130 }}>Ngày sinh</TableCell>
-              <TableCell sx={{ width: 160 }}>Người thực hiện</TableCell>
-              <TableCell sx={{ width: 220 }}>Ghi chú</TableCell>
+              <TableCell align="center" sx={{ width: 170 }}>Thời gian</TableCell>
+              <TableCell align="center" sx={{ width: 120 }}>Hành động</TableCell>
+              <TableCell align="center" sx={{ width: 170 }}>CCCD</TableCell>
+              <TableCell align="left" sx={{ width: 220 }}>Họ và tên</TableCell>
+              <TableCell align="center" sx={{ width: 140 }}>Quan hệ</TableCell>
+              <TableCell align="center" sx={{ width: 130 }}>Ngày sinh</TableCell>
+              <TableCell align="center" sx={{ width: 160 }}>Người thực hiện</TableCell>
+              <TableCell align="left" sx={{ width: 220 }}>Ghi chú</TableCell>
             </TableRow>
           </TableHead>
 
           <TableBody>
             {visibleRows.map((row, idx) => (
-              <TableRow
+              <TableRow 
                 key={row.logId}
                 hover
                 sx={{
@@ -160,11 +160,11 @@ function ChangeLogTable({ logs }) {
                   },
                 }}
               >
-                <TableCell sx={{ color: "#475569" }}>{row.time}</TableCell>
-                <TableCell>
+                <TableCell align="center" sx={{ color: "#475569" }}>{row.time}</TableCell>
+                <TableCell align="center">
                   <ActionChip action={row.action} />
                 </TableCell>
-                <TableCell
+                <TableCell align="center"
                   sx={{
                     fontFamily:
                       "ui-monospace, SFMono-Regular, Menlo, monospace",
@@ -183,9 +183,9 @@ function ChangeLogTable({ logs }) {
                 >
                   {row.fullName}
                 </TableCell>
-                <TableCell>{row.relation}</TableCell>
-                <TableCell sx={{ color: "#475569" }}>{row.dob}</TableCell>
-                <TableCell sx={{ color: "#0F172A", fontWeight: 600 }}>
+                <TableCell align="center">{row.relation}</TableCell>
+                <TableCell align="center" sx={{ color: "#475569" }}>{row.dob}</TableCell>
+                <TableCell align="center" sx={{ color: "#0F172A" }}>
                   {row.actor}
                 </TableCell>
                 <TableCell

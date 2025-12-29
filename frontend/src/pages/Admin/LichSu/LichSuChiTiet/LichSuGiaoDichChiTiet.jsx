@@ -53,27 +53,27 @@ function TransactionDetailTable({ rows }) {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Thời gian tạo</TableCell>
-              <TableCell>Khoản thu</TableCell>
-              <TableCell>Kỳ</TableCell>
-              <TableCell align="right">Số tiền</TableCell>
-              <TableCell>Trạng thái</TableCell>
-              <TableCell>Thời gian đóng</TableCell>
-              <TableCell>Hình thức</TableCell>
+              <TableCell align="center">Thời gian tạo</TableCell>
+              <TableCell align="left">Khoản thu</TableCell>
+              <TableCell align="center">Kỳ</TableCell>
+              <TableCell align="center">Số tiền</TableCell>
+              <TableCell align="center">Trạng thái</TableCell>
+              <TableCell align="center">Thời gian đóng</TableCell>
+              <TableCell align="center">Hình thức</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {visibleRows.map((row) => (
               <TableRow key={row.id} hover>
-                <TableCell>{row.time}</TableCell>
+                <TableCell align="center">{row.time}</TableCell>
                 <TableCell>{row.feeName}</TableCell>
-                <TableCell>{row.period}</TableCell>
-                <TableCell align="right">{formatMoney(row.amount)}</TableCell>
-                <TableCell sx={{ fontWeight: 700, color: statusColor(row.status) }}>
+                <TableCell align="center">{row.period}</TableCell>
+                <TableCell align="center">{formatMoney(row.amount)}</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 700, color: statusColor(row.status) }}>
                   {statusLabel(row.status)}
                 </TableCell>
-                <TableCell>{row.paidAt}</TableCell>
-                <TableCell>{row.method}</TableCell>
+                <TableCell align="center">{row.paidAt}</TableCell>
+                <TableCell align="center">{row.method}</TableCell>
               </TableRow>
             ))}
           </TableBody>

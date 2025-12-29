@@ -83,8 +83,8 @@ function TamTruVangTable({ households, loading, onViewDetail }) {
                 </TableCell>
                 <TableCell align="center">
                   <Button
-                    variant="contained"
                     size="small"
+                    variant="outlined"
                     startIcon={<Eye size={14} />}
                     onClick={() => onViewDetail(row)}
                     sx={{ textTransform: "none", borderRadius: "6px" }}
@@ -136,21 +136,22 @@ export default function QuanLiTamTruVang() {
   //     }
   //   };
   // Lấy dữ liệu từ ResidentHistory thay vì requests
+
   const fetchData = async () => {
     setLoading(true);
     try {
       const households = await householdAPI.getAll();
-      
+
       // Lấy thông tin tạm trú/tạm vắng cho từng hộ
       const updatedHouseholds = await Promise.all(
         households.map(async (h) => {
           try {
             const changes = await householdAPI.getTamTruVangDetails(h._id);
             const { temporaryHistory } = changes;
-            
+
             const tamTruCount = temporaryHistory?.temporaryResidents?.length || 0;
             const tamVangCount = temporaryHistory?.temporaryAbsent?.length || 0;
-            
+
             return { ...h, tamTruCount, tamVangCount };
           } catch (err) {
             console.error(`Error fetching data for household ${h._id}:`, err);
