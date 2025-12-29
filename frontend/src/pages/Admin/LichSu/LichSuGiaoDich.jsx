@@ -85,14 +85,14 @@ function HouseholdTransactionTable({ rows, rolePrefix }) {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Mã hộ dân</TableCell>
-              <TableCell>CCCD chủ hộ</TableCell>
-              <TableCell>Chủ hộ</TableCell>
-              <TableCell align="right">Số khoản đã đóng</TableCell>
-              <TableCell align="right">Số khoản chưa đóng</TableCell>
-              <TableCell align="right">Tổng đã đóng</TableCell>
-              <TableCell align="right">Tổng chưa đóng</TableCell>
-              <TableCell>Lần đóng gần nhất</TableCell>
+              <TableCell align="center">Mã hộ dân</TableCell>
+              <TableCell align="center">CCCD chủ hộ</TableCell>
+              <TableCell align="center">Chủ hộ</TableCell>
+              <TableCell align="center">Số khoản đã đóng</TableCell>
+              <TableCell align="center">Số khoản chưa đóng</TableCell>
+              <TableCell align="center">Tổng đã đóng</TableCell>
+              <TableCell align="center">Tổng chưa đóng</TableCell>
+              <TableCell align="center">Lần đóng gần nhất</TableCell>
               <TableCell align="center">Chi tiết</TableCell>
             </TableRow>
           </TableHead>
@@ -104,18 +104,18 @@ function HouseholdTransactionTable({ rows, rolePrefix }) {
                 <TableCell>{row.cccdChuHo}</TableCell>
                 <TableCell>{row.chuHo}</TableCell>
 
-                <TableCell align="right" sx={{ fontWeight: 700, color: "#2e7d32" }}>
+                <TableCell align="center" sx={{ fontWeight: 700, color: "#2e7d32" }}>
                   {row.paidCount}
                 </TableCell>
 
-                <TableCell align="right" sx={{ fontWeight: 700, color: "#d32f2f" }}>
+                <TableCell align="center" sx={{ fontWeight: 700, color: "#d32f2f" }}>
                   {row.unpaidCount}
                 </TableCell>
 
-                <TableCell align="right">{formatMoney(row.totalPaid)}</TableCell>
-                <TableCell align="right">{formatMoney(row.totalUnpaid)}</TableCell>
+                <TableCell align="center">{formatMoney(row.totalPaid)}</TableCell>
+                <TableCell align="center">{formatMoney(row.totalUnpaid)}</TableCell>
 
-                <TableCell>{row.lastPaidAt}</TableCell>
+                <TableCell align="center">{row.lastPaidAt}</TableCell>
 
                 <TableCell align="center">
                   <Button

@@ -101,11 +101,11 @@ function ResidentsTable({ selected, setSelected, households, loading, onDelete, 
                   onChange={handleSelectAll}
                 />
               </TableCell>
-              <TableCell>Mã hộ dân</TableCell>
-              <TableCell>Chủ hộ</TableCell>
-              <TableCell>Ngày khởi tạo</TableCell>
-              <TableCell>Số thành viên</TableCell>
-              <TableCell>Thao tác</TableCell>
+              <TableCell align="center">Mã hộ dân</TableCell>
+              <TableCell align="left">Chủ hộ</TableCell>
+              <TableCell align="center">Ngày khởi tạo</TableCell>
+              <TableCell align="center">Số thành viên</TableCell>
+              <TableCell align="center">Thao tác</TableCell>
             </TableRow>
           </TableHead>
 
@@ -128,31 +128,30 @@ function ResidentsTable({ selected, setSelected, households, loading, onDelete, 
                     />
                   </TableCell>
 
-                  <TableCell>{row.houseHoldID}</TableCell>
-                  <TableCell>{row.leader?.name || "N/A"}</TableCell>
-                  <TableCell>{formatDate(row.createdAt)}</TableCell>
-                  <TableCell>{row.members?.length || 0}</TableCell>
-
+                  <TableCell align="center">{row.houseHoldID}</TableCell>
+                  <TableCell align="left">{row.leader?.name || "N/A"}</TableCell>
+                  <TableCell align="center">{formatDate(row.createdAt)}</TableCell>
+                  <TableCell align="center">{row.members?.length || 0}</TableCell>
                   <TableCell>
-                    <Box sx={{ display: "flex", gap: 1 }}>
+                    <Box sx={{ display: "flex", gap: 1 , justifyContent:"center"}}>
                       <Button
-                        variant="contained"
                         size="small"
+                        variant="outlined"
                         onClick={() => onViewDetail(row)}
-                        sx={{ 
+                        sx={{
                           textTransform: "none",
                           minWidth: "60px",
                           fontSize: "13px"
                         }}
                       >
-                        Xem
+                        Xem chi tiết
                       </Button>
                       <Button
                         // variant="outlined"
                         color="error"
                         size="small"
                         onClick={() => onDelete(row)}
-                        sx={{ 
+                        sx={{
                           textTransform: "none",
                           minWidth: "40px",
                           padding: "4px 8px"
@@ -318,11 +317,11 @@ export default function Quanlydancu() {
 
   // Filter and search logic
   const filteredHouseholds = households.filter(household => {
-    const matchesSearch = 
+    const matchesSearch =
       household.houseHoldID?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       household.leader?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       household.address?.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     return matchesSearch;
   });
 
@@ -365,8 +364,8 @@ export default function Quanlydancu() {
                 py: 1,
                 fontSize: "14px",
                 fontWeight: "500",
-                "&:hover": { 
-                  backgroundColor: selected.length === 0 ? "#fca5a5" : "#c84848ff" 
+                "&:hover": {
+                  backgroundColor: selected.length === 0 ? "#fca5a5" : "#c84848ff"
                 },
                 "&.Mui-disabled": {
                   backgroundColor: "#fca5a5",
@@ -398,9 +397,9 @@ export default function Quanlydancu() {
 
         {/* Error Alert */}
         {error && (
-          <Alert 
-            severity="error" 
-            sx={{ mb: 3 }} 
+          <Alert
+            severity="error"
+            sx={{ mb: 3 }}
             onClose={() => setError("")}
           >
             {error}
@@ -527,9 +526,9 @@ export default function Quanlydancu() {
             p: 2,
           }}
         >
-          <ResidentsTable 
-            selected={selected} 
-            setSelected={setSelected} 
+          <ResidentsTable
+            selected={selected}
+            setSelected={setSelected}
             households={filteredHouseholds}
             loading={loading}
             onDelete={handleDeleteSingle}

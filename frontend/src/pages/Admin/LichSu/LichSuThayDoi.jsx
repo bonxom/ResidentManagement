@@ -90,13 +90,13 @@ function HouseholdChangeTable({ rows, rolePrefix }) {
                 },
               }}
             >
-              <TableCell sx={{ width: 120 }}>Mã hộ dân</TableCell>
-              <TableCell sx={{ width: 170 }}>CCCD chủ hộ</TableCell>
-              <TableCell sx={{ width: 240 }}>Chủ hộ</TableCell>
+              <TableCell align="center" sx={{ width: 120 }}>Mã hộ dân</TableCell>
+              <TableCell align="center" sx={{ width: 170 }}>CCCD chủ hộ</TableCell>
+              <TableCell align="left" sx={{ width: 240 }}>Chủ hộ</TableCell>
               <TableCell align="center" sx={{ width: 150 }}>
                 Số lượng thay đổi
               </TableCell>
-              <TableCell sx={{ width: 200 }}>Lần thay đổi gần nhất</TableCell>
+              <TableCell align="center" sx={{ width: 200 }}>Lần thay đổi gần nhất</TableCell>
               <TableCell align="center" sx={{ width: 150 }}>
                 Chi tiết
               </TableCell>
@@ -105,7 +105,7 @@ function HouseholdChangeTable({ rows, rolePrefix }) {
 
           <TableBody>
             {visibleRows.map((row, idx) => (
-              <TableRow
+              <TableRow align="center"
                 key={row.householdCode}
                 hover
                 sx={{
@@ -118,11 +118,11 @@ function HouseholdChangeTable({ rows, rolePrefix }) {
                   },
                 }}
               >
-                <TableCell sx={{ fontWeight: 700, color: "#0F172A" }}>
+                <TableCell align="center" sx={{ color: "#0F172A" }}>
                   {row.householdCode}
                 </TableCell>
 
-                <TableCell
+                <TableCell align="center"
                   sx={{
                     fontFamily:
                       "ui-monospace, SFMono-Regular, Menlo, monospace",
@@ -132,7 +132,7 @@ function HouseholdChangeTable({ rows, rolePrefix }) {
                   {row.cccdChuHo}
                 </TableCell>
 
-                <TableCell
+                <TableCell 
                   sx={{
                     whiteSpace: "nowrap",
                     overflow: "hidden",
@@ -153,18 +153,13 @@ function HouseholdChangeTable({ rows, rolePrefix }) {
                       minWidth: 36,
                       height: 28,
                       px: 1,
-                      borderRadius: 999,
-                      fontWeight: 800,
-                      color: "#1D4ED8",
-                      backgroundColor: "#EFF6FF",
-                      border: "1px solid #DBEAFE",
                     }}
                   >
                     {row.changeCount}
                   </Box>
                 </TableCell>
 
-                <TableCell sx={{ color: "#475569" }}>
+                <TableCell align="center" sx={{ color: "#475569" }}>
                   {row.lastChangeAt}
                 </TableCell>
 

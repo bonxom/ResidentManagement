@@ -11,6 +11,7 @@ import {
   Wallet,
   Menu,
   X,
+  FaChildren,
 } from "lucide-react";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -112,7 +113,7 @@ export function SidebarForUser({ user, onWidthChange }) {
         isExpanded={isExpanded}
       />
       <MenuItem
-        icon={<Wallet size={18} />}
+        icon={<FaChildren size={18} />}
         label="Khai báo sinh tử"
         to="/member/requestsinhtu"
         isExpanded={isExpanded}

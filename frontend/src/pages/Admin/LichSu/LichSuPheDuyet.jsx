@@ -92,32 +92,32 @@ function HistoryTable({ history }) {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Thời gian</TableCell>
-              <TableCell>Trạng thái</TableCell>
-              <TableCell>Mã hộ dân</TableCell>
-              <TableCell>CCCD chủ hộ</TableCell>
-              <TableCell>Chủ hộ</TableCell>
-              <TableCell>Loại tài khoản</TableCell>
-              <TableCell>Người duyệt</TableCell>
-              <TableCell>Ghi chú</TableCell>
+              <TableCell align="center">Thời gian</TableCell>
+              <TableCell align="center">Trạng thái</TableCell>
+              <TableCell align="center">Mã hộ dân</TableCell>
+              <TableCell align="center">CCCD chủ hộ</TableCell>
+              <TableCell align="left">Chủ hộ</TableCell>
+              <TableCell align="center">Loại tài khoản</TableCell>
+              <TableCell align="center">Người duyệt</TableCell>
+              <TableCell align="left">Ghi chú</TableCell>
             </TableRow>
           </TableHead>
 
           <TableBody>
             {visibleRows.map((row) => (
               <TableRow key={row.logId} hover>
-                <TableCell>{row.time}</TableCell>
+                <TableCell align="center">{row.time}</TableCell>
 
-                <TableCell sx={{ fontWeight: 700, color: statusColor(row.status) }}>
+                <TableCell align="center" sx={{ fontWeight: 700, color: statusColor(row.status) }}>
                   {statusLabel(row.status)}
                 </TableCell>
 
-                <TableCell>{row.householdCode}</TableCell>
-                <TableCell>{row.cccdChuHo}</TableCell>
-                <TableCell>{row.chuHo}</TableCell>
-                <TableCell>{row.accountType}</TableCell>
-                <TableCell>{row.reviewer}</TableCell>
-                <TableCell>{row.note}</TableCell>
+                <TableCell align="center">{row.householdCode}</TableCell>
+                <TableCell align="center">{row.cccdChuHo}</TableCell>
+                <TableCell align="left">{row.chuHo}</TableCell>
+                <TableCell align="center">{row.accountType}</TableCell>
+                <TableCell align="center">{row.reviewer}</TableCell>
+                <TableCell align="left">{row.note}</TableCell>
               </TableRow>
             ))}
           </TableBody>
