@@ -10,11 +10,13 @@ import {
   Box,
   Button,
   TextField,
+  InputAdornment,
   Typography,
   Chip,
   Alert,
   CircularProgress,
 } from "@mui/material";
+import { Search } from "lucide-react";
 import { requestAPI } from "../../../api/apiService";
 
 const statusMap = {
@@ -91,24 +93,60 @@ export default function DanhSachThuTien() {
         <Typography variant="h5" sx={{ fontWeight: 700 }}>
           Yêu cầu thanh toán
         </Typography>
-        <Box sx={{ display: "flex", gap: 1 }}>
-          <Button variant="outlined" onClick={() => setSearchText("")}>
-            Xóa tìm kiếm
-          </Button>
-          <Button variant="contained" onClick={fetchRequests}>
-            Làm mới
-          </Button>
-        </Box>
+        <Button
+          variant="contained"
+          onClick={fetchRequests}
+          sx={{
+            backgroundColor: "#2D66F5",
+            borderRadius: "8px",
+            textTransform: "none",
+            px: 3,
+            py: 1,
+            fontSize: "14px",
+            fontWeight: "500",
+            "&:hover": { backgroundColor: "#1E54D4" },
+          }}
+        >
+          Làm mới
+        </Button>
       </Box>
 
-      <Box sx={{ background: "#f7f9fc", p: 2, borderRadius: 2, mb: 2 }}>
-        <TextField
-          fullWidth
-          size="small"
-          label="Tìm kiếm (Tên chủ hộ / Mã hộ / Khoản thu / Ghi chú)"
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
-        />
+      <Box
+        sx={{
+          display: "flex",
+          gap: 2,
+          backgroundColor: "white",
+          padding: "22px",
+          borderRadius: "12px",
+          boxShadow: "0 2px 10px rgba(0,0,0,0.05)",
+          alignItems: "center",
+          mb: 4,
+        }}
+      >
+        <Box sx={{ flex: 1 }}>
+          <Typography sx={{ fontSize: "13px", mb: 1 }}>Tìm kiếm</Typography>
+          <TextField
+            fullWidth
+            placeholder="Nhập tên chủ hộ, mã hộ, khoản thu hoặc ghi chú..."
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search size={18} color="#777" />
+                </InputAdornment>
+              ),
+              sx: {
+                background: "#F1F3F6",
+                borderRadius: "8px",
+                height: "40px",
+                "& .MuiInputBase-input": {
+                  padding: "10px 0px",
+                },
+              },
+            }}
+          />
+        </Box>
       </Box>
 
       {error && (
@@ -124,7 +162,7 @@ export default function DanhSachThuTien() {
       ) : (
         <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
           <Table>
-            <TableHead sx={{ backgroundColor: "#f5f5f5" }}>
+            <TableHead sx={{ backgroundColor: "#F8FAFC" }}>
               <TableRow>
                 <TableCell>Chủ hộ</TableCell>
                 <TableCell>Mã hộ</TableCell>

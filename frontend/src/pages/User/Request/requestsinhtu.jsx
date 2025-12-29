@@ -103,27 +103,52 @@ export default function RequestSinhTu() {
   const renderField = (field, data, setter) => {
     if (field.select) {
       return (
-        <FormControl fullWidth size="small">
-          <InputLabel>{field.label}</InputLabel>
-          <Select
-            label={field.label}
-            name={field.name}
-            value={data[field.name]}
-            onChange={handleChange(setter)}
+        <Box>
+          <Typography 
+            sx={{ 
+              fontSize: "13px", 
+              fontWeight: "500", 
+              mb: 1, 
+              color: "#666" 
+            }}
           >
-            {field.options.map((opt) =>
-              typeof opt === "string" ? (
-                <MenuItem key={opt} value={opt}>
-                  {opt}
-                </MenuItem>
-              ) : (
-                <MenuItem key={opt.value} value={opt.value}>
-                  {opt.label}
-                </MenuItem>
-              )
-            )}
-          </Select>
-        </FormControl>
+            {field.label}
+          </Typography>
+          <FormControl fullWidth size="small">
+            <Select
+              name={field.name}
+              value={data[field.name]}
+              onChange={handleChange(setter)}
+              displayEmpty
+              sx={{
+                backgroundColor: "#F5F7FA",
+                borderRadius: "8px",
+                fontSize: "15px",
+                "& .MuiOutlinedInput-notchedOutline": {
+                  border: "none",
+                },
+                "&:hover .MuiOutlinedInput-notchedOutline": {
+                  border: "none",
+                },
+                "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                  border: "1px solid #2D66F5",
+                },
+              }}
+            >
+              {field.options.map((opt) =>
+                typeof opt === "string" ? (
+                  <MenuItem key={opt} value={opt}>
+                    {opt}
+                  </MenuItem>
+                ) : (
+                  <MenuItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </MenuItem>
+                )
+              )}
+            </Select>
+          </FormControl>
+        </Box>
       );
     }
 
@@ -135,18 +160,46 @@ export default function RequestSinhTu() {
         : {};
 
     return (
-      <TextField
-        fullWidth
-        size="small"
-        name={field.name}
-        label={field.label}
-        type={field.type || "text"}
-        value={data[field.name]}
-        onChange={handleChange(setter)}
-        multiline={field.multiline}
-        minRows={field.multiline ? 2 : undefined}
-        {...dateProps}
-      />
+      <Box>
+        <Typography 
+          sx={{ 
+            fontSize: "13px", 
+            fontWeight: "500", 
+            mb: 1, 
+            color: "#666" 
+          }}
+        >
+          {field.label}
+        </Typography>
+        <TextField
+          fullWidth
+          size="small"
+          name={field.name}
+          type={field.type || "text"}
+          value={data[field.name]}
+          onChange={handleChange(setter)}
+          multiline={field.multiline}
+          minRows={field.multiline ? 2 : undefined}
+          placeholder={field.label}
+          sx={{
+            "& .MuiOutlinedInput-root": {
+              backgroundColor: "#F5F7FA",
+              borderRadius: "8px",
+              fontSize: "15px",
+              "& fieldset": {
+                border: "none",
+              },
+              "&:hover fieldset": {
+                border: "none",
+              },
+              "&.Mui-focused fieldset": {
+                border: "1px solid #2D66F5",
+              },
+            },
+          }}
+          {...dateProps}
+        />
+      </Box>
     );
   };
 
@@ -162,10 +215,50 @@ export default function RequestSinhTu() {
           Khai báo sinh tử
         </Typography>
         <Box sx={{ display: "flex", gap: 1 }}>
-          <Button variant={isBirth ? "contained" : "outlined"} onClick={() => setMode("BIRTH")}>
+          <Button 
+            variant={isBirth ? "contained" : "outlined"} 
+            onClick={() => setMode("BIRTH")}
+            sx={isBirth ? {
+              backgroundColor: "#2D66F5",
+              borderRadius: "8px",
+              textTransform: "none",
+              px: 3,
+              py: 1,
+              fontSize: "14px",
+              fontWeight: "500",
+              "&:hover": { backgroundColor: "#1E54D4" },
+            } : {
+              borderRadius: "8px",
+              textTransform: "none",
+              px: 3,
+              py: 1,
+              fontSize: "14px",
+              fontWeight: "500",
+            }}
+          >
             Khai sinh
           </Button>
-          <Button variant={!isBirth ? "contained" : "outlined"} onClick={() => setMode("DEATH")}>
+          <Button 
+            variant={!isBirth ? "contained" : "outlined"} 
+            onClick={() => setMode("DEATH")}
+            sx={!isBirth ? {
+              backgroundColor: "#2D66F5",
+              borderRadius: "8px",
+              textTransform: "none",
+              px: 3,
+              py: 1,
+              fontSize: "14px",
+              fontWeight: "500",
+              "&:hover": { backgroundColor: "#1E54D4" },
+            } : {
+              borderRadius: "8px",
+              textTransform: "none",
+              px: 3,
+              py: 1,
+              fontSize: "14px",
+              fontWeight: "500",
+            }}
+          >
             Khai tử
           </Button>
         </Box>
@@ -199,10 +292,32 @@ export default function RequestSinhTu() {
             setError(null);
             setSuccess(null);
           }}
+          sx={{
+            borderRadius: "8px",
+            textTransform: "none",
+            px: 3,
+            py: 1,
+            fontSize: "14px",
+            fontWeight: "500",
+          }}
         >
           Xóa form
         </Button>
-        <Button variant="contained" onClick={handleSubmit} disabled={loading}>
+        <Button 
+          variant="contained" 
+          onClick={handleSubmit} 
+          disabled={loading}
+          sx={{
+            backgroundColor: "#2D66F5",
+            borderRadius: "8px",
+            textTransform: "none",
+            px: 3,
+            py: 1,
+            fontSize: "14px",
+            fontWeight: "500",
+            "&:hover": { backgroundColor: "#1E54D4" },
+          }}
+        >
           {loading ? <CircularProgress size={20} /> : "Gửi yêu cầu"}
         </Button>
       </Box>

@@ -11,11 +11,13 @@ import {
   Paper,
   Pagination,
   TextField,
+  InputAdornment,
   Chip,
   Alert,
   CircularProgress,
   Button,
 } from "@mui/material";
+import { Search } from "lucide-react";
 import { requestAPI } from "../../../api/apiService";
 
 const statusMap = {
@@ -89,9 +91,78 @@ export default function Lichsugiaodich() {
 
   return (
     <Box sx={{ padding: "24px 32px", backgroundColor: "#f8f9fa", minHeight: "100vh" }}>
-      <Typography sx={{ fontSize: 24, fontWeight: 700, mb: 3, color: "#333" }}>
-        Lịch sử yêu cầu thanh toán
-      </Typography>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 3,
+        }}
+      >
+        <Typography sx={{ fontSize: 24, fontWeight: 700, color: "#333" }}>
+          Lịch sử yêu cầu thanh toán
+        </Typography>
+        <Button
+          variant="contained"
+          onClick={fetchRequests}
+          sx={{
+            backgroundColor: "#2D66F5",
+            borderRadius: "8px",
+            textTransform: "none",
+            px: 3,
+            py: 1,
+            fontSize: "14px",
+            fontWeight: "500",
+            "&:hover": { backgroundColor: "#1E54D4" },
+          }}
+        >
+          Làm mới
+        </Button>
+      </Box>
+
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
+
+      <Box
+        sx={{
+          display: "flex",
+          gap: 2,
+          backgroundColor: "white",
+          padding: "22px",
+          borderRadius: "12px",
+          boxShadow: "0 2px 10px rgba(0,0,0,0.05)",
+          alignItems: "center",
+          mb: 4,
+        }}
+      >
+        <Box sx={{ flex: 1 }}>
+          <Typography sx={{ fontSize: "13px", mb: 1 }}>Tìm kiếm</Typography>
+          <TextField
+            fullWidth
+            placeholder="Nhập người gửi, khoản thu, ghi chú, trạng thái..."
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search size={18} color="#777" />
+                </InputAdornment>
+              ),
+              sx: {
+                background: "#F1F3F6",
+                borderRadius: "8px",
+                height: "40px",
+                "& .MuiInputBase-input": {
+                  padding: "10px 0px",
+                },
+              },
+            }}
+          />
+        </Box>
+      </Box>
 
       <Box
         sx={{
@@ -101,25 +172,6 @@ export default function Lichsugiaodich() {
           p: 2,
         }}
       >
-        <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
-          <TextField
-            fullWidth
-            size="small"
-            label="Tìm kiếm (Người gửi / Khoản thu / Ghi chú / Trạng thái)"
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-          />
-          <Button variant="contained" onClick={fetchRequests}>
-            Làm mới
-          </Button>
-        </Box>
-
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-        )}
-
         {loading ? (
           <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
             <CircularProgress />
@@ -131,8 +183,8 @@ export default function Lichsugiaodich() {
               elevation={0}
               sx={{ border: "1px solid #efefef", borderRadius: 3 }}
             >
-              <Table sx={{ minWidth: 800 }}>
-                <TableHead sx={{ backgroundColor: "#fafafa" }}>
+              <Table sx={{ minWidth: 650 }}>
+                <TableHead sx={{ backgroundColor: "#F8FAFC" }}>
                   <TableRow>
                     <TableCell sx={{ fontWeight: 600 }}>Khoản thu</TableCell>
                     <TableCell sx={{ fontWeight: 600 }} align="right">

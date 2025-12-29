@@ -456,7 +456,7 @@ export default function ThongTinHoDanPage() {
       <Paper sx={{ borderRadius: "16px", overflow: "hidden" }}>
         <TableContainer>
           <Table>
-            <TableHead sx={{ backgroundColor: "#F8F9FB" }}>
+            <TableHead sx={{ backgroundColor: "#F8FAFC" }}>
               <TableRow>
                 <TableCell>Số CCCD</TableCell>
                 <TableCell>Họ và tên</TableCell>

@@ -1,6 +1,7 @@
-import { Box, Typography, TextField, MenuItem, Button, Paper, Tabs, Tab, Alert } from "@mui/material";
-import { useState } from "react";
+import { Box, Typography, TextField, MenuItem, Button, Paper, Tabs, Tab, Alert, Autocomplete } from "@mui/material";
+import { useState, useEffect } from "react";
 import { UserPlus, Users } from "lucide-react";
+import { householdAPI, userAPI } from "../../../api/apiService";
 
 export default function ThemThongTinCuDan() {
   const [tabIndex, setTabIndex] = useState(0); // 0: Thêm dân cư, 1: Thêm kế toán
@@ -12,12 +13,40 @@ export default function ThemThongTinCuDan() {
     gender: "",
     nationality: "Việt Nam",
     personalId: "",
-    permanentAddress: "",
     household: "",
     relationshipToHead: "",
     email: "",
     phoneNumber: "",
   });
+
+  // State cho danh sách hộ gia đình từ API
+  const [households, setHouseholds] = useState([]);
+  const [loadingHouseholds, setLoadingHouseholds] = useState(false);
+
+  // Fetch households từ API
+  useEffect(() => {
+    const fetchHouseholds = async () => {
+      try {
+        setLoadingHouseholds(true);
+        const response = await householdAPI.getAll();
+        console.log("API Response:", response);
+        
+        // API trả về trực tiếp mảng, không có response.data
+        const householdsData = Array.isArray(response) 
+          ? response 
+          : (Array.isArray(response.data) ? response.data : []);
+        
+        console.log("Processed households:", householdsData);
+        setHouseholds(householdsData);
+      } catch (error) {
+        console.error("Lỗi khi lấy danh sách hộ gia đình:", error);
+        setErrorMessage("Không thể tải danh sách hộ gia đình");
+      } finally {
+        setLoadingHouseholds(false);
+      }
+    };
+    fetchHouseholds();
+  }, []);
 
   // State cho form Kế toán
   const [keToanData, setKeToanData] = useState({
@@ -32,22 +61,14 @@ export default function ThemThongTinCuDan() {
 
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Danh sách quan hệ với chủ hộ
-  const relationships = [
-    "Chủ hộ",
-    "Vợ/Chồng",
-    "Con",
-    "Cha/Mẹ",
-    "Anh/Chị/Em",
-    "Ông/Bà",
-    "Cháu",
-    "Khác"
-  ];
 
-  const handleSubmitDanCu = (e) => {
+
+  const handleSubmitDanCu = async (e) => {
     e.preventDefault();
     setErrorMessage("");
+    setSuccessMessage("");
     
     // Validate
     if (!danCuData.name.trim() || !danCuData.email.trim() || !danCuData.personalId.trim()) {
@@ -55,32 +76,73 @@ export default function ThemThongTinCuDan() {
       return;
     }
 
-    // TODO: Gọi API để thêm dân cư
-    console.log("Thêm dân cư:", { ...danCuData, password: "12345678", role: "MEMBER" });
-    
-    setSuccessMessage("Thêm dân cư thành công! Mật khẩu mặc định: 12345678");
-    
-    // Reset form
-    setDanCuData({
-      name: "",
-      dateOfBirth: "",
-      gender: "",
-      nationality: "Việt Nam",
-      personalId: "",
-      permanentAddress: "",
-      household: "",
-      relationshipToHead: "",
-      email: "",
-      phoneNumber: "",
-    });
+    if (!danCuData.household) {
+      setErrorMessage("Vui lòng chọn hộ gia đình!");
+      return;
+    }
 
-    // Clear success message sau 5s
-    setTimeout(() => setSuccessMessage(""), 5000);
+    if (!danCuData.relationshipToHead.trim()) {
+      setErrorMessage("Vui lòng nhập quan hệ với chủ hộ!");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+
+      // 1. Tạo User với role HOUSE MEMBER
+      const userData = {
+        email: danCuData.email,
+        password: "12345678", // Mật khẩu mặc định
+        name: danCuData.name,
+        sex: danCuData.gender,
+        dob: danCuData.dateOfBirth,
+        phoneNumber: danCuData.phoneNumber,
+        userCardID: danCuData.personalId,
+        ethnic: danCuData.nationality,
+        roleName: "HOUSE MEMBER",
+        status: "VERIFIED"
+      };
+
+      const newUser = await userAPI.create(userData);
+      console.log("User created:", newUser);
+
+      // 2. Thêm user vào hộ gia đình
+      await householdAPI.addMember(danCuData.household, {
+        userId: newUser._id,
+        relationship: danCuData.relationshipToHead
+      });
+
+      setSuccessMessage(`Thêm dân cư ${danCuData.name} thành công! Mật khẩu mặc định: 12345678`);
+      
+      // Reset form
+      setDanCuData({
+        name: "",
+        dateOfBirth: "",
+        gender: "",
+        nationality: "Việt Nam",
+        personalId: "",
+        household: "",
+        relationshipToHead: "",
+        email: "",
+        phoneNumber: "",
+      });
+
+      // Clear success message sau 5s
+      setTimeout(() => setSuccessMessage(""), 5000);
+
+    } catch (error) {
+      console.error("Error creating user:", error);
+      const errorMsg = error.response?.data?.message || error.message || "Có lỗi xảy ra khi thêm dân cư";
+      setErrorMessage(errorMsg);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleSubmitKeToan = (e) => {
+  const handleSubmitKeToan = async (e) => {
     e.preventDefault();
     setErrorMessage("");
+    setSuccessMessage("");
     
     // Validate
     if (!keToanData.name.trim() || !keToanData.email.trim() || !keToanData.personalId.trim()) {
@@ -88,24 +150,49 @@ export default function ThemThongTinCuDan() {
       return;
     }
 
-    // TODO: Gọi API để thêm kế toán
-    console.log("Thêm kế toán:", { ...keToanData, password: "12345678", role: "ACCOUNTANT" });
-    
-    setSuccessMessage("Thêm kế toán thành công! Mật khẩu mặc định: 12345678");
-    
-    // Reset form
-    setKeToanData({
-      name: "",
-      dateOfBirth: "",
-      gender: "",
-      nationality: "Việt Nam",
-      personalId: "",
-      email: "",
-      phoneNumber: "",
-    });
+    try {
+      setIsSubmitting(true);
 
-    // Clear success message sau 5s
-    setTimeout(() => setSuccessMessage(""), 5000);
+      // Tạo User với role ACCOUNTANT
+      const userData = {
+        email: keToanData.email,
+        password: "12345678", // Mật khẩu mặc định
+        name: keToanData.name,
+        sex: keToanData.gender,
+        dob: keToanData.dateOfBirth,
+        phoneNumber: keToanData.phoneNumber,
+        userCardID: keToanData.personalId,
+        ethnic: keToanData.nationality,
+        roleName: "ACCOUNTANT",
+        status: "VERIFIED"
+      };
+
+      const newUser = await userAPI.create(userData);
+      console.log("Accountant created:", newUser);
+
+      setSuccessMessage(`Thêm kế toán ${keToanData.name} thành công! Mật khẩu mặc định: 12345678`);
+      
+      // Reset form
+      setKeToanData({
+        name: "",
+        dateOfBirth: "",
+        gender: "",
+        nationality: "Việt Nam",
+        personalId: "",
+        email: "",
+        phoneNumber: "",
+      });
+
+      // Clear success message sau 5s
+      setTimeout(() => setSuccessMessage(""), 5000);
+
+    } catch (error) {
+      console.error("Error creating accountant:", error);
+      const errorMsg = error.response?.data?.message || error.message || "Có lỗi xảy ra khi thêm kế toán";
+      setErrorMessage(errorMsg);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -200,136 +287,308 @@ export default function ThemThongTinCuDan() {
                 gap: 3 
               }}
             >
-              <TextField
-                label="Họ và tên"
-                value={danCuData.name}
-                onChange={(e) => setDanCuData({ ...danCuData, name: e.target.value })}
-                required
-                fullWidth
-                placeholder="Nguyễn Văn A"
-              />
+              <Box>
+                <Typography sx={{ fontSize: "13px", fontWeight: "500", mb: 1, color: "#666" }}>
+                  Họ và tên <span style={{ color: "red" }}>*</span>
+                </Typography>
+                <TextField
+                  value={danCuData.name}
+                  onChange={(e) => setDanCuData({ ...danCuData, name: e.target.value })}
+                  required
+                  fullWidth
+                  placeholder="Nguyễn Văn A"
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      backgroundColor: "#F5F7FA",
+                      borderRadius: "8px",
+                      "& fieldset": { borderColor: "transparent" },
+                      "&:hover fieldset": { borderColor: "#E0E0E0" },
+                      "&.Mui-focused fieldset": { borderColor: "#2D66F5" },
+                    },
+                    "& .MuiInputBase-input": {
+                      padding: "12px 14px",
+                      fontSize: "15px",
+                      color: "#333"
+                    }
+                  }}
+                />
+              </Box>
 
-              <TextField
-                label="Ngày sinh"
-                type="date"
-                value={danCuData.dateOfBirth}
-                onChange={(e) => setDanCuData({ ...danCuData, dateOfBirth: e.target.value })}
-                InputLabelProps={{ shrink: true }}
-                required
-                fullWidth
-              />
+              <Box>
+                <Typography sx={{ fontSize: "13px", fontWeight: "500", mb: 1, color: "#666" }}>
+                  Ngày sinh <span style={{ color: "red" }}>*</span>
+                </Typography>
+                <TextField
+                  type="date"
+                  value={danCuData.dateOfBirth}
+                  onChange={(e) => setDanCuData({ ...danCuData, dateOfBirth: e.target.value })}
+                  InputLabelProps={{ shrink: true }}
+                  required
+                  fullWidth
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      backgroundColor: "#F5F7FA",
+                      borderRadius: "8px",
+                      "& fieldset": { borderColor: "transparent" },
+                      "&:hover fieldset": { borderColor: "#E0E0E0" },
+                      "&.Mui-focused fieldset": { borderColor: "#2D66F5" },
+                    },
+                    "& .MuiInputBase-input": {
+                      padding: "12px 14px",
+                      fontSize: "15px",
+                      color: "#333"
+                    }
+                  }}
+                />
+              </Box>
 
-              <TextField
-                label="Giới tính"
-                select
-                value={danCuData.gender}
-                onChange={(e) => setDanCuData({ ...danCuData, gender: e.target.value })}
-                required
-                fullWidth
-              >
-                <MenuItem value="Nam">Nam</MenuItem>
-                <MenuItem value="Nữ">Nữ</MenuItem>
-                <MenuItem value="Khác">Khác</MenuItem>
-              </TextField>
+              <Box>
+                <Typography sx={{ fontSize: "13px", fontWeight: "500", mb: 1, color: "#666" }}>
+                  Giới tính <span style={{ color: "red" }}>*</span>
+                </Typography>
+                <TextField
+                  select
+                  value={danCuData.gender}
+                  onChange={(e) => setDanCuData({ ...danCuData, gender: e.target.value })}
+                  required
+                  fullWidth
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      backgroundColor: "#F5F7FA",
+                      borderRadius: "8px",
+                      "& fieldset": { borderColor: "transparent" },
+                      "&:hover fieldset": { borderColor: "#E0E0E0" },
+                      "&.Mui-focused fieldset": { borderColor: "#2D66F5" },
+                    },
+                    "& .MuiInputBase-input": {
+                      padding: "12px 14px",
+                      fontSize: "15px",
+                      color: "#333"
+                    }
+                  }}
+                >
+                  <MenuItem value="Nam">Nam</MenuItem>
+                  <MenuItem value="Nữ">Nữ</MenuItem>
+                  <MenuItem value="Khác">Khác</MenuItem>
+                </TextField>
+              </Box>
 
-              <TextField
-                label="Quốc tịch"
-                value={danCuData.nationality}
-                onChange={(e) => setDanCuData({ ...danCuData, nationality: e.target.value })}
-                required
-                fullWidth
-              />
+              <Box>
+                <Typography sx={{ fontSize: "13px", fontWeight: "500", mb: 1, color: "#666" }}>
+                  Quốc tịch <span style={{ color: "red" }}>*</span>
+                </Typography>
+                <TextField
+                  value={danCuData.nationality}
+                  onChange={(e) => setDanCuData({ ...danCuData, nationality: e.target.value })}
+                  required
+                  fullWidth
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      backgroundColor: "#F5F7FA",
+                      borderRadius: "8px",
+                      "& fieldset": { borderColor: "transparent" },
+                      "&:hover fieldset": { borderColor: "#E0E0E0" },
+                      "&.Mui-focused fieldset": { borderColor: "#2D66F5" },
+                    },
+                    "& .MuiInputBase-input": {
+                      padding: "12px 14px",
+                      fontSize: "15px",
+                      color: "#333"
+                    }
+                  }}
+                />
+              </Box>
 
-              <TextField
-                label="Số định danh cá nhân (CCCD)"
-                value={danCuData.personalId}
-                onChange={(e) => setDanCuData({ ...danCuData, personalId: e.target.value })}
-                required
-                fullWidth
-                placeholder="001234567890"
-                inputProps={{ maxLength: 12 }}
-              />
+              <Box>
+                <Typography sx={{ fontSize: "13px", fontWeight: "500", mb: 1, color: "#666" }}>
+                  Số định danh cá nhân (CCCD) <span style={{ color: "red" }}>*</span>
+                </Typography>
+                <TextField
+                  value={danCuData.personalId}
+                  onChange={(e) => setDanCuData({ ...danCuData, personalId: e.target.value })}
+                  required
+                  fullWidth
+                  placeholder="001234567890"
+                  inputProps={{ maxLength: 12 }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      backgroundColor: "#F5F7FA",
+                      borderRadius: "8px",
+                      "& fieldset": { borderColor: "transparent" },
+                      "&:hover fieldset": { borderColor: "#E0E0E0" },
+                      "&.Mui-focused fieldset": { borderColor: "#2D66F5" },
+                    },
+                    "& .MuiInputBase-input": {
+                      padding: "12px 14px",
+                      fontSize: "15px",
+                      color: "#333"
+                    }
+                  }}
+                />
+              </Box>
 
-              <TextField
-                label="Số điện thoại"
-                value={danCuData.phoneNumber}
-                onChange={(e) => setDanCuData({ ...danCuData, phoneNumber: e.target.value })}
-                required
-                fullWidth
-                placeholder="0123456789"
-                inputProps={{ maxLength: 10 }}
-              />
+              <Box>
+                <Typography sx={{ fontSize: "13px", fontWeight: "500", mb: 1, color: "#666" }}>
+                  Số điện thoại <span style={{ color: "red" }}>*</span>
+                </Typography>
+                <TextField
+                  value={danCuData.phoneNumber}
+                  onChange={(e) => setDanCuData({ ...danCuData, phoneNumber: e.target.value })}
+                  required
+                  fullWidth
+                  placeholder="0123456789"
+                  inputProps={{ maxLength: 10 }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      backgroundColor: "#F5F7FA",
+                      borderRadius: "8px",
+                      "& fieldset": { borderColor: "transparent" },
+                      "&:hover fieldset": { borderColor: "#E0E0E0" },
+                      "&.Mui-focused fieldset": { borderColor: "#2D66F5" },
+                    },
+                    "& .MuiInputBase-input": {
+                      padding: "12px 14px",
+                      fontSize: "15px",
+                      color: "#333"
+                    }
+                  }}
+                />
+              </Box>
 
+              <Box>
+                <Typography sx={{ fontSize: "13px", fontWeight: "500", mb: 1, color: "#666" }}>
+                  Hộ gia đình <span style={{ color: "red" }}>*</span>
+                </Typography>
+                <Autocomplete
+                  value={households.find(h => h._id === danCuData.household) || null}
+                  onChange={(event, newValue) => {
+                    setDanCuData({ ...danCuData, household: newValue?._id || "" });
+                  }}
+                  options={households}
+                  getOptionLabel={(option) => {
+                    const id = option.houseHoldID || option._id || "";
+                    const name = option.headOfHousehold?.name || option.leader?.name || "Chưa có chủ hộ";
+                    return `${id} - ${name}`;
+                  }}
+                  renderOption={(props, option) => (
+                    <Box component="li" {...props} key={option._id}>
+                      <Box sx={{ display: "flex", flexDirection: "column" }}>
+                        <Typography sx={{ fontSize: "15px", fontWeight: "500" }}>
+                          {option.houseHoldID || option._id} - {option.headOfHousehold?.name || option.leader?.name || "Chưa có chủ hộ"}
+                        </Typography>
+                        <Typography sx={{ fontSize: "13px", color: "#666" }}>
+                          {option.address}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  )}
+                  loading={loadingHouseholds}
+                  disabled={loadingHouseholds}
+                  noOptionsText="Không tìm thấy hộ gia đình"
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      placeholder={loadingHouseholds ? "Đang tải..." : "Tìm kiếm hộ gia đình..."}
+                      required={!danCuData.household}
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          backgroundColor: "#F5F7FA",
+                          borderRadius: "8px",
+                          "& fieldset": { borderColor: "transparent" },
+                          "&:hover fieldset": { borderColor: "#E0E0E0" },
+                          "&.Mui-focused fieldset": { borderColor: "#2D66F5" },
+                        },
+                        "& .MuiInputBase-input": {
+                          padding: "12px 14px !important",
+                          fontSize: "15px",
+                          color: "#333"
+                        }
+                      }}
+                    />
+                  )}
+                />
+              </Box>
+
+              <Box>
+                <Typography sx={{ fontSize: "13px", fontWeight: "500", mb: 1, color: "#666" }}>
+                  Quan hệ với chủ hộ <span style={{ color: "red" }}>*</span>
+                </Typography>
+                <TextField
+                  value={danCuData.relationshipToHead}
+                  onChange={(e) => setDanCuData({ ...danCuData, relationshipToHead: e.target.value })}
+                  required
+                  fullWidth
+                  placeholder="Ví dụ: Con, Vợ/Chồng, Cha/Mẹ..."
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      backgroundColor: "#F5F7FA",
+                      borderRadius: "8px",
+                      "& fieldset": { borderColor: "transparent" },
+                      "&:hover fieldset": { borderColor: "#E0E0E0" },
+                      "&.Mui-focused fieldset": { borderColor: "#2D66F5" },
+                    },
+                    "& .MuiInputBase-input": {
+                      padding: "12px 14px",
+                      fontSize: "15px",
+                      color: "#333"
+                    }
+                  }}
+                />
+              </Box>
+
+            <Box sx={{ gridColumn: { xs: 'span 1', md: 'span 2' } }}>
+              <Typography sx={{ fontSize: "13px", fontWeight: "500", mb: 1, color: "#666" }}>
+                Email <span style={{ color: "red" }}>*</span>
+              </Typography>
               <TextField
-                label="Email"
                 type="email"
                 value={danCuData.email}
                 onChange={(e) => setDanCuData({ ...danCuData, email: e.target.value })}
                 required
                 fullWidth
                 placeholder="nguyenvana@gmail.com"
-                sx={{ gridColumn: { xs: 'span 1', md: 'span 2' } }}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "#F5F7FA",
+                    borderRadius: "8px",
+                    "& fieldset": { borderColor: "transparent" },
+                    "&:hover fieldset": { borderColor: "#E0E0E0" },
+                    "&.Mui-focused fieldset": { borderColor: "#2D66F5" },
+                  },
+                  "& .MuiInputBase-input": {
+                    padding: "12px 14px",
+                    fontSize: "15px",
+                    color: "#333"
+                  }
+                }}
               />
-
-              <TextField
-                label="Địa chỉ thường trú"
-                value={danCuData.permanentAddress}
-                onChange={(e) => setDanCuData({ ...danCuData, permanentAddress: e.target.value })}
-                required
-                fullWidth
-                multiline
-                rows={2}
-                placeholder="123 Đường ABC, Phường XYZ, Quận 1, TP.HCM"
-                sx={{ gridColumn: { xs: 'span 1', md: 'span 2' } }}
-              />
-
-              <TextField
-                label="Hộ gia đình"
-                value={danCuData.household}
-                onChange={(e) => setDanCuData({ ...danCuData, household: e.target.value })}
-                required
-                fullWidth
-                placeholder="HGĐ-001"
-              />
-
-              <TextField
-                label="Quan hệ với chủ hộ"
-                select
-                value={danCuData.relationshipToHead}
-                onChange={(e) => setDanCuData({ ...danCuData, relationshipToHead: e.target.value })}
-                required
-                fullWidth
-              >
-                {relationships.map((relation) => (
-                  <MenuItem key={relation} value={relation}>
-                    {relation}
-                  </MenuItem>
-                ))}
-              </TextField>
+            </Box>
             </Box>
 
             <Box sx={{ mt: 4, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
               <Button
                 type="button"
-                variant="outlined"
+                variant="contained"
                 onClick={() => setDanCuData({
                   name: "",
                   dateOfBirth: "",
                   gender: "",
                   nationality: "Việt Nam",
                   personalId: "",
-                  permanentAddress: "",
                   household: "",
                   relationshipToHead: "",
                   email: "",
                   phoneNumber: "",
                 })}
                 sx={{ 
-                  px: 4,
-                  py: 1.5,
-                  borderRadius: '8px',
-                  textTransform: 'none',
-                  fontWeight: 600,
+                  backgroundColor: "#ef4444",
+                  borderRadius: "8px",
+                  textTransform: "none",
+                  px: 3,
+                  py: 1,
+                  fontSize: "14px",
+                  fontWeight: "500",
+                  "&:hover": { backgroundColor: "#dc2626" },
                 }}
               >
                 Xóa form
@@ -337,19 +596,20 @@ export default function ThemThongTinCuDan() {
               <Button
                 type="submit"
                 variant="contained"
+                disabled={isSubmitting}
                 sx={{ 
-                  px: 4,
-                  py: 1.5,
-                  borderRadius: '8px',
-                  textTransform: 'none',
-                  fontWeight: 600,
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  '&:hover': {
-                    background: 'linear-gradient(135deg, #5568d3 0%, #653a8b 100%)',
-                  }
+                  backgroundColor: "#2D66F5",
+                  borderRadius: "8px",
+                  textTransform: "none",
+                  px: 3,
+                  py: 1,
+                  fontSize: "14px",
+                  fontWeight: "500",
+                  "&:hover": { backgroundColor: "#1E54D4" },
+                  "&:disabled": { backgroundColor: "#ccc" },
                 }}
               >
-                Thêm dân cư
+                {isSubmitting ? "Đang xử lý..." : "Thêm dân cư"}
               </Button>
             </Box>
           </form>
@@ -365,82 +625,207 @@ export default function ThemThongTinCuDan() {
                 gap: 3 
               }}
             >
-              <TextField
-                label="Họ và tên"
-                value={keToanData.name}
-                onChange={(e) => setKeToanData({ ...keToanData, name: e.target.value })}
-                required
-                fullWidth
-                placeholder="Nguyễn Thị B"
-              />
+              <Box>
+                <Typography sx={{ fontSize: "13px", fontWeight: "500", mb: 1, color: "#666" }}>
+                  Họ và tên <span style={{ color: "red" }}>*</span>
+                </Typography>
+                <TextField
+                  value={keToanData.name}
+                  onChange={(e) => setKeToanData({ ...keToanData, name: e.target.value })}
+                  required
+                  fullWidth
+                  placeholder="Nguyễn Thị B"
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      backgroundColor: "#F5F7FA",
+                      borderRadius: "8px",
+                      "& fieldset": { borderColor: "transparent" },
+                      "&:hover fieldset": { borderColor: "#E0E0E0" },
+                      "&.Mui-focused fieldset": { borderColor: "#2D66F5" },
+                    },
+                    "& .MuiInputBase-input": {
+                      padding: "12px 14px",
+                      fontSize: "15px",
+                      color: "#333"
+                    }
+                  }}
+                />
+              </Box>
 
-              <TextField
-                label="Ngày sinh"
-                type="date"
-                value={keToanData.dateOfBirth}
-                onChange={(e) => setKeToanData({ ...keToanData, dateOfBirth: e.target.value })}
-                InputLabelProps={{ shrink: true }}
-                required
-                fullWidth
-              />
+              <Box>
+                <Typography sx={{ fontSize: "13px", fontWeight: "500", mb: 1, color: "#666" }}>
+                  Ngày sinh <span style={{ color: "red" }}>*</span>
+                </Typography>
+                <TextField
+                  type="date"
+                  value={keToanData.dateOfBirth}
+                  onChange={(e) => setKeToanData({ ...keToanData, dateOfBirth: e.target.value })}
+                  InputLabelProps={{ shrink: true }}
+                  required
+                  fullWidth
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      backgroundColor: "#F5F7FA",
+                      borderRadius: "8px",
+                      "& fieldset": { borderColor: "transparent" },
+                      "&:hover fieldset": { borderColor: "#E0E0E0" },
+                      "&.Mui-focused fieldset": { borderColor: "#2D66F5" },
+                    },
+                    "& .MuiInputBase-input": {
+                      padding: "12px 14px",
+                      fontSize: "15px",
+                      color: "#333"
+                    }
+                  }}
+                />
+              </Box>
 
-              <TextField
-                label="Giới tính"
-                select
-                value={keToanData.gender}
-                onChange={(e) => setKeToanData({ ...keToanData, gender: e.target.value })}
-                required
-                fullWidth
-              >
-                <MenuItem value="Nam">Nam</MenuItem>
-                <MenuItem value="Nữ">Nữ</MenuItem>
-                <MenuItem value="Khác">Khác</MenuItem>
-              </TextField>
+              <Box>
+                <Typography sx={{ fontSize: "13px", fontWeight: "500", mb: 1, color: "#666" }}>
+                  Giới tính <span style={{ color: "red" }}>*</span>
+                </Typography>
+                <TextField
+                  select
+                  value={keToanData.gender}
+                  onChange={(e) => setKeToanData({ ...keToanData, gender: e.target.value })}
+                  required
+                  fullWidth
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      backgroundColor: "#F5F7FA",
+                      borderRadius: "8px",
+                      "& fieldset": { borderColor: "transparent" },
+                      "&:hover fieldset": { borderColor: "#E0E0E0" },
+                      "&.Mui-focused fieldset": { borderColor: "#2D66F5" },
+                    },
+                    "& .MuiInputBase-input": {
+                      padding: "12px 14px",
+                      fontSize: "15px",
+                      color: "#333"
+                    }
+                  }}
+                >
+                  <MenuItem value="Nam">Nam</MenuItem>
+                  <MenuItem value="Nữ">Nữ</MenuItem>
+                  <MenuItem value="Khác">Khác</MenuItem>
+                </TextField>
+              </Box>
 
-              <TextField
-                label="Quốc tịch"
-                value={keToanData.nationality}
-                onChange={(e) => setKeToanData({ ...keToanData, nationality: e.target.value })}
-                required
-                fullWidth
-              />
+              <Box>
+                <Typography sx={{ fontSize: "13px", fontWeight: "500", mb: 1, color: "#666" }}>
+                  Quốc tịch <span style={{ color: "red" }}>*</span>
+                </Typography>
+                <TextField
+                  value={keToanData.nationality}
+                  onChange={(e) => setKeToanData({ ...keToanData, nationality: e.target.value })}
+                  required
+                  fullWidth
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      backgroundColor: "#F5F7FA",
+                      borderRadius: "8px",
+                      "& fieldset": { borderColor: "transparent" },
+                      "&:hover fieldset": { borderColor: "#E0E0E0" },
+                      "&.Mui-focused fieldset": { borderColor: "#2D66F5" },
+                    },
+                    "& .MuiInputBase-input": {
+                      padding: "12px 14px",
+                      fontSize: "15px",
+                      color: "#333"
+                    }
+                  }}
+                />
+              </Box>
 
-              <TextField
-                label="Số định danh cá nhân (CCCD)"
-                value={keToanData.personalId}
-                onChange={(e) => setKeToanData({ ...keToanData, personalId: e.target.value })}
-                required
-                fullWidth
-                placeholder="001234567890"
-                inputProps={{ maxLength: 12 }}
-              />
+              <Box>
+                <Typography sx={{ fontSize: "13px", fontWeight: "500", mb: 1, color: "#666" }}>
+                  Số định danh cá nhân (CCCD) <span style={{ color: "red" }}>*</span>
+                </Typography>
+                <TextField
+                  value={keToanData.personalId}
+                  onChange={(e) => setKeToanData({ ...keToanData, personalId: e.target.value })}
+                  required
+                  fullWidth
+                  placeholder="001234567890"
+                  inputProps={{ maxLength: 12 }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      backgroundColor: "#F5F7FA",
+                      borderRadius: "8px",
+                      "& fieldset": { borderColor: "transparent" },
+                      "&:hover fieldset": { borderColor: "#E0E0E0" },
+                      "&.Mui-focused fieldset": { borderColor: "#2D66F5" },
+                    },
+                    "& .MuiInputBase-input": {
+                      padding: "12px 14px",
+                      fontSize: "15px",
+                      color: "#333"
+                    }
+                  }}
+                />
+              </Box>
 
-              <TextField
-                label="Số điện thoại"
-                value={keToanData.phoneNumber}
-                onChange={(e) => setKeToanData({ ...keToanData, phoneNumber: e.target.value })}
-                required
-                fullWidth
-                placeholder="0123456789"
-                inputProps={{ maxLength: 10 }}
-              />
+              <Box>
+                <Typography sx={{ fontSize: "13px", fontWeight: "500", mb: 1, color: "#666" }}>
+                  Số điện thoại <span style={{ color: "red" }}>*</span>
+                </Typography>
+                <TextField
+                  value={keToanData.phoneNumber}
+                  onChange={(e) => setKeToanData({ ...keToanData, phoneNumber: e.target.value })}
+                  required
+                  fullWidth
+                  placeholder="0123456789"
+                  inputProps={{ maxLength: 10 }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      backgroundColor: "#F5F7FA",
+                      borderRadius: "8px",
+                      "& fieldset": { borderColor: "transparent" },
+                      "&:hover fieldset": { borderColor: "#E0E0E0" },
+                      "&.Mui-focused fieldset": { borderColor: "#2D66F5" },
+                    },
+                    "& .MuiInputBase-input": {
+                      padding: "12px 14px",
+                      fontSize: "15px",
+                      color: "#333"
+                    }
+                  }}
+                />
+              </Box>
 
-              <TextField
-                label="Email"
-                type="email"
-                value={keToanData.email}
-                onChange={(e) => setKeToanData({ ...keToanData, email: e.target.value })}
-                required
-                fullWidth
-                placeholder="ketoan@gmail.com"
-                sx={{ gridColumn: { xs: 'span 1', md: 'span 2' } }}
-              />
+              <Box sx={{ gridColumn: { xs: 'span 1', md: 'span 2' } }}>
+                <Typography sx={{ fontSize: "13px", fontWeight: "500", mb: 1, color: "#666" }}>
+                  Email <span style={{ color: "red" }}>*</span>
+                </Typography>
+                <TextField
+                  type="email"
+                  value={keToanData.email}
+                  onChange={(e) => setKeToanData({ ...keToanData, email: e.target.value })}
+                  required
+                  fullWidth
+                  placeholder="ketoan@gmail.com"
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      backgroundColor: "#F5F7FA",
+                      borderRadius: "8px",
+                      "& fieldset": { borderColor: "transparent" },
+                      "&:hover fieldset": { borderColor: "#E0E0E0" },
+                      "&.Mui-focused fieldset": { borderColor: "#2D66F5" },
+                    },
+                    "& .MuiInputBase-input": {
+                      padding: "12px 14px",
+                      fontSize: "15px",
+                      color: "#333"
+                    }
+                  }}
+                />
+              </Box>
             </Box>
 
             <Box sx={{ mt: 4, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
               <Button
                 type="button"
-                variant="outlined"
+                variant="contained"
                 onClick={() => setKeToanData({
                   name: "",
                   dateOfBirth: "",
@@ -451,11 +836,14 @@ export default function ThemThongTinCuDan() {
                   phoneNumber: "",
                 })}
                 sx={{ 
-                  px: 4,
-                  py: 1.5,
-                  borderRadius: '8px',
-                  textTransform: 'none',
-                  fontWeight: 600,
+                  backgroundColor: "#ef4444",
+                  borderRadius: "8px",
+                  textTransform: "none",
+                  px: 3,
+                  py: 1,
+                  fontSize: "14px",
+                  fontWeight: "500",
+                  "&:hover": { backgroundColor: "#dc2626" },
                 }}
               >
                 Xóa form
@@ -463,19 +851,20 @@ export default function ThemThongTinCuDan() {
               <Button
                 type="submit"
                 variant="contained"
+                disabled={isSubmitting}
                 sx={{ 
-                  px: 4,
-                  py: 1.5,
-                  borderRadius: '8px',
-                  textTransform: 'none',
-                  fontWeight: 600,
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  '&:hover': {
-                    background: 'linear-gradient(135deg, #5568d3 0%, #653a8b 100%)',
-                  }
+                  backgroundColor: "#2D66F5",
+                  borderRadius: "8px",
+                  textTransform: "none",
+                  px: 3,
+                  py: 1,
+                  fontSize: "14px",
+                  fontWeight: "500",
+                  "&:hover": { backgroundColor: "#1E54D4" },
+                  "&:disabled": { backgroundColor: "#ccc" },
                 }}
               >
-                Thêm kế toán
+                {isSubmitting ? "Đang xử lý..." : "Thêm kế toán"}
               </Button>
             </Box>
           </form>

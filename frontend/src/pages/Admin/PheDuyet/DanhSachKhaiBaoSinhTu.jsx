@@ -11,10 +11,12 @@ import {
   Chip,
   Button,
   TextField,
+  InputAdornment,
   Alert,
   CircularProgress,
   Typography,
 } from "@mui/material";
+import { Search, Eye } from "lucide-react";
 import KhaiBaoSinhTuForm from "../../../feature/admin/Form/KhaiBaoSinhTuForm";
 import { requestAPI } from "../../../api/apiService";
 
@@ -135,12 +137,12 @@ export default function DanhSachKhaiBaoSinhTu() {
               Từ chối
             </Button>
             <Button
-              variant="contained"
+              variant="outlined"
               size="small"
-              sx={{ textTransform: "none" }}
+              sx={{ textTransform: "none", minWidth: "40px", padding: "4px 8px" }}
               onClick={() => setSelectedRequest(request)}
             >
-              Xem
+              <Eye size={16} />
             </Button>
           </Box>
         </TableCell>
@@ -154,34 +156,61 @@ export default function DanhSachKhaiBaoSinhTu() {
         <Typography variant="h5" sx={{ fontWeight: 700 }}>
           Danh sách khai báo sinh tử
         </Typography>
-        <Box sx={{ display: "flex", gap: 1 }}>
-          <Button variant="outlined" onClick={() => setSearchText("")}>
-            Xóa tìm kiếm
-          </Button>
-          <Button variant="contained" onClick={fetchRequests}>
-            Làm mới
-          </Button>
-        </Box>
+        <Button
+          variant="contained"
+          onClick={fetchRequests}
+          sx={{
+            backgroundColor: "#2D66F5",
+            borderRadius: "8px",
+            textTransform: "none",
+            px: 3,
+            py: 1,
+            fontSize: "14px",
+            fontWeight: "500",
+            "&:hover": { backgroundColor: "#1E54D4" },
+          }}
+        >
+          Làm mới
+        </Button>
       </Box>
 
       <Box
         sx={{
-          marginTop: "20px",
-          background: "#f7f9fc",
-          padding: "16px",
-          borderRadius: "12px",
           display: "flex",
-          gap: "12px",
+          gap: 2,
+          backgroundColor: "white",
+          padding: "22px",
+          borderRadius: "12px",
+          boxShadow: "0 2px 10px rgba(0,0,0,0.05)",
           alignItems: "center",
+          mb: 4,
+          mt: 2,
         }}
       >
-        <TextField
-          fullWidth
-          label="Tìm kiếm (Chủ hộ / Mã hộ / Bé / Người mất)"
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
-          size="small"
-        />
+        <Box sx={{ flex: 1 }}>
+          <Typography sx={{ fontSize: "13px", mb: 1 }}>Tìm kiếm</Typography>
+          <TextField
+            fullWidth
+            placeholder="Nhập chủ hộ, mã hộ, tên bé hoặc người mất..."
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search size={18} color="#777" />
+                </InputAdornment>
+              ),
+              sx: {
+                background: "#F1F3F6",
+                borderRadius: "8px",
+                height: "40px",
+                "& .MuiInputBase-input": {
+                  padding: "10px 0px",
+                },
+              },
+            }}
+          />
+        </Box>
       </Box>
 
       {error && (
@@ -197,7 +226,7 @@ export default function DanhSachKhaiBaoSinhTu() {
       ) : (
         <TableContainer component={Paper} sx={{ mt: 3, borderRadius: "12px" }}>
           <Table>
-            <TableHead sx={{ backgroundColor: "#f5f5f5" }}>
+            <TableHead sx={{ backgroundColor: "#F8FAFC" }}>
               <TableRow>
                 <TableCell sx={{ fontWeight: "bold", padding: "12px 16px" }}>
                   Chủ hộ

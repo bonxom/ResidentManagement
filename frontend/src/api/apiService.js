@@ -116,6 +116,11 @@ export const householdAPI = {
     return response.data;
   },
 
+  getMemberById: async (householdId, userId) => {
+    const response = await api.get(`/households/${householdId}/member/${userId}`);
+    return response.data;
+  },
+
   addMember: async (id, memberData) => {
     const response = await api.post(`/households/${id}/members`, memberData);
     return response.data;
@@ -283,9 +288,16 @@ export const requestAPI = {
 
 // ============= STATS API =============
 export const statsAPI = {
-  // Lấy số liệu tổng quan cho Dashboard
+  // Lấy số liệu tổng quan cho Dashboard (Admin/Leader)
   getDashboard: async () => {
     const response = await api.get('/stats/dashboard');
     return response.data;
   },
+  
+  // Lấy thống kê Dashboard cho User (về hộ gia đình của họ)
+  getUserDashboard: async () => {
+    const response = await api.get('/stats/user-dashboard');
+    return response.data;
+  },
+
 };

@@ -51,7 +51,7 @@ function TransactionDetailTable({ rows }) {
     <Box>
       <TableContainer component={Paper} sx={{ borderRadius: 3 }}>
         <Table>
-          <TableHead>
+          <TableHead sx={{ backgroundColor: "#F8FAFC" }}>
             <TableRow>
               <TableCell>Thời gian tạo</TableCell>
               <TableCell>Khoản thu</TableCell>

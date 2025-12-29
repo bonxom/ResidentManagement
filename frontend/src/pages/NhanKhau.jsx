@@ -238,7 +238,7 @@ function NhanKhau() {
         ) : (
           <Paper sx={{ mt: 2 }}>
             <Table>
-              <TableHead>
+              <TableHead sx={{ backgroundColor: "#F8FAFC" }}>
                 <TableRow>
                   <TableCell>CCCD</TableCell>
                   <TableCell>Họ tên</TableCell>

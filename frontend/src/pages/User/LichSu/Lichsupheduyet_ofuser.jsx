@@ -68,7 +68,7 @@ function BirthDeathTable({ data }) {
     <Box>
       <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
         <Table>
-          <TableHead sx={{ backgroundColor: "#f5f5f5" }}>
+          <TableHead sx={{ backgroundColor: "#F8FAFC" }}>
             <TableRow>
               <TableCell><strong>Thời gian</strong></TableCell>
               <TableCell><strong>Loại</strong></TableCell>
@@ -133,7 +133,7 @@ function ResidenceTable({ data }) {
     <Box>
       <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
         <Table>
-          <TableHead sx={{ backgroundColor: "#f5f5f5" }}>
+          <TableHead sx={{ backgroundColor: "#F8FAFC" }}>
             <TableRow>
               <TableCell><strong>Thời gian</strong></TableCell>
               <TableCell><strong>Loại</strong></TableCell>
@@ -267,7 +267,8 @@ export default function Lichsupheduyet() {
       title: "Lịch sử phê duyệt sinh tử",
       description: "Xem lịch sử các yêu cầu khai sinh, khai tử đã được phê duyệt",
       icon: <FamilyRestroom sx={{ fontSize: 40 }} />,
-      color: "#4caf50",
+      color: "#10b981",
+      bgColor: "#ecfdf5",
       data: birthDeathHistory,
       component: BirthDeathTable,
     },
@@ -276,7 +277,8 @@ export default function Lichsupheduyet() {
       title: "Lịch sử phê duyệt tạm trú/vắng",
       description: "Xem lịch sử các yêu cầu tạm trú, tạm vắng đã được phê duyệt",
       icon: <HomeWork sx={{ fontSize: 40 }} />,
-      color: "#2196f3",
+      color: "#3b82f6",
+      bgColor: "#eff6ff",
       data: residenceHistory,
       component: ResidenceTable,
     },
@@ -300,36 +302,102 @@ export default function Lichsupheduyet() {
 
       <Grid container spacing={3}>
         {sections.map((section) => (
-          <Grid item xs={12} md={4} key={section.id}>
+          <Grid item xs={12} md={6} key={section.id}>
             <Card
               sx={{
                 height: "100%",
                 cursor: "pointer",
-                transition: "all 0.3s ease",
+                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                borderRadius: "16px",
+                background: activeSection === section.id 
+                  ? `linear-gradient(135deg, ${section.bgColor} 0%, #ffffff 100%)`
+                  : "#ffffff",
+                boxShadow: activeSection === section.id
+                  ? `0 8px 32px ${section.color}20`
+                  : "0 2px 12px rgba(0,0,0,0.08)",
                 "&:hover": {
-                  transform: "translateY(-4px)",
-                  boxShadow: "0 8px 25px rgba(0,0,0,0.15)",
+                  transform: "translateY(-8px)",
+                  boxShadow: `0 12px 40px ${section.color}30`,
                 },
-                border:
-                  activeSection === section.id
-                    ? `2px solid ${section.color}`
-                    : "1px solid #e0e0e0",
+                border: activeSection === section.id
+                  ? `2px solid ${section.color}`
+                  : "2px solid transparent",
               }}
               onClick={() => handleSectionClick(section.id)}
             >
-              <CardContent sx={{ textAlign: "center", p: 3 }}>
-                <Box sx={{ color: section.color, mb: 2 }}>{section.icon}</Box>
-                <Typography variant="h6" fontWeight={600} mb={1}>
+              <CardContent sx={{ textAlign: "center", p: 4 }}>
+                <Box 
+                  sx={{ 
+                    color: section.color, 
+                    mb: 2,
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    width: "80px",
+                    height: "80px",
+                    borderRadius: "20px",
+                    backgroundColor: section.bgColor,
+                    margin: "0 auto 16px",
+                  }}
+                >
+                  {section.icon}
+                </Box>
+                <Typography 
+                  variant="h6" 
+                  fontWeight={600} 
+                  mb={1.5}
+                  sx={{ 
+                    fontSize: "18px",
+                    color: "#1a202c",
+                  }}
+                >
                   {section.title}
                 </Typography>
-                <Typography variant="body2" color="text.secondary" mb={2}>
+                <Typography 
+                  variant="body2" 
+                  color="text.secondary" 
+                  mb={3}
+                  sx={{
+                    fontSize: "14px",
+                    lineHeight: 1.6,
+                    color: "#64748b",
+                  }}
+                >
                   {section.description}
                 </Typography>
-                <Typography variant="body2" fontWeight={500} color={section.color}>
-                  {section.data.length} bản ghi
-                </Typography>
+                <Box
+                  sx={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 1,
+                    px: 2,
+                    py: 0.75,
+                    borderRadius: "12px",
+                    backgroundColor: section.bgColor,
+                  }}
+                >
+                  <Typography 
+                    variant="body2" 
+                    fontWeight={600} 
+                    sx={{ 
+                      color: section.color,
+                      fontSize: "15px",
+                    }}
+                  >
+                    {section.data.length}
+                  </Typography>
+                  <Typography 
+                    variant="body2"
+                    sx={{ 
+                      color: section.color,
+                      fontSize: "14px",
+                    }}
+                  >
+                    bản ghi
+                  </Typography>
+                </Box>
               </CardContent>
-              <CardActions sx={{ justifyContent: "center", pb: 2 }}>
+              <CardActions sx={{ justifyContent: "center", pb: 3 }}>
                 <Button
                   variant={activeSection === section.id ? "contained" : "outlined"}
                   startIcon={<Visibility />}
@@ -337,9 +405,19 @@ export default function Lichsupheduyet() {
                     backgroundColor: activeSection === section.id ? section.color : "transparent",
                     borderColor: section.color,
                     color: activeSection === section.id ? "white" : section.color,
+                    borderRadius: "10px",
+                    textTransform: "none",
+                    px: 3,
+                    py: 1,
+                    fontSize: "14px",
+                    fontWeight: 500,
+                    borderWidth: "2px",
                     "&:hover": {
                       backgroundColor: section.color,
                       color: "white",
+                      borderColor: section.color,
+                      borderWidth: "2px",
+                      transform: "scale(1.05)",
                     },
                   }}
                 >
@@ -352,19 +430,58 @@ export default function Lichsupheduyet() {
       </Grid>
 
       {activeSection && (
-        <Box sx={{ mt: 4 }}>
+        <Box sx={{ mt: 5 }}>
           {sections.map((section) => {
             if (section.id !== activeSection) return null;
             const TableComponent = section.component;
             return (
               <Box key={section.id}>
-                <Typography variant="h5" fontWeight={600} mb={3} color={section.color}>
-                  {section.title}
-                </Typography>
-                <Paper sx={{ p: 3, borderRadius: 3 }}>
+                <Box 
+                  sx={{ 
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 2,
+                    mb: 3,
+                    pb: 2,
+                    borderBottom: `3px solid ${section.color}`,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: "48px",
+                      height: "48px",
+                      borderRadius: "12px",
+                      backgroundColor: section.bgColor,
+                      color: section.color,
+                    }}
+                  >
+                    {section.icon}
+                  </Box>
+                  <Typography 
+                    variant="h5" 
+                    fontWeight={600} 
+                    sx={{ 
+                      color: section.color,
+                      fontSize: "22px",
+                    }}
+                  >
+                    {section.title}
+                  </Typography>
+                </Box>
+                <Paper 
+                  sx={{ 
+                    p: 3, 
+                    borderRadius: "16px",
+                    boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+                    border: "1px solid #f1f5f9",
+                  }}
+                >
                   {loading ? (
                     <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
-                      <CircularProgress />
+                      <CircularProgress sx={{ color: section.color }} />
                     </Box>
                   ) : (
                     <TableComponent data={section.data} />

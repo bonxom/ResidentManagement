@@ -11,7 +11,8 @@ import {
   Wallet,
   Menu,
   X,
-  FaChildren,
+  ClipboardList,
+  MapPin,
 } from "lucide-react";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -121,23 +122,23 @@ export function SidebarForUser({ user, onWidthChange }) {
             isExpanded={isExpanded}
           />
           <MenuItem
-            icon={<Wallet size={18} />}
+            icon={<ClipboardList size={18} />}
             label="Khai báo sinh tử"
             to="/member/requestsinhtu"
             isExpanded={isExpanded}
           />
           <MenuItem
-            icon={<Wallet size={18} />}
+            icon={<MapPin size={18} />}
             label="Khai báo tạm trú tạm vắng"
             to="/member/requesttamtruvang"
             isExpanded={isExpanded}
           />
-          <MenuItem
+          {/* <MenuItem
             icon={<PlusCircle size={18} />}
             label="Yêu cầu tạm trú/vắng nhanh"
             to="/member/yeucau/tamtruvang"
             isExpanded={isExpanded}
-          />
+          /> */}
         </>
       )}
 

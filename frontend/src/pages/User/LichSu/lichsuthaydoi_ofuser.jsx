@@ -83,7 +83,7 @@ function TemporaryAbsentTable({ rows }) {
   return (
     <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
       <Table>
-        <TableHead sx={{ backgroundColor: "#f5f5f5" }}>
+        <TableHead sx={{ backgroundColor: "#F8FAFC" }}>
           <TableRow>
             <TableCell>Họ tên</TableCell>
             <TableCell>Từ ngày</TableCell>
@@ -124,7 +124,7 @@ function BirthTable({ rows }) {
   return (
     <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
       <Table>
-        <TableHead sx={{ backgroundColor: "#f5f5f5" }}>
+        <TableHead sx={{ backgroundColor: "#F8FAFC" }}>
           <TableRow>
             <TableCell>Họ tên</TableCell>
             <TableCell>Ngày sinh</TableCell>
@@ -163,7 +163,7 @@ function DeathTable({ rows }) {
   return (
     <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
       <Table>
-        <TableHead sx={{ backgroundColor: "#f5f5f5" }}>
+        <TableHead sx={{ backgroundColor: "#F8FAFC" }}>
           <TableRow>
             <TableCell>Họ tên</TableCell>
             <TableCell>CCCD</TableCell>

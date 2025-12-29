@@ -83,7 +83,7 @@ function HouseholdTransactionTable({ rows, rolePrefix }) {
     <Box>
       <TableContainer component={Paper} sx={{ borderRadius: 3 }}>
         <Table>
-          <TableHead>
+          <TableHead sx={{ backgroundColor: "#F8FAFC" }}>
             <TableRow>
               <TableCell>Mã hộ dân</TableCell>
               <TableCell>CCCD chủ hộ</TableCell>

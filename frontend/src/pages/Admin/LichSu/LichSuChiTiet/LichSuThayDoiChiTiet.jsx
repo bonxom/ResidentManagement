@@ -120,11 +120,10 @@ function ChangeLogTable({ logs }) {
         }}
       >
         <Table stickyHeader sx={{ tableLayout: "fixed" }}>
-          <TableHead>
+          <TableHead sx={{ backgroundColor: "#F8FAFC" }}>
             <TableRow
               sx={{
                 "& th": {
-                  backgroundColor: "#F8FAFC",
                   fontWeight: 700,
                   fontSize: "13px",
                   color: "#0F172A",

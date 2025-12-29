@@ -488,8 +488,8 @@ function FeeHouseHoldPage() {
           ) : (
             <Paper elevation={2}>
               <Table>
-                <TableHead>
-                  <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
+                <TableHead sx={{ backgroundColor: "#F8FAFC" }}>
+                  <TableRow>
                     <TableCell>
                       <strong>Tên khoản thu</strong>
                     </TableCell>

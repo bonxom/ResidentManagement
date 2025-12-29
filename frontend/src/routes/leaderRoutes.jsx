@@ -1,6 +1,6 @@
 import { Route, Navigate } from "react-router-dom";
 import MainLayout from "../layout/MainLayout";
-import Dashboard from "../pages/Dashboard";
+import Dashboard from "../pages/Admin/Dashboard";
 import Quanlydancu from "../pages/Admin/QuanLyDanCu/Quanlydancu";
 import Profile from "../pages/Profile";
 import DanhSachDangKyTaiKhoan from "../pages/Admin/PheDuyet/DanhSachDangKyTaiKhoan";

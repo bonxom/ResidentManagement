@@ -12,6 +12,7 @@ import {
   moveMember,
   getHouseholdChanges,
   getHouseholdMemberSummaries,
+  getHouseholdMemberById,
   updateResidentHistory,
   completeResidentHistory
 } from "../controllers/householdController.js";
@@ -27,6 +28,7 @@ router.get("/", protect, authorizePermission("VIEW HOUSEHOLD LIST"), getAllHouse
 router.get("/:id", protect, authorizePermission("VIEW HOUSEHOLD"), getHouseholdById);
 router.get("/:id/members", protect, authorizePermission("VIEW HOUSEHOLD"), getHouseholdResidents);
 router.get("/:id/members-info", protect, authorizePermission("VIEW HOUSEHOLD"), getHouseholdMemberSummaries);
+router.get("/:householdId/member/:userId", protect, authorizePermission("VIEW HOUSEHOLD"), getHouseholdMemberById);
 
 router.put("/:id",protect, authorizePermission("EDIT HOUSEHOLD"), updateHousehold);
 router.delete("/:id", protect, authorizePermission("DELETE HOUSEHOLD"), deleteHousehold);

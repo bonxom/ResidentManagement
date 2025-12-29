@@ -92,7 +92,7 @@ function ResidentsTable({ selected, setSelected, members, loading, onDelete, onV
         sx={{ borderRadius: 3, boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}
       >
         <Table>
-          <TableHead>
+          <TableHead sx={{ backgroundColor: "#F8FAFC" }}>
             <TableRow>
               <TableCell padding="checkbox">
                 <Checkbox
@@ -131,22 +131,22 @@ function ResidentsTable({ selected, setSelected, members, loading, onDelete, onV
                   <TableCell>
                     <Box sx={{ display: "flex", gap: 1 }}>
                       <Button
-                        variant="contained"
                         size="small"
+                        variant="outlined"
                         onClick={() => onViewDetail(row)}
-                        sx={{ 
+                        sx={{
                           textTransform: "none",
                           minWidth: "60px",
                           fontSize: "13px"
                         }}
                       >
-                        Xem
+                        Xem chi tiết
                       </Button>
                       <Button
                         color="error"
                         size="small"
                         onClick={() => onDelete(row)}
-                        sx={{ 
+                        sx={{
                           textTransform: "none",
                           minWidth: "40px",
                           padding: "4px 8px"
@@ -168,7 +168,6 @@ function ResidentsTable({ selected, setSelected, members, loading, onDelete, onV
           count={pageCount}
           page={page}
           onChange={(e, value) => setPage(value)}
-          shape="rounded"
         />
       </Box>
     </Box>
@@ -419,57 +418,6 @@ export default function ThongTinHoDanAdmin() {
                 },
               }}
             />
-          </Box>
-
-          {/* FILTER SELECT */}
-          <Box sx={{ width: "220px" }}>
-            <Typography sx={{ fontSize: "13px", mb: 1 }}>Lọc theo</Typography>
-
-            <Box
-              sx={{
-                backgroundColor: "#F1F3F6",
-                height: "40px",
-                borderRadius: "8px",
-                display: "flex",
-                alignItems: "center",
-                px: 1,
-                overflow: "hidden",
-                border: "1px solid #bec0c5ff",
-                "&:hover": {
-                  borderColor: "#000000ff",
-                },
-              }}
-            >
-              <Filter
-                size={18}
-                color="#555"
-                style={{ marginLeft: 8, marginRight: 6 }}
-              />
-
-              <Select
-                fullWidth
-                displayEmpty
-                variant="standard"
-                disableUnderline
-                IconComponent={() => (
-                  <ChevronDown size={18} style={{ marginRight: 2 }} />
-                )}
-                sx={{
-                  flex: 1,
-                  fontSize: "14px",
-                  backgroundColor: "transparent",
-                  "& .MuiSelect-select": {
-                    backgroundColor: "transparent !important",
-                    paddingY: "10px",
-                    paddingLeft: "6px",
-                  },
-                }}
-              >
-                <MenuItem value="">Tất cả</MenuItem>
-                <MenuItem value="hokhau">Hộ khẩu</MenuItem>
-                <MenuItem value="nhankhau">Nhân khẩu</MenuItem>
-              </Select>
-            </Box>
           </Box>
 
           {/* SEARCH BUTTON */}

@@ -17,7 +17,9 @@ import {
   Alert,
   CircularProgress,
   Button,
+  InputAdornment,
 } from "@mui/material";
+import { Search } from "lucide-react";
 import { requestAPI } from "../../../api/apiService";
 
 const statusMap = {
@@ -175,7 +177,7 @@ export default function LichSuPheDuyetTaiKhoanHoDan() {
 
   const renderRegisterTable = () => (
     <Table>
-      <TableHead>
+      <TableHead sx={{ backgroundColor: "#F8FAFC" }}>
         <TableRow>
           <TableCell>Thời gian</TableCell>
           <TableCell>Trạng thái</TableCell>
@@ -214,7 +216,7 @@ export default function LichSuPheDuyetTaiKhoanHoDan() {
 
   const renderBirthDeathTable = () => (
     <Table>
-      <TableHead>
+      <TableHead sx={{ backgroundColor: "#F8FAFC" }}>
         <TableRow>
           <TableCell>Thời gian</TableCell>
           <TableCell>Loại</TableCell>
@@ -261,7 +263,7 @@ export default function LichSuPheDuyetTaiKhoanHoDan() {
 
   const renderResidenceTable = () => (
     <Table>
-      <TableHead>
+      <TableHead sx={{ backgroundColor: "#F8FAFC" }}>
         <TableRow>
           <TableCell>Thời gian</TableCell>
           <TableCell>Loại</TableCell>
@@ -331,17 +333,61 @@ export default function LichSuPheDuyetTaiKhoanHoDan() {
           p: 2,
         }}
       >
-        <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
-          <TextField
-            fullWidth
-            size="small"
-            label="Tìm kiếm"
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-          />
-          <Button variant="contained" onClick={fetchAllRequests}>
-            Làm mới
-          </Button>
+        <Box
+          sx={{
+            display: "flex",
+            gap: 2,
+            backgroundColor: "white",
+            padding: "22px",
+            borderRadius: "12px",
+            boxShadow: "0 2px 10px rgba(0,0,0,0.05)",
+            alignItems: "center",
+            mb: 3,
+          }}
+        >
+          <Box sx={{ flex: 1 }}>
+            <Typography sx={{ fontSize: "13px", mb: 1 }}>Tìm kiếm</Typography>
+            <TextField
+              fullWidth
+              placeholder="Nhập từ khóa tìm kiếm..."
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Search size={18} color="#777" />
+                  </InputAdornment>
+                ),
+                sx: {
+                  background: "#F1F3F6",
+                  borderRadius: "8px",
+                  height: "40px",
+                  "& .MuiInputBase-input": {
+                    padding: "10px 0px",
+                  },
+                  "& fieldset": { border: "none" },
+                },
+              }}
+            />
+          </Box>
+          <Box sx={{ alignSelf: "flex-end" }}>
+            <Button
+              variant="contained"
+              onClick={fetchAllRequests}
+              sx={{
+                backgroundColor: "#2D66F5",
+                borderRadius: "8px",
+                textTransform: "none",
+                px: 3,
+                py: 1,
+                fontSize: "14px",
+                fontWeight: "500",
+                "&:hover": { backgroundColor: "#1E54D4" },
+              }}
+            >
+              Làm mới
+            </Button>
+          </Box>
         </Box>
 
         {error && (

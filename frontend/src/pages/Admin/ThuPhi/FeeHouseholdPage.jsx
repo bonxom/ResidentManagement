@@ -70,81 +70,109 @@ function FeeHouseholdPage() {
     <Box sx={{ display: "flex" }}>
       <Sidebar user={user} navigate={navigate} onLogout={signOut} />
 
-      <Box sx={{ flexGrow: 1, p: 4, ml: `${drawerWidth}px` }}>
-        <Typography variant="h4" gutterBottom>
-          Khoản thu của hộ gia đình
-          {household?.name ? ` (${household.name})` : ""}
-        </Typography>
-        {household?.address && (
-          <Typography variant="body2" color="text.secondary" gutterBottom>
-            {household.address}
-          </Typography>
-        )}
+      <Box sx={{ flexGrow: 1, ml: `${drawerWidth}px` }}>
+        <Box sx={{ padding: "24px 32px" }}>
+          {/* TITLE */}
+          <Box sx={{ mb: 3 }}>
+            <Typography sx={{ fontSize: "26px", fontWeight: "600" }}>
+              Khoản thu của hộ gia đình
+              {household?.name ? ` (${household.name})` : ""}
+            </Typography>
+            {household?.address && (
+              <Typography sx={{ fontSize: "14px", color: "#666", mt: 1 }}>
+                {household.address}
+              </Typography>
+            )}
+          </Box>
 
-        {loading ? (
-          <Typography>Đang tải...</Typography>
-        ) : error ? (
-          <Alert severity="warning">{error}</Alert>
-        ) : (
-          <Paper>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Tên khoản thu</TableCell>
-                  <TableCell>Loại</TableCell>
-                  <TableCell align="right">Phải thu</TableCell>
-                  <TableCell align="right">Đã thu</TableCell>
-                  <TableCell align="right">Còn thiếu</TableCell>
-                  <TableCell>Trạng thái</TableCell>
-                </TableRow>
-              </TableHead>
+          {/* Error Alert */}
+          {error && (
+            <Alert severity="warning" sx={{ mb: 3 }}>
+              {error}
+            </Alert>
+          )}
 
-              <TableBody>
-                {fees.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} align="center">
-                      Hộ gia đình của bạn chưa có khoản thu nào.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  fees.map((fee) => {
-                    const chip =
-                      statusMap[fee.status] || {
-                        label: fee.status || "N/A",
-                        color: "default",
-                      };
-                    return (
-                      <TableRow key={fee.feeId}>
-                        <TableCell>{fee.name}</TableCell>
+          {/* TABLE AREA */}
+          <Box
+            sx={{
+              backgroundColor: "white",
+              borderRadius: "16px",
+              boxShadow: "0px 3px 12px rgba(0, 0, 0, 0.1)",
+              p: 2,
+            }}
+          >
+            {loading ? (
+              <Box sx={{ textAlign: "center", py: 8 }}>
+                <Typography sx={{ color: "#666", fontSize: "16px" }}>
+                  Đang tải...
+                </Typography>
+              </Box>
+            ) : (
+              <Paper sx={{ boxShadow: "none" }}>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell sx={{ fontWeight: "600" }}>Tên khoản thu</TableCell>
+                      <TableCell sx={{ fontWeight: "600" }}>Loại</TableCell>
+                      <TableCell sx={{ fontWeight: "600" }} align="right">Phải thu</TableCell>
+                      <TableCell sx={{ fontWeight: "600" }} align="right">Đã thu</TableCell>
+                      <TableCell sx={{ fontWeight: "600" }} align="right">Còn thiếu</TableCell>
+                      <TableCell sx={{ fontWeight: "600" }}>Trạng thái</TableCell>
+                    </TableRow>
+                  </TableHead>
 
-                        <TableCell>
-                          {fee.type === "MANDATORY" ? "Bắt buộc" : "Tự nguyện"}
-                        </TableCell>
-
-                        <TableCell align="right">
-                          {(fee.requiredAmount || 0).toLocaleString()} VND
-                        </TableCell>
-                        <TableCell align="right">
-                          {(fee.paidAmount || 0).toLocaleString()} VND
-                        </TableCell>
-                        <TableCell align="right">
-                          {(fee.remainingAmount || 0).toLocaleString()} VND
-                        </TableCell>
-                        <TableCell>
-                          <Chip
-                            label={chip.label}
-                            color={chip.color}
-                            size="small"
-                          />
+                  <TableBody>
+                    {fees.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={6} align="center">
+                          <Box sx={{ py: 4 }}>
+                            <Typography sx={{ color: "#666", fontSize: "16px" }}>
+                              Hộ gia đình của bạn chưa có khoản thu nào.
+                            </Typography>
+                          </Box>
                         </TableCell>
                       </TableRow>
-                    );
-                  })
-                )}
-              </TableBody>
-            </Table>
-          </Paper>
-        )}
+                    ) : (
+                      fees.map((fee) => {
+                        const chip =
+                          statusMap[fee.status] || {
+                            label: fee.status || "N/A",
+                            color: "default",
+                          };
+                        return (
+                          <TableRow key={fee.feeId} hover>
+                            <TableCell>{fee.name}</TableCell>
+
+                            <TableCell>
+                              {fee.type === "MANDATORY" ? "Bắt buộc" : "Tự nguyện"}
+                            </TableCell>
+
+                            <TableCell align="right">
+                              {(fee.requiredAmount || 0).toLocaleString()} VND
+                            </TableCell>
+                            <TableCell align="right">
+                              {(fee.paidAmount || 0).toLocaleString()} VND
+                            </TableCell>
+                            <TableCell align="right">
+                              {(fee.remainingAmount || 0).toLocaleString()} VND
+                            </TableCell>
+                            <TableCell>
+                              <Chip
+                                label={chip.label}
+                                color={chip.color}
+                                size="small"
+                              />
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
+                    )}
+                  </TableBody>
+                </Table>
+              </Paper>
+            )}
+          </Box>
+        </Box>
       </Box>
     </Box>
   );

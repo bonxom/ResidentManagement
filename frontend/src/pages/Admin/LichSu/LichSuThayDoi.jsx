@@ -16,7 +16,9 @@ import {
   TableHead,
   TableRow,
   Chip,
+  InputAdornment,
 } from "@mui/material";
+import { Search } from "lucide-react";
 import { householdAPI } from "../../../api/apiService";
 
 const formatDate = (value) =>
@@ -44,7 +46,7 @@ function TemporaryResidentsTable({ rows }) {
   return (
     <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
       <Table>
-        <TableHead sx={{ backgroundColor: "#f5f5f5" }}>
+        <TableHead sx={{ backgroundColor: "#F8FAFC" }}>
           <TableRow>
             <TableCell>Họ tên</TableCell>
             <TableCell>CCCD</TableCell>
@@ -85,7 +87,7 @@ function TemporaryAbsentTable({ rows }) {
   return (
     <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
       <Table>
-        <TableHead sx={{ backgroundColor: "#f5f5f5" }}>
+        <TableHead sx={{ backgroundColor: "#F8FAFC" }}>
           <TableRow>
             <TableCell>Họ tên</TableCell>
             <TableCell>Từ ngày</TableCell>
@@ -126,7 +128,7 @@ function BirthTable({ rows }) {
   return (
     <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
       <Table>
-        <TableHead sx={{ backgroundColor: "#f5f5f5" }}>
+        <TableHead sx={{ backgroundColor: "#F8FAFC" }}>
           <TableRow>
             <TableCell>Họ tên</TableCell>
             <TableCell>Ngày sinh</TableCell>
@@ -165,7 +167,7 @@ function DeathTable({ rows }) {
   return (
     <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
       <Table>
-        <TableHead sx={{ backgroundColor: "#f5f5f5" }}>
+        <TableHead sx={{ backgroundColor: "#F8FAFC" }}>
           <TableRow>
             <TableCell>Họ tên</TableCell>
             <TableCell>CCCD</TableCell>
@@ -274,18 +276,39 @@ export default function LichSuThayDoiTheoHoDan() {
         Lịch sử thay đổi của hộ dân
       </Typography>
 
-      <Paper sx={{ p: 2, mb: 3, borderRadius: 2 }}>
-        <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+      <Box
+        sx={{
+          display: "flex",
+          gap: 2,
+          backgroundColor: "white",
+          padding: "22px",
+          borderRadius: "12px",
+          boxShadow: "0 2px 10px rgba(0,0,0,0.05)",
+          alignItems: "center",
+          mb: 3,
+        }}
+      >
+        <Box sx={{ flex: 1 }}>
+          <Typography sx={{ fontSize: "13px", mb: 1 }}>Chọn hộ khẩu</Typography>
           <TextField
             select
             fullWidth
-            size="small"
-            label="Chọn hộ khẩu"
             value={selectedHouseholdId}
             onChange={(e) => setSelectedHouseholdId(e.target.value)}
             SelectProps={{ displayEmpty: true }}
-            helperText="Chọn hộ để xem lịch sử thay đổi"
             disabled={loadingList}
+            placeholder="Chọn hộ để xem lịch sử thay đổi"
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                background: "#F1F3F6",
+                borderRadius: "8px",
+                height: "40px",
+                "& fieldset": { border: "none" },
+              },
+              "& .MuiInputBase-input": {
+                padding: "10px 14px",
+              },
+            }}
           >
             <MenuItem value="">
               <em>Chọn hộ khẩu</em>
@@ -296,27 +319,44 @@ export default function LichSuThayDoiTheoHoDan() {
               </MenuItem>
             ))}
           </TextField>
-          <Button variant="contained" onClick={fetchHouseholds} disabled={loadingList}>
+        </Box>
+        <Box sx={{ alignSelf: "flex-end" }}>
+          <Button
+            variant="contained"
+            onClick={fetchHouseholds}
+            disabled={loadingList}
+            sx={{
+              backgroundColor: "#2D66F5",
+              borderRadius: "8px",
+              textTransform: "none",
+              px: 3,
+              py: 1,
+              fontSize: "14px",
+              fontWeight: "500",
+              "&:hover": { backgroundColor: "#1E54D4" },
+            }}
+          >
             Làm mới
           </Button>
         </Box>
-        {selectedHousehold && (
-          <Box sx={{ mt: 2 }}>
-            <Typography sx={{ fontWeight: 700 }}>
-              Mã hộ: {selectedHousehold.houseHoldID}
-            </Typography>
-            <Typography sx={{ color: "#475569" }}>
-              Địa chỉ: {selectedHousehold.address || "-"}
-            </Typography>
-            <Typography sx={{ color: "#0F172A" }}>
-              Chủ hộ: {selectedHousehold.leader?.name || "-"}{" "}
-              {selectedHousehold.leader?.userCardID
-                ? `(${selectedHousehold.leader.userCardID})`
-                : ""}
-            </Typography>
-          </Box>
-        )}
-      </Paper>
+      </Box>
+
+      {selectedHousehold && (
+        <Paper sx={{ p: 2, mb: 3, borderRadius: 2 }}>
+          <Typography sx={{ fontWeight: 700 }}>
+            Mã hộ: {selectedHousehold.houseHoldID}
+          </Typography>
+          <Typography sx={{ color: "#475569" }}>
+            Địa chỉ: {selectedHousehold.address || "-"}
+          </Typography>
+          <Typography sx={{ color: "#0F172A" }}>
+            Chủ hộ: {selectedHousehold.leader?.name || "-"}{" "}
+            {selectedHousehold.leader?.userCardID
+              ? `(${selectedHousehold.leader.userCardID})`
+              : ""}
+          </Typography>
+        </Paper>
+      )}
 
       {error && (
         <Alert severity="error" sx={{ mb: 3 }}>

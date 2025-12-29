@@ -22,8 +22,9 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  IconButton,
 } from "@mui/material";
-import { Search, Filter, ChevronDown, Trash2 } from "lucide-react";
+import { Search, Trash2, ArrowUpDown } from "lucide-react";
 import { useRoleNavigation } from "../../../hooks/useRoleNavigation";
 import AddProfileModal from "../../../feature/profile/AddProfile";
 import ThemHoDan from "../../../feature/admin/QuanLyHoKhau/ThemHoDan";
@@ -33,11 +34,65 @@ import { householdAPI } from "../../../api/apiService";
 function ResidentsTable({ selected, setSelected, households, loading, onDelete, onViewDetail }) {
   const ROWS_PER_PAGE = 10;
   const [page, setPage] = useState(1);
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const { navigateWithRole } = useRoleNavigation();
 
   const pageCount = Math.ceil(households.length / ROWS_PER_PAGE) || 1;
+
+  // Sorting logic
+  const sortedHouseholds = React.useMemo(() => {
+    let sortableHouseholds = [...households];
+    
+    if (sortConfig.key) {
+      sortableHouseholds.sort((a, b) => {
+        let aValue, bValue;
+        
+        switch (sortConfig.key) {
+          case 'houseHoldID':
+            aValue = a.houseHoldID || '';
+            bValue = b.houseHoldID || '';
+            break;
+          case 'createdAt':
+            aValue = new Date(a.createdAt || 0).getTime();
+            bValue = new Date(b.createdAt || 0).getTime();
+            break;
+          case 'memberCount':
+            aValue = a.members?.length || 0;
+            bValue = b.members?.length || 0;
+            break;
+          default:
+            return 0;
+        }
+        
+        if (aValue < bValue) {
+          return sortConfig.direction === 'asc' ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.direction === 'asc' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    
+    return sortableHouseholds;
+  }, [households, sortConfig]);
+
   const start = (page - 1) * ROWS_PER_PAGE;
-  const visibleRows = households.slice(start, start + ROWS_PER_PAGE);
+  const visibleRows = sortedHouseholds.slice(start, start + ROWS_PER_PAGE);
+
+  const handleSort = (key) => {
+    setSortConfig((prevConfig) => {
+      if (prevConfig.key === key) {
+        // Toggle direction
+        return {
+          key,
+          direction: prevConfig.direction === 'asc' ? 'desc' : 'asc'
+        };
+      }
+      // New key, default to ascending
+      return { key, direction: 'asc' };
+    });
+  };
 
   const handleSelectRow = (id) => {
     setSelected((prev) =>
@@ -90,7 +145,7 @@ function ResidentsTable({ selected, setSelected, households, loading, onDelete, 
         sx={{ borderRadius: 3, boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}
       >
         <Table>
-          <TableHead>
+          <TableHead sx={{ backgroundColor: "#F8FAFC" }}>
             <TableRow>
               <TableCell padding="checkbox">
                 <Checkbox
@@ -101,10 +156,52 @@ function ResidentsTable({ selected, setSelected, households, loading, onDelete, 
                   onChange={handleSelectAll}
                 />
               </TableCell>
-              <TableCell align="center">Mã hộ dân</TableCell>
+              <TableCell align="center">
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
+                  Mã hộ dân
+                  <IconButton 
+                    size="small" 
+                    onClick={() => handleSort('houseHoldID')}
+                    sx={{ 
+                      padding: '2px',
+                      color: sortConfig.key === 'houseHoldID' ? '#2D66F5' : '#666'
+                    }}
+                  >
+                    <ArrowUpDown size={16} />
+                  </IconButton>
+                </Box>
+              </TableCell>
               <TableCell align="left">Chủ hộ</TableCell>
-              <TableCell align="center">Ngày khởi tạo</TableCell>
-              <TableCell align="center">Số thành viên</TableCell>
+              <TableCell align="center">
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
+                  Ngày khởi tạo
+                  <IconButton 
+                    size="small" 
+                    onClick={() => handleSort('createdAt')}
+                    sx={{ 
+                      padding: '2px',
+                      color: sortConfig.key === 'createdAt' ? '#2D66F5' : '#666'
+                    }}
+                  >
+                    <ArrowUpDown size={16} />
+                  </IconButton>
+                </Box>
+              </TableCell>
+              <TableCell align="center">
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
+                  Số thành viên
+                  <IconButton 
+                    size="small" 
+                    onClick={() => handleSort('memberCount')}
+                    sx={{ 
+                      padding: '2px',
+                      color: sortConfig.key === 'memberCount' ? '#2D66F5' : '#666'
+                    }}
+                  >
+                    <ArrowUpDown size={16} />
+                  </IconButton>
+                </Box>
+              </TableCell>
               <TableCell align="center">Thao tác</TableCell>
             </TableRow>
           </TableHead>
@@ -173,7 +270,6 @@ function ResidentsTable({ selected, setSelected, households, loading, onDelete, 
           count={pageCount}
           page={page}
           onChange={(e, value) => setPage(value)}
-          shape="rounded"
         />
       </Box>
     </Box>
@@ -194,7 +290,6 @@ export default function Quanlydancu() {
   const [householdToDelete, setHouseholdToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterType, setFilterType] = useState("");
   const { navigateWithRole } = useRoleNavigation();
 
   // Fetch households on component mount
@@ -444,77 +539,6 @@ export default function Quanlydancu() {
               }}
             />
           </Box>
-
-          {/* FILTER SELECT */}
-          <Box sx={{ width: "220px" }}>
-            <Typography sx={{ fontSize: "13px", mb: 1 }}>Lọc theo</Typography>
-
-            <Box
-              sx={{
-                backgroundColor: "#F1F3F6",
-                height: "40px",
-                borderRadius: "8px",
-                display: "flex",
-                alignItems: "center",
-                px: 1,
-                overflow: "hidden",
-                border: "1px solid #bec0c5ff",
-                "&:hover": {
-                  borderColor: "#000000ff",
-                },
-              }}
-            >
-              <Filter
-                size={18}
-                color="#555"
-                style={{ marginLeft: 8, marginRight: 6 }}
-              />
-
-              <Select
-                fullWidth
-                displayEmpty
-                variant="standard"
-                disableUnderline
-                value={filterType}
-                onChange={(e) => setFilterType(e.target.value)}
-                IconComponent={() => (
-                  <ChevronDown size={18} style={{ marginRight: 2 }} />
-                )}
-                sx={{
-                  flex: 1,
-                  fontSize: "14px",
-                  backgroundColor: "transparent",
-                  "& .MuiSelect-select": {
-                    backgroundColor: "transparent !important",
-                    paddingY: "10px",
-                    paddingLeft: "6px",
-                  },
-                }}
-              >
-                <MenuItem value="">Tất cả</MenuItem>
-                <MenuItem value="hokhau">Hộ khẩu</MenuItem>
-                <MenuItem value="nhankhau">Nhân khẩu</MenuItem>
-              </Select>
-            </Box>
-          </Box>
-
-          {/* SEARCH BUTTON */}
-          <Button
-            variant="contained"
-            onClick={handleSearch}
-            sx={{
-              backgroundColor: "#2D66F5",
-              borderRadius: "8px",
-              textTransform: "none",
-              height: "40px",
-              width: "120px",
-              "&:hover": { backgroundColor: "#1E54D4" },
-              alignItems: "center",
-              mt: "26px",
-            }}
-          >
-            Tìm kiếm
-          </Button>
         </Box>
 
         {/* TABLE AREA */}

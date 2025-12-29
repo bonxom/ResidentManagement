@@ -111,6 +111,12 @@ export function SidebarForAccountant({ user, onWidthChange }) {
         to="/accountant/fee"
         isExpanded={isExpanded}
       />
+      <MenuItem
+        icon={<CheckCircle size={18} />}
+        label="Phê duyệt"
+        to="/accountant/pheduyet"
+        isExpanded={isExpanded}
+      />
 
       {/* HISTORY */}
       {isExpanded && <SectionTitle text="History" />}

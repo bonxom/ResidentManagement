@@ -17,7 +17,7 @@ import {
   Pagination,
   CircularProgress,
 } from "@mui/material";
-import { Search, Eye } from "lucide-react";
+import { Search } from "lucide-react";
 import { useRoleNavigation } from "../../../hooks/useRoleNavigation";
 import { householdAPI } from "../../../api/apiService";
 // ===== COMPONENT BẢNG TẠM TRÚ TẠM VẮNG =====
@@ -85,11 +85,14 @@ function TamTruVangTable({ households, loading, onViewDetail }) {
                   <Button
                     size="small"
                     variant="outlined"
-                    startIcon={<Eye size={14} />}
                     onClick={() => onViewDetail(row)}
-                    sx={{ textTransform: "none", borderRadius: "6px" }}
+                    sx={{
+                      textTransform: "none",
+                      minWidth: "60px",
+                      fontSize: "13px"
+                    }}
                   >
-                    Chi tiết
+                    Xem chi tiết
                   </Button>
                 </TableCell>
               </TableRow>
@@ -98,13 +101,11 @@ function TamTruVangTable({ households, loading, onViewDetail }) {
         </Table>
       </TableContainer>
 
-      <Box sx={{ mt: 3, display: "flex", justifyContent: "center" }}>
+      <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
         <Pagination
           count={pageCount}
           page={page}
           onChange={(e, value) => setPage(value)}
-          color="primary"
-          shape="rounded"
         />
       </Box>
     </Box>

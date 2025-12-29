@@ -317,16 +317,16 @@ export const removeMember = async (req, res) => {
 // @desc Lấy danh sách thành viên của hộ theo ID (lấy CCCD, tên, Quan hệ với chủ hộ, Ngày tháng năm sinh)
 // @route  GET /api/households/:householdId/member-summaries
 export const getHouseholdMemberSummaries = async (req, res) => {
-  const { householdId } = req.params;
+  const { id } = req.params;
   try {
-    const isOwnHousehold = req.user?.household?.toString() === householdId;
+    const isOwnHousehold = req.user?.household?.toString() === id;
     const userPermissions = (req.user?.permissions || []).map((p) => p.toUpperCase());
     const canViewAll = userPermissions.includes("VIEW HOUSEHOLD LIST");
     if (!isOwnHousehold && !canViewAll) {
       return res.status(403).json({ message: "You can only view members of your household" });
     }
 
-    const household = await Household.findById(householdId);
+    const household = await Household.findById(id);
     if (!household) {
       return res.status(404).json({ message: "Household not found" });
     }
@@ -337,6 +337,47 @@ export const getHouseholdMemberSummaries = async (req, res) => {
   } catch (error) { 
     res.status(500).json({ message: error.message });
   } 
+}
+
+// @desc    Lấy thông tin chi tiết một thành viên trong hộ gia đình
+// @route   GET /api/households/:householdId/member/:userId
+export const getHouseholdMemberById = async (req, res) => {
+  const { householdId, userId } = req.params;
+  try {
+    // Kiểm tra quyền: phải là thành viên của hộ đó hoặc có quyền VIEW HOUSEHOLD LIST
+    const isOwnHousehold = req.user?.household?.toString() === householdId;
+    const userPermissions = (req.user?.permissions || []).map((p) => p.toUpperCase());
+    const canViewAll = userPermissions.includes("VIEW HOUSEHOLD LIST");
+    
+    if (!isOwnHousehold && !canViewAll) {
+      return res.status(403).json({ message: "You can only view members of your household" });
+    }
+
+    // Kiểm tra household tồn tại
+    const household = await Household.findById(householdId).populate("leader", "name");
+    if (!household) {
+      return res.status(404).json({ message: "Household not found" });
+    }
+
+    // Kiểm tra user có phải là thành viên của household không
+    const isMember = household.members.some(m => m.toString() === userId);
+    if (!isMember) {
+      return res.status(404).json({ message: "User is not a member of this household" });
+    }
+
+    // Lấy thông tin user
+    const member = await User.findById(userId)
+      .select("-password")
+      .populate("household", "houseHoldID address leader");
+    
+    if (!member) {
+      return res.status(404).json({ message: "Member not found" });
+    }
+
+    res.status(200).json(member);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 }
 
 // @desc    Tách hộ (Một thành viên ra ở riêng, lập hộ mới)

@@ -49,6 +49,7 @@ const INIT_PERMISSIONS = {
   "CALCULATE FEE": "Calculate household fee payable",
   "RECORD PAYMENT": "Record fee payment transaction",
   "VIEW FEE STATS": "View fee collection statistics",
+  "VIEW BASIC STATS": "View basic dashboard statistics",
 
   // --- REQUEST & APPROVAL SYSTEM (MỚI) ---
   "READ REQUESTS LIST": "View list of registration/update requests",
@@ -56,7 +57,7 @@ const INIT_PERMISSIONS = {
   "APPROVE REQUEST": "Approve a request (Register, Update Info)",
 };
 
-const HOUSE_MEMBER_PERMISSIONS = ["VIEW USER", "VIEW HOUSEHOLD"];
+const HOUSE_MEMBER_PERMISSIONS = ["VIEW USER", "VIEW HOUSEHOLD", "VIEW BASIC STATS"];
 
 const INIT_ROLES = {
   "HAMLET LEADER": [
@@ -125,6 +126,7 @@ const INIT_ROLES = {
   // Cư dân vãng lai / Mới đăng ký (Chưa vào hộ)
   MEMBER: [
     "VIEW USER", // Chỉ xem được profile bản thân
+    "VIEW BASIC STATS", // Xem thống kê cơ bản
   ],
 };
 

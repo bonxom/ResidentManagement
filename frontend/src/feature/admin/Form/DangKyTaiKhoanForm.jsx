@@ -6,7 +6,9 @@ import {
   Box,
   Typography,
   Grid,
+  IconButton,
 } from "@mui/material";
+import { X } from "lucide-react";
 
 function InfoField({ label, value }) {
   return (
@@ -86,7 +88,18 @@ export default function DangKyTaiKhoanForm({
         },
       }}
     >
-      <DialogContent sx={{ padding: "24px 32px" }}>
+      <DialogContent sx={{ padding: "24px 32px", position: "relative" }}>
+        <IconButton
+          onClick={onClose}
+          sx={{
+            position: "absolute",
+            right: 8,
+            top: 8,
+            color: "#666",
+          }}
+        >
+          <X size={20} />
+        </IconButton>
         {/* Title */}
         <Typography
           sx={{

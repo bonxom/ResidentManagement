@@ -10,11 +10,13 @@ import {
   Box,
   Button,
   TextField,
+  InputAdornment,
   Chip,
   CircularProgress,
   Alert,
   Typography,
 } from "@mui/material";
+import { Search, Eye } from "lucide-react";
 import DangKyTaiKhoanForm from "../../../feature/admin/Form/DangKyTaiKhoanForm";
 import { requestAPI } from "../../../api/apiService";
 
@@ -122,12 +124,12 @@ export default function DanhSachDangKyTaiKhoan() {
         Từ chối
       </Button>
       <Button
-        variant="contained"
+        variant="outlined"
         size="small"
         onClick={() => setSelectedRequest(request)}
-        sx={{ textTransform: "none" }}
+        sx={{ textTransform: "none", minWidth: "40px", padding: "4px 8px" }}
       >
-        Xem
+        <Eye size={16} />
       </Button>
     </Box>
   );
@@ -171,14 +173,22 @@ export default function DanhSachDangKyTaiKhoan() {
         <Typography variant="h5" sx={{ fontWeight: 700 }}>
           Quản lý yêu cầu tài khoản
         </Typography>
-        <Box sx={{ display: "flex", gap: 1 }}>
-          <Button variant="outlined" onClick={() => setSearchText("")}>
-            Xóa tìm kiếm
-          </Button>
-          <Button variant="contained" onClick={fetchRequests}>
-            Làm mới
-          </Button>
-        </Box>
+        <Button
+          variant="contained"
+          onClick={fetchRequests}
+          sx={{
+            backgroundColor: "#2D66F5",
+            borderRadius: "8px",
+            textTransform: "none",
+            px: 3,
+            py: 1,
+            fontSize: "14px",
+            fontWeight: "500",
+            "&:hover": { backgroundColor: "#1E54D4" },
+          }}
+        >
+          Làm mới
+        </Button>
       </Box>
 
       <Box sx={{ display: "flex", gap: 1.5, mt: 2 }}>
@@ -187,7 +197,18 @@ export default function DanhSachDangKyTaiKhoan() {
             key={tab.key}
             variant={activeTab === tab.key ? "contained" : "outlined"}
             onClick={() => setActiveTab(tab.key)}
-            sx={{ textTransform: "none" }}
+            sx={{
+              textTransform: "none",
+              ...(activeTab === tab.key && {
+                backgroundColor: "#2D66F5",
+                borderRadius: "8px",
+                px: 3,
+                py: 1,
+                fontSize: "14px",
+                fontWeight: "500",
+                "&:hover": { backgroundColor: "#1E54D4" },
+              }),
+            }}
           >
             {tab.label}
           </Button>
@@ -196,22 +217,41 @@ export default function DanhSachDangKyTaiKhoan() {
 
       <Box
         sx={{
-          marginTop: "20px",
-          background: "#f7f9fc",
-          padding: "16px",
-          borderRadius: "12px",
           display: "flex",
-          gap: "12px",
+          gap: 2,
+          backgroundColor: "white",
+          padding: "22px",
+          borderRadius: "12px",
+          boxShadow: "0 2px 10px rgba(0,0,0,0.05)",
           alignItems: "center",
+          mb: 4,
+          mt: 2,
         }}
       >
-        <TextField
-          fullWidth
-          label="Tìm kiếm (Tên / Email / CCCD)"
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
-          size="small"
-        />
+        <Box sx={{ flex: 1 }}>
+          <Typography sx={{ fontSize: "13px", mb: 1 }}>Tìm kiếm</Typography>
+          <TextField
+            fullWidth
+            placeholder="Nhập tên, email hoặc CCCD..."
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search size={18} color="#777" />
+                </InputAdornment>
+              ),
+              sx: {
+                background: "#F1F3F6",
+                borderRadius: "8px",
+                height: "40px",
+                "& .MuiInputBase-input": {
+                  padding: "10px 0px",
+                },
+              },
+            }}
+          />
+        </Box>
       </Box>
 
       {error && (
@@ -227,7 +267,7 @@ export default function DanhSachDangKyTaiKhoan() {
       ) : (
         <TableContainer component={Paper} sx={{ mt: 3 }}>
           <Table>
-            <TableHead sx={{ backgroundColor: "#f5f5f5" }}>
+            <TableHead sx={{ backgroundColor: "#F8FAFC" }}>
               <TableRow>
                 <TableCell sx={{ fontWeight: "bold", padding: "12px 16px" }}>
                   Họ và tên

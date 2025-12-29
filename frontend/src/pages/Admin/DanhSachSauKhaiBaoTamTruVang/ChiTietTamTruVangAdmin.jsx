@@ -23,18 +23,71 @@ import {
   DialogActions,
   Select,
   MenuItem,
+  IconButton,
 } from "@mui/material";
-import { Search, ArrowLeft, Eye, X } from "lucide-react";
+import { Search, Eye, X, ArrowUpDown } from "lucide-react";
 import { householdAPI, userAPI } from "../../../api/apiService";
 
 // ===== COMPONENT BẢNG CHI TIẾT =====
 function DetailTable({ data, loading, onViewMember, onComplete }) {
   const ROWS_PER_PAGE = 10;
   const [page, setPage] = useState(1);
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
 
   const pageCount = Math.ceil(data.length / ROWS_PER_PAGE) || 1;
+
+  // Sorting logic
+  const sortedData = React.useMemo(() => {
+    let sortableData = [...data];
+    
+    if (sortConfig.key) {
+      sortableData.sort((a, b) => {
+        let aValue, bValue;
+        
+        switch (sortConfig.key) {
+          case 'name':
+            aValue = a.name || '';
+            bValue = b.name || '';
+            break;
+          case 'startDate':
+            aValue = new Date(a.startDate || 0).getTime();
+            bValue = new Date(b.startDate || 0).getTime();
+            break;
+          case 'endDate':
+            aValue = new Date(a.endDate || 0).getTime();
+            bValue = new Date(b.endDate || 0).getTime();
+            break;
+          default:
+            return 0;
+        }
+        
+        if (aValue < bValue) {
+          return sortConfig.direction === 'asc' ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.direction === 'asc' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    
+    return sortableData;
+  }, [data, sortConfig]);
+
   const start = (page - 1) * ROWS_PER_PAGE;
-  const visibleRows = data.slice(start, start + ROWS_PER_PAGE);
+  const visibleRows = sortedData.slice(start, start + ROWS_PER_PAGE);
+
+  const handleSort = (key) => {
+    setSortConfig((prevConfig) => {
+      if (prevConfig.key === key) {
+        return {
+          key,
+          direction: prevConfig.direction === 'asc' ? 'desc' : 'asc'
+        };
+      }
+      return { key, direction: 'asc' };
+    });
+  };
 
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
@@ -77,13 +130,55 @@ function DetailTable({ data, loading, onViewMember, onComplete }) {
           <TableHead sx={{ backgroundColor: "#F8FAFC" }}>
             <TableRow>
               <TableCell sx={{ fontWeight: "600" }}>CCCD</TableCell>
-              <TableCell sx={{ fontWeight: "600" }}>Họ và tên</TableCell>
+              <TableCell sx={{ fontWeight: "600" }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  Họ và tên
+                  <IconButton 
+                    size="small" 
+                    onClick={() => handleSort('name')}
+                    sx={{ 
+                      padding: '2px',
+                      color: sortConfig.key === 'name' ? '#2D66F5' : '#666'
+                    }}
+                  >
+                    <ArrowUpDown size={16} />
+                  </IconButton>
+                </Box>
+              </TableCell>
               <TableCell sx={{ fontWeight: "600" }}>
                 Quan hệ với chủ hộ
               </TableCell>
               <TableCell sx={{ fontWeight: "600" }}>Loại</TableCell>
-              <TableCell sx={{ fontWeight: "600" }}>Bắt đầu</TableCell>
-              <TableCell sx={{ fontWeight: "600" }}>Kết thúc</TableCell>
+              <TableCell sx={{ fontWeight: "600" }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  Bắt đầu
+                  <IconButton 
+                    size="small" 
+                    onClick={() => handleSort('startDate')}
+                    sx={{ 
+                      padding: '2px',
+                      color: sortConfig.key === 'startDate' ? '#2D66F5' : '#666'
+                    }}
+                  >
+                    <ArrowUpDown size={16} />
+                  </IconButton>
+                </Box>
+              </TableCell>
+              <TableCell sx={{ fontWeight: "600" }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  Kết thúc
+                  <IconButton 
+                    size="small" 
+                    onClick={() => handleSort('endDate')}
+                    sx={{ 
+                      padding: '2px',
+                      color: sortConfig.key === 'endDate' ? '#2D66F5' : '#666'
+                    }}
+                  >
+                    <ArrowUpDown size={16} />
+                  </IconButton>
+                </Box>
+              </TableCell>
               <TableCell sx={{ fontWeight: "600" }} align="center">
                 Thao tác
               </TableCell>
@@ -145,14 +240,11 @@ function DetailTable({ data, loading, onViewMember, onComplete }) {
           </TableBody>
         </Table>
       </TableContainer>
-
       <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
         <Pagination
           count={pageCount}
           page={page}
           onChange={(e, value) => setPage(value)}
-          shape="rounded"
-          color="primary"
         />
       </Box>
     </Box>
@@ -416,14 +508,8 @@ export default function ChiTietTamTruVangAdmin() {
 
   return (
     <Box sx={{ padding: "24px 32px" }}>
-      {/* Nút quay lại và Tiêu đề */}
-      <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 4 }}>
-        <Button
-          onClick={() => navigate(-1)}
-          sx={{ minWidth: "40px", color: "#666" }}
-        >
-          <ArrowLeft size={24} />
-        </Button>
+      {/* Tiêu đề */}
+      <Box sx={{ mb: 4 }}>
         <Typography sx={{ fontSize: "26px", fontWeight: "600" }}>
           Chi tiết Tạm trú / Tạm vắng hộ dân
         </Typography>
