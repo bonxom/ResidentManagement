@@ -141,9 +141,9 @@ export const getUserDashboardStats = async (req, res) => {
     const activeFees = await Fee.find({ status: 'ACTIVE' });
 
     // 4. Lấy các giao dịch đã VERIFIED của hộ này
-    const paidTransactions = await Transaction.find({ 
+    const paidTransactions = await Transaction.find({
       household: userHouseholdId,
-      status: 'VERIFIED'
+      $or: [{ status: "VERIFIED" }, { status: { $exists: false } }],
     });
 
     // 5. Tính toán chi tiết từng khoản thu (giống getUnpaidAndPaidFees)
@@ -154,13 +154,14 @@ export const getUserDashboardStats = async (req, res) => {
     let totalUnpaid = 0;
 
     activeFees.forEach(fee => {
+      const isMandatory = fee.type === "MANDATORY";
       const paidTrans = paidTransactions.filter(t => t.fee.toString() === fee._id.toString());
       const paidAmount = paidTrans.reduce((sum, t) => sum + t.amount, 0);
       
       let requiredAmount = 0;
       let status = "UNPAID";
 
-      if (fee.type === "MANDATORY") {
+      if (isMandatory) {
         const months = 12;
         requiredAmount = fee.unitPrice * months * memberCount;
         
@@ -194,13 +195,17 @@ export const getUserDashboardStats = async (req, res) => {
         lastPaymentDate: paidTrans.length > 0 ? paidTrans[paidTrans.length - 1].createdAt : null
       };
       
-      totalAmountDue += requiredAmount;
-      totalPaid += paidAmount;
+      if (isMandatory) {
+        totalAmountDue += requiredAmount;
+        totalPaid += paidAmount;
+      }
       
       // Phân loại
       if (remaining > 0) {
         unpaidFees.push(feeDetail);
-        totalUnpaid += remaining;
+        if (isMandatory) {
+          totalUnpaid += remaining;
+        }
       }
       
       if (paidAmount > 0) {

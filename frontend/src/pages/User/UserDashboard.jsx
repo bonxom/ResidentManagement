@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Grid, Alert } from '@mui/material';
-import { Home, Users, Wallet, Clock } from 'lucide-react';
+import { Box, Grid, Alert, Button, Paper, Typography } from '@mui/material';
+import { Home, Users, Wallet, Clock, User, Settings, ShieldCheck, UserPlus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../../store/authStore';
 import { statsAPI } from '../../api/apiService';
 import GreetingHeader from '../../feature/dashboard/User/GreetingHeader';
@@ -12,11 +13,21 @@ import LoadingState from '../../feature/dashboard/User/LoadingState';
 
 function UserDashboard() {
   const { user } = useAuthStore();
+  const navigate = useNavigate();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const userRole = user?.role?.role_name;
+  const isMember = userRole === 'MEMBER';
 
   useEffect(() => {
+    if (isMember) {
+      setLoading(false);
+      setStats(null);
+      setError(null);
+      return;
+    }
+
     const fetchStats = async () => {
       try {
         setLoading(true);
@@ -41,7 +52,213 @@ function UserDashboard() {
     };
 
     fetchStats();
-  }, []);
+  }, [isMember]);
+
+  if (isMember) {
+    const statusConfig = {
+      VERIFIED: { label: 'Đã xác minh', color: '#16a34a', bg: '#dcfce7' },
+      PENDING: { label: 'Chờ xác minh', color: '#f59e0b', bg: '#fef3c7' },
+      LOCKED: { label: 'Tạm khóa', color: '#ef4444', bg: '#fee2e2' },
+      DECEASED: { label: 'Đã mất', color: '#6b7280', bg: '#f1f5f9' },
+    };
+    const statusInfo = statusConfig[user?.status] || {
+      label: 'Chưa cập nhật',
+      color: '#64748b',
+      bg: '#f1f5f9',
+    };
+    const roleLabel = 'Cư dân (chưa thuộc hộ)';
+    const steps = [
+      'Liên hệ tổ trưởng để được thêm vào hộ gia đình.',
+      'Chuẩn bị CCCD và thông tin cư trú để xác minh.',
+      'Sau khi được thêm vào hộ, bạn sẽ xem được khoản nộp và lịch sử.',
+    ];
+
+    return (
+      <Box sx={{ p: 4 }}>
+        <GreetingHeader userName={user?.name} />
+
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          <Grid item xs={12} md={7}>
+            <Paper
+              sx={{
+                borderRadius: '16px',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                overflow: 'hidden',
+                height: '100%',
+              }}
+            >
+              <Box
+                sx={{
+                  p: 3,
+                  background: 'linear-gradient(135deg, #e2e8f0 0%, #f8fafc 100%)',
+                  borderBottom: '1px solid #e2e8f0',
+                }}
+              >
+                <Typography sx={{ fontSize: '20px', fontWeight: 600, color: '#1e293b' }}>
+                  Trạng thái tài khoản
+                </Typography>
+                <Typography sx={{ fontSize: '14px', color: '#64748b', mt: 0.5 }}>
+                  Bạn chưa được liên kết vào hộ gia đình.
+                </Typography>
+              </Box>
+
+              <Box sx={{ p: 3 }}>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                      px: 2,
+                      py: 1.25,
+                      borderRadius: '12px',
+                      bgcolor: statusInfo.bg,
+                      border: `1px solid ${statusInfo.color}33`,
+                    }}
+                  >
+                    <ShieldCheck size={18} color={statusInfo.color} />
+                    <Box>
+                      <Typography variant="caption" sx={{ color: '#64748b' }}>
+                        Trạng thái
+                      </Typography>
+                      <Typography sx={{ fontWeight: 600, color: statusInfo.color }}>
+                        {statusInfo.label}
+                      </Typography>
+                    </Box>
+                  </Box>
+
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                      px: 2,
+                      py: 1.25,
+                      borderRadius: '12px',
+                      bgcolor: '#f8fafc',
+                      border: '1px solid #e2e8f0',
+                    }}
+                  >
+                    <User size={18} color="#2563eb" />
+                    <Box>
+                      <Typography variant="caption" sx={{ color: '#64748b' }}>
+                        Vai trò
+                      </Typography>
+                      <Typography sx={{ fontWeight: 600, color: '#1e293b' }}>
+                        {roleLabel}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Box>
+
+                <Box
+                  sx={{
+                    mt: 3,
+                    p: 2.5,
+                    borderRadius: '14px',
+                    bgcolor: '#eef2ff',
+                    border: '1px solid #c7d2fe',
+                  }}
+                >
+                  <Typography sx={{ fontWeight: 600, color: '#1e293b', mb: 0.5 }}>
+                    Quyền truy cập hiện tại
+                  </Typography>
+                  <Typography sx={{ color: '#475569', fontSize: '14px' }}>
+                    Bạn có thể xem và cập nhật thông tin cá nhân, quản lý cài đặt tài khoản.
+                  </Typography>
+                </Box>
+              </Box>
+            </Paper>
+          </Grid>
+
+          <Grid item xs={12} md={5}>
+            <Paper
+              sx={{
+                borderRadius: '16px',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                overflow: 'hidden',
+                height: '100%',
+              }}
+            >
+              <Box
+                sx={{
+                  p: 3,
+                  background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
+                  borderBottom: '1px solid #f1e1a6',
+                }}
+              >
+                <Typography sx={{ fontSize: '20px', fontWeight: 600, color: '#1e293b' }}>
+                  Bước tiếp theo
+                </Typography>
+                <Typography sx={{ fontSize: '14px', color: '#7c6f3f', mt: 0.5 }}>
+                  Hoàn tất liên kết hộ để mở khóa tính năng.
+                </Typography>
+              </Box>
+
+              <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {steps.map((step, index) => (
+                  <Box key={step} sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-start' }}>
+                    <Box
+                      sx={{
+                        width: 28,
+                        height: 28,
+                        borderRadius: '50%',
+                        bgcolor: '#f59e0b',
+                        color: 'white',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontWeight: 700,
+                        fontSize: '14px',
+                        flexShrink: 0,
+                      }}
+                    >
+                      {index + 1}
+                    </Box>
+                    <Typography sx={{ color: '#475569', fontSize: '14px' }}>
+                      {step}
+                    </Typography>
+                  </Box>
+                ))}
+
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mt: 1 }}>
+                  <Button
+                    variant="contained"
+                    startIcon={<UserPlus size={18} />}
+                    onClick={() => navigate('/member/profile')}
+                    sx={{
+                      textTransform: 'none',
+                      borderRadius: '10px',
+                      backgroundColor: '#2563eb',
+                      '&:hover': { backgroundColor: '#1d4ed8' },
+                    }}
+                  >
+                    Cập nhật hồ sơ
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    startIcon={<Settings size={18} />}
+                    onClick={() => navigate('/member/setting')}
+                    sx={{
+                      textTransform: 'none',
+                      borderRadius: '10px',
+                      borderColor: '#cbd5f5',
+                      color: '#1e293b',
+                      '&:hover': { borderColor: '#94a3b8', backgroundColor: '#f8fafc' },
+                    }}
+                  >
+                    Cài đặt tài khoản
+                  </Button>
+                </Box>
+              </Box>
+            </Paper>
+          </Grid>
+        </Grid>
+
+        <PersonalInfo user={user} />
+      </Box>
+    );
+  }
 
   // Chuẩn bị dữ liệu cho các components
   const quickStats = [

@@ -22,8 +22,13 @@ const transactionSchema = new mongoose.Schema(
       min: 0,
     },
     note: { // Ghi chú (nếu nộp thiếu/nộp hộ)
-      type: String, 
-    }
+      type: String,
+    },
+    status: {
+      type: String,
+      enum: ["PENDING", "VERIFIED"],
+      default: "VERIFIED",
+    },
   },
   { timestamps: true } // Có createdAt = Ngày nộp tiền
 );

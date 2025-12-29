@@ -30,7 +30,8 @@ export const createTransaction = async (req, res) => {
       household: householdId,
       payer: payerId, 
       amount: parsedAmount,
-      note
+      note,
+      status: "VERIFIED",
     });
 
     res.status(201).json(transaction);

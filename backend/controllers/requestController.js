@@ -168,15 +168,29 @@ export const createBirthRequest = async (req, res) => {
   try {
     const { name, dob, sex, birthLocation, ethnic, birthCertificateNumber } = req.body;
     const user = req.user;
+    const normalizedBirthCert = birthCertificateNumber?.toString().trim();
 
     if (!user.household) return res.status(400).json({ message: "Bạn chưa có hộ khẩu." });
-    if (!name || !dob || !sex || !birthLocation || !ethnic || !birthCertificateNumber) {
+    if (!name || !dob || !sex || !birthLocation || !ethnic || !normalizedBirthCert) {
       return res.status(400).json({ message: "Thiếu thông tin khai sinh." });
     }
 
-    // Check xem số khai sinh đã tồn tại chưa (tránh trùng lặp)
-    const exist = await User.findOne({ userCardID: birthCertificateNumber });
-    if(exist) return res.status(400).json({ message: "Số giấy khai sinh này đã tồn tại trong hệ thống." });
+    // Check trùng số giấy khai sinh đã lưu trong lịch sử hoặc yêu cầu đang chờ/đã duyệt
+    const existingBirthHistory = await ResidentHistory.findOne({
+      "births.birthCertificateNumber": normalizedBirthCert,
+    });
+    if (existingBirthHistory) {
+      return res.status(400).json({ message: "Số giấy khai sinh này đã tồn tại trong hệ thống." });
+    }
+
+    const existingBirthRequest = await Request.findOne({
+      type: "BIRTH_REPORT",
+      status: { $in: ["PENDING", "APPROVED"] },
+      "requestData.birthCertificateNumber": normalizedBirthCert,
+    });
+    if (existingBirthRequest) {
+      return res.status(400).json({ message: "Số giấy khai sinh này đã tồn tại trong hệ thống." });
+    }
 
     const request = await Request.create({
       requester: user._id,
@@ -188,7 +202,7 @@ export const createBirthRequest = async (req, res) => {
         sex,
         birthLocation,
         ethnic,
-        birthCertificateNumber,
+        birthCertificateNumber: normalizedBirthCert,
       }
     });
     res.status(201).json(request);
@@ -549,6 +563,7 @@ export const reviewRequest = async (req, res) => {
               amount,
               payer: request.requester,
               note: txNotes,
+              status: "VERIFIED",
             });
           }
           break;

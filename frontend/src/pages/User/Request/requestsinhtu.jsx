@@ -93,7 +93,11 @@ export default function RequestSinhTu() {
         setSuccess("Đã gửi yêu cầu khai tử.");
       }
     } catch (err) {
-      const msg = err?.message || err?.customMessage || "Gửi yêu cầu thất bại.";
+      const msg =
+        err?.response?.data?.message ||
+        err?.customMessage ||
+        err?.message ||
+        "Gửi yêu cầu thất bại.";
       setError(msg);
     } finally {
       setLoading(false);
