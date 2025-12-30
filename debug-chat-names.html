@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Chat Names</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        button { padding: 10px 20px; margin: 10px; font-size: 16px; }
+        .result { margin-top: 20px; padding: 10px; border: 1px solid #ccc; max-height: 400px; overflow-y: auto; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .message { margin: 10px 0; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        .user { margin: 5px 0; padding: 5px; background-color: #f8f9fa; border-radius: 3px; }
+        input { padding: 8px; margin: 5px; width: 200px; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Debug Chat Names</h1>
+    
+    <button onclick="debugMessages()">Debug Tin Nhắn & Users</button>
+    
+    <div>
+        <h3>Sửa tên user:</h3>
+        <input type="text" id="userEmail" placeholder="Email user" value="">
+        <input type="text" id="newName" placeholder="Tên mới" value="">
+        <button onclick="fixUserName()">Sửa Tên</button>
+    </div>
+    
+    <div id="result"></div>
+    
+    <script>
+        const resultDiv = document.getElementById('result');
+        
+        async function debugMessages() {
+            resultDiv.innerHTML = '<p>🔄 Đang debug tin nhắn và users...</p>';
+            
+            try {
+                const response = await fetch('http://localhost:3000/api/chat/debug-messages');
+                const data = await response.json();
+                
+                let html = '<div class="result success">';
+                html += '<h3>📨 Tin nhắn gần đây:</h3>';
+                
+                data.messages.forEach(msg => {
+                    html += `
+                        <div class="message">
+                            <strong>Nội dung:</strong> ${msg.content}<br>
+                            <strong>Người gửi:</strong> ${msg.sender?.name || 'N/A'} (${msg.sender?.email || 'N/A'})<br>
+                            <strong>Role:</strong> ${msg.sender?.role || 'N/A'}<br>
+                            <strong>Thời gian:</strong> ${new Date(msg.createdAt).toLocaleString()}<br>
+                            <strong>Sender ID:</strong> ${msg.sender?._id || 'N/A'}
+                        </div>
+                    `;
+                });
+                
+                html += '<h3>👥 Tất cả users:</h3>';
+                data.users.forEach(user => {
+                    html += `
+                        <div class="user">
+                            <strong>${user.name}</strong> (${user.email}) - Role: ${user.role || 'N/A'} - ID: ${user._id}
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+                resultDiv.innerHTML = html;
+                
+                // Tự động điền email nếu tìm thấy user có tên lạ
+                const suspiciousUser = data.users.find(u => 
+                    u.name.includes('Tổ Trưởng') || u.name.includes('Khá Văn Bịp')
+                );
+                
+                if (suspiciousUser) {
+                    document.getElementById('userEmail').value = suspiciousUser.email;
+                    document.getElementById('newName').value = 'Admin Tổ Trưởng';
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h3>❌ Lỗi</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function fixUserName() {
+            const email = document.getElementById('userEmail').value;
+            const newName = document.getElementById('newName').value;
+            
+            if (!email || !newName) {
+                alert('Vui lòng nhập email và tên mới');
+                return;
+            }
+            
+            resultDiv.innerHTML = '<p>🔄 Đang sửa tên user...</p>';
+            
+            try {
+                const response = await fetch('http://localhost:3000/api/chat/fix-user-name', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        newName: newName
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="result success">
+                            <h3>✅ Sửa tên thành công!</h3>
+                            <p><strong>Email:</strong> ${data.email}</p>
+                            <p><strong>Tên cũ:</strong> ${data.oldName}</p>
+                            <p><strong>Tên mới:</strong> ${data.newName}</p>
+                            <p>🔄 Hãy refresh trang chat để thấy thay đổi!</p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            <h3>❌ Lỗi</h3>
+                            <p>${data.message}</p>
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h3>❌ Lỗi</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Tự động debug khi load trang
+        window.onload = function() {
+            setTimeout(debugMessages, 1000);
+        };
+    </script>
+</body>
+</html>

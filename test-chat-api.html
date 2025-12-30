@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Chat API</title>
+</head>
+<body>
+    <h1>Test Chat API</h1>
+    <div id="result"></div>
+    
+    <script>
+        // Test function
+        async function testChatAPI() {
+            const resultDiv = document.getElementById('result');
+            
+            try {
+                // Test 1: Check if backend is running
+                resultDiv.innerHTML += '<h3>Test 1: Backend Health Check</h3>';
+                const healthResponse = await fetch('http://localhost:3000/api/users');
+                resultDiv.innerHTML += `<p>Backend Status: ${healthResponse.status === 401 ? 'Running (401 = Need Auth)' : 'Error'}</p>`;
+                
+                // Test 2: Try to get participants without auth (should get 401)
+                resultDiv.innerHTML += '<h3>Test 2: Chat Participants (No Auth)</h3>';
+                const participantsResponse = await fetch('http://localhost:3000/api/chat/participants');
+                resultDiv.innerHTML += `<p>Participants Status: ${participantsResponse.status} (Should be 401)</p>`;
+                
+                // Test 3: Try to get messages without auth (should get 401)
+                resultDiv.innerHTML += '<h3>Test 3: Chat Messages (No Auth)</h3>';
+                const messagesResponse = await fetch('http://localhost:3000/api/chat/messages');
+                resultDiv.innerHTML += `<p>Messages Status: ${messagesResponse.status} (Should be 401)</p>`;
+                
+                resultDiv.innerHTML += '<h3>✅ Basic API Tests Complete</h3>';
+                resultDiv.innerHTML += '<p>If all tests show 401, the chat API is working correctly and needs authentication.</p>';
+                resultDiv.innerHTML += '<p><strong>Next step:</strong> Login to the app and run the sync command.</p>';
+                
+            } catch (error) {
+                resultDiv.innerHTML += `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+        
+        // Run test when page loads
+        testChatAPI();
+    </script>
+</body>
+</html>

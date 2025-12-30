@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import NotificationPanel from "./In4ButtonTop3/NotificationPanel"; // Đảm bảo đúng đường dẫn file
 import useNotificationStore from "../store/notificationStore";
+import ChatButton from "./Chat/ChatButton";
 
 export default function Topbar() {
   const { navigateWithRole } = useRoleNavigation();
@@ -87,6 +88,19 @@ export default function Topbar() {
       </Box>
 
       <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+        {/* Chat Button */}
+        <Box
+          sx={{
+            backgroundColor: "#1976d2",
+            borderRadius: "12px",
+            "&:hover": {
+              backgroundColor: "#1565c0",
+            },
+          }}
+        >
+          <ChatButton />
+        </Box>
+
         {/* Nút Chuông */}
                 <IconButton
           onClick={handleOpenNoti}

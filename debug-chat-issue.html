@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Chat Issue</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        button { padding: 10px 20px; margin: 10px; font-size: 16px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .result { margin-top: 20px; padding: 15px; border: 1px solid #ccc; border-radius: 5px; max-height: 500px; overflow-y: auto; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        .warning { background-color: #fff3cd; border-color: #ffeaa7; }
+        .user-info { margin: 10px 0; padding: 10px; border: 1px solid #ddd; border-radius: 3px; }
+        .message-info { margin: 5px 0; padding: 8px; background: #f8f9fa; border-radius: 3px; }
+        pre { background: #f4f4f4; padding: 10px; border-radius: 3px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Debug Chat Issue</h1>
+    
+    <button onclick="fullDebug()">Full Debug Analysis</button>
+    <button onclick="checkCurrentSession()">Kiểm tra Session Hiện Tại</button>
+    <button onclick="testSendMessage()">Test Gửi Tin Nhắn</button>
+    <button onclick="clearAllData()">Clear All Data & Logout</button>
+    
+    <div id="result"></div>
+    
+    <script>
+        const resultDiv = document.getElementById('result');
+        
+        async function fullDebug() {
+            resultDiv.innerHTML = '<p>🔄 Đang thực hiện full debug...</p>';
+            
+            try {
+                let html = '<div class="result info"><h3>🔍 FULL DEBUG ANALYSIS</h3>';
+                
+                // 1. Kiểm tra localStorage
+                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                const token = localStorage.getItem('token');
+                
+                html += '<h4>1. 📱 LocalStorage Data:</h4>';
+                html += `<div class="user-info">
+                    <strong>User Name:</strong> ${user.name || 'N/A'}<br>
+                    <strong>User Email:</strong> ${user.email || 'N/A'}<br>
+                    <strong>User ID:</strong> ${user._id || 'N/A'}<br>
+                    <strong>User Role:</strong> ${user.role?.role_name || 'N/A'}<br>
+                    <strong>Token exists:</strong> ${!!token}<br>
+                    <strong>Token preview:</strong> ${token ? token.substring(0, 20) + '...' : 'N/A'}
+                </div>`;
+                
+                // 2. Kiểm tra server session
+                html += '<h4>2. 🔐 Server Session Check:</h4>';
+                try {
+                    const meResponse = await fetch('http://localhost:3000/api/auth/me', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    
+                    if (meResponse.ok) {
+                        const serverUser = await meResponse.json();
+                        html += `<div class="user-info success">
+                            <strong>Server User Name:</strong> ${serverUser.name || 'N/A'}<br>
+                            <strong>Server User Email:</strong> ${serverUser.email || 'N/A'}<br>
+                            <strong>Server User ID:</strong> ${serverUser._id || 'N/A'}<br>
+                            <strong>Server User Role:</strong> ${serverUser.role?.role_name || 'N/A'}
+                        </div>`;
+                        
+                        // So sánh localStorage vs server
+                        if (user._id !== serverUser._id) {
+                            html += '<div class="warning">⚠️ <strong>MISMATCH:</strong> LocalStorage user ID khác với server user ID!</div>';
+                        }
+                        if (user.name !== serverUser.name) {
+                            html += '<div class="warning">⚠️ <strong>MISMATCH:</strong> LocalStorage user name khác với server user name!</div>';
+                        }
+                    } else {
+                        html += '<div class="error">❌ Không thể lấy thông tin user từ server (Token có thể hết hạn)</div>';
+                    }
+                } catch (error) {
+                    html += `<div class="error">❌ Lỗi kết nối server: ${error.message}</div>`;
+                }
+                
+                // 3. Kiểm tra tin nhắn gần đây
+                html += '<h4>3. 💬 Recent Messages Analysis:</h4>';
+                try {
+                    const debugResponse = await fetch('http://localhost:3000/api/chat/debug-messages');
+                    if (debugResponse.ok) {
+                        const debugData = await debugResponse.json();
+                        
+                        html += `<p><strong>Tổng số tin nhắn:</strong> ${debugData.messages.length}</p>`;
+                        
+                        debugData.messages.slice(0, 5).forEach((msg, index) => {
+                            html += `<div class="message-info">
+                                <strong>Tin nhắn ${index + 1}:</strong> "${msg.content}"<br>
+                                <strong>Sender Name:</strong> ${msg.sender?.name || 'N/A'}<br>
+                                <strong>Sender Email:</strong> ${msg.sender?.email || 'N/A'}<br>
+                                <strong>Sender ID:</strong> ${msg.sender?._id || 'N/A'}<br>
+                                <strong>Time:</strong> ${new Date(msg.createdAt).toLocaleString()}
+                            </div>`;
+                        });
+                        
+                        // Tìm tin nhắn của user hiện tại
+                        const myMessages = debugData.messages.filter(msg => msg.sender?._id === user._id);
+                        html += `<p><strong>Tin nhắn của bạn:</strong> ${myMessages.length} tin nhắn</p>`;
+                        
+                        if (myMessages.length > 0) {
+                            const latestMyMessage = myMessages[0];
+                            html += `<div class="warning">
+                                <strong>Tin nhắn mới nhất của bạn:</strong><br>
+                                Content: "${latestMyMessage.content}"<br>
+                                Hiển thị tên: ${latestMyMessage.sender?.name}<br>
+                                Actual email: ${latestMyMessage.sender?.email}
+                            </div>`;
+                        }
+                    }
+                } catch (error) {
+                    html += `<div class="error">❌ Không thể lấy debug messages: ${error.message}</div>`;
+                }
+                
+                // 4. Kiểm tra tất cả users
+                html += '<h4>4. 👥 All Users in Database:</h4>';
+                try {
+                    const debugResponse = await fetch('http://localhost:3000/api/chat/debug-messages');
+                    if (debugResponse.ok) {
+                        const debugData = await debugResponse.json();
+                        
+                        debugData.users.forEach(dbUser => {
+                            const isCurrentUser = dbUser._id === user._id;
+                            html += `<div class="user-info ${isCurrentUser ? 'warning' : ''}">
+                                ${isCurrentUser ? '👤 <strong>THIS IS YOU:</strong><br>' : ''}
+                                <strong>Name:</strong> ${dbUser.name}<br>
+                                <strong>Email:</strong> ${dbUser.email}<br>
+                                <strong>ID:</strong> ${dbUser._id}<br>
+                                <strong>Role:</strong> ${dbUser.role}
+                            </div>`;
+                        });
+                    }
+                } catch (error) {
+                    html += `<div class="error">❌ Không thể lấy user list: ${error.message}</div>`;
+                }
+                
+                html += '</div>';
+                resultDiv.innerHTML = html;
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h3>❌ Debug Error</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function checkCurrentSession() {
+            resultDiv.innerHTML = '<p>🔄 Đang kiểm tra session...</p>';
+            
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            const token = localStorage.getItem('token');
+            
+            let html = '<div class="result info"><h3>🔐 Current Session</h3>';
+            html += `<pre>${JSON.stringify(user, null, 2)}</pre>`;
+            html += `<p><strong>Token:</strong> ${token ? 'EXISTS' : 'MISSING'}</p>`;
+            html += '</div>';
+            
+            resultDiv.innerHTML = html;
+        }
+        
+        async function testSendMessage() {
+            resultDiv.innerHTML = '<p>🔄 Testing send message...</p>';
+            
+            try {
+                const token = localStorage.getItem('token');
+                const testMessage = `Test message at ${new Date().toLocaleTimeString()}`;
+                
+                const response = await fetch('http://localhost:3000/api/chat/messages', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        content: testMessage,
+                        replyTo: null
+                    })
+                });
+                
+                if (response.ok) {
+                    const sentMessage = await response.json();
+                    
+                    resultDiv.innerHTML = `
+                        <div class="result success">
+                            <h3>✅ Test Message Sent</h3>
+                            <p><strong>Content:</strong> ${sentMessage.content}</p>
+                            <p><strong>Sender Name:</strong> ${sentMessage.sender?.name}</p>
+                            <p><strong>Sender Email:</strong> ${sentMessage.sender?.email}</p>
+                            <p><strong>Sender ID:</strong> ${sentMessage.sender?._id}</p>
+                            <p><strong>Role:</strong> ${sentMessage.sender?.role?.role_name}</p>
+                            
+                            <h4>Raw Response:</h4>
+                            <pre>${JSON.stringify(sentMessage, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    const errorData = await response.text();
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            <h3>❌ Send Message Failed</h3>
+                            <p><strong>Status:</strong> ${response.status}</p>
+                            <p><strong>Error:</strong> ${errorData}</p>
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h3>❌ Test Send Error</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function clearAllData() {
+            if (confirm('Bạn có chắc muốn xóa tất cả dữ liệu và đăng xuất?')) {
+                localStorage.clear();
+                sessionStorage.clear();
+                
+                resultDiv.innerHTML = `
+                    <div class="result success">
+                        <h3>✅ Đã xóa tất cả dữ liệu</h3>
+                        <p>Tất cả localStorage và sessionStorage đã được xóa.</p>
+                        <p><a href="http://localhost:5174" target="_blank">Đăng nhập lại tại đây</a></p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Auto run full debug
+        window.onload = function() {
+            setTimeout(fullDebug, 1000);
+        };
+    </script>
+</body>
+</html>

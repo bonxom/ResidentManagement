@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sửa Tên User Ngay</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        button { padding: 15px 30px; margin: 10px; font-size: 18px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .result { margin-top: 20px; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Sửa Tên User Trong Chat</h1>
+    
+    <button onclick="fixCurrentUserName()">Sửa Tên User Hiện Tại</button>
+    <button onclick="checkCurrentUser()">Kiểm tra User Hiện Tại</button>
+    
+    <div id="result"></div>
+    
+    <script>
+        const resultDiv = document.getElementById('result');
+        
+        async function checkCurrentUser() {
+            resultDiv.innerHTML = '<p>🔄 Đang kiểm tra user hiện tại...</p>';
+            
+            try {
+                const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+                const token = localStorage.getItem('token');
+                
+                if (!currentUser._id || !token) {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            <h3>❌ Chưa đăng nhập</h3>
+                            <p>Vui lòng đăng nhập trước khi sử dụng chức năng này.</p>
+                            <p><a href="http://localhost:5174" target="_blank">Đăng nhập tại đây</a></p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                resultDiv.innerHTML = `
+                    <div class="result info">
+                        <h3>👤 Thông tin user hiện tại:</h3>
+                        <p><strong>Tên:</strong> ${currentUser.name}</p>
+                        <p><strong>Email:</strong> ${currentUser.email}</p>
+                        <p><strong>Role:</strong> ${currentUser.role?.role_name}</p>
+                        <p><strong>ID:</strong> ${currentUser._id}</p>
+                        
+                        <h4>🔧 Vấn đề:</h4>
+                        <p>Nếu bạn muốn tên hiển thị trong chat là "Khá Văn Bịp" thay vì "${currentUser.name}", hãy nhấn nút "Sửa Tên User Hiện Tại"</p>
+                    </div>
+                `;
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h3>❌ Lỗi</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function fixCurrentUserName() {
+            resultDiv.innerHTML = '<p>🔄 Đang sửa tên user...</p>';
+            
+            try {
+                const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+                const token = localStorage.getItem('token');
+                
+                if (!currentUser.email || !token) {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            <h3>❌ Chưa đăng nhập</h3>
+                            <p>Vui lòng đăng nhập trước.</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Sửa tên user
+                const response = await fetch('http://localhost:3000/api/chat/fix-user-name', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: currentUser.email,
+                        newName: 'Khá Văn Bịp'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="result success">
+                            <h3>✅ Sửa tên thành công!</h3>
+                            <p><strong>Email:</strong> ${data.email}</p>
+                            <p><strong>Tên cũ:</strong> ${data.oldName}</p>
+                            <p><strong>Tên mới:</strong> ${data.newName}</p>
+                            
+                            <h4>🔄 Bước tiếp theo:</h4>
+                            <ol>
+                                <li>Đăng xuất khỏi trang web</li>
+                                <li>Đăng nhập lại</li>
+                                <li>Mở chat và thử gửi tin nhắn</li>
+                                <li>Tên hiển thị sẽ là "Khá Văn Bịp"</li>
+                            </ol>
+                            
+                            <button onclick="logoutAndReload()" style="background: #28a745;">Đăng xuất và Reload</button>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            <h3>❌ Lỗi sửa tên</h3>
+                            <p>${data.message}</p>
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h3>❌ Lỗi kết nối</h3>
+                        <p>${error.message}</p>
+                        <p>Đảm bảo backend đang chạy trên port 3000</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function logoutAndReload() {
+            localStorage.clear();
+            alert('Đã đăng xuất! Trang sẽ reload và bạn cần đăng nhập lại.');
+            window.open('http://localhost:5174', '_blank');
+        }
+        
+        // Tự động kiểm tra user khi load trang
+        window.onload = function() {
+            setTimeout(checkCurrentUser, 500);
+        };
+    </script>
+</body>
+</html>
