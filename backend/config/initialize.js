@@ -6,6 +6,7 @@ import Fee from "../models/Fee.js";
 import Transaction from "../models/Transaction.js";
 import Request from "../models/Request.js";
 import ResidentHistory from "../models/ResidentHistory.js";
+import ChatParticipant from "../models/ChatParticipant.js";
 
 const INIT_PERMISSIONS = {
   // --- USER MANAGEMENT ---
@@ -816,7 +817,170 @@ export const defaultInit = async () => {
     await initSeedRequests();
     await initSeedResidentHistory();
     await initAdmin();
+    await initChatAdmin(); // Thêm khởi tạo chat admin
   } catch (error) {
     console.error("Initialization Error:", error);
+  }
+};
+
+// Khởi tạo admin vào chat tự động
+const initChatAdmin = async () => {
+  try {
+    console.log("🚀 INIT_CHAT_ADMIN: Khởi tạo admin và kế toán vào chat...");
+    
+    let totalAdded = 0;
+    
+    // FORCE ADD ADMIN - Thêm admin cụ thể vào chat
+    const adminEmails = ['admin@res.com', 'admin@resident.test', 'hamlet.leader@resident.test'];
+    
+    for (const email of adminEmails) {
+      try {
+        const admin = await User.findOne({ email: email }).populate('role');
+        
+        if (admin) {
+          console.log(`✅ Tìm thấy admin: ${admin.name} (${admin.email})`);
+          
+          // Kiểm tra admin đã có trong chat chưa
+          const existingParticipant = await ChatParticipant.findOne({ user: admin._id });
+          
+          if (!existingParticipant) {
+            // Thêm admin vào chat
+            await ChatParticipant.create({
+              user: admin._id,
+              role: 'ADMIN',
+              isActive: true,
+              joinedAt: new Date(),
+              lastSeen: new Date(),
+              notificationSettings: {
+                enabled: true,
+                sound: true,
+                desktop: true
+              }
+            });
+            
+            console.log(`🎉 Đã thêm admin ${admin.name} vào chat thành công!`);
+            totalAdded++;
+          } else {
+            console.log(`ℹ️ Admin ${admin.name} đã có trong chat`);
+          }
+        }
+      } catch (error) {
+        console.error(`❌ Lỗi xử lý admin ${email}:`, error.message);
+      }
+    }
+    
+    // FORCE ADD ACCOUNTANT - Thêm kế toán cụ thể vào chat
+    const accountantEmails = [
+      'accountant@resident.test',
+      'accountant1@resident.test', 
+      'accountant2@resident.test',
+      'accountant3@resident.test'
+    ];
+    
+    for (const email of accountantEmails) {
+      try {
+        const accountant = await User.findOne({ email: email }).populate('role');
+        
+        if (accountant) {
+          console.log(`✅ Tìm thấy kế toán: ${accountant.name} (${accountant.email})`);
+          
+          // Kiểm tra kế toán đã có trong chat chưa
+          const existingParticipant = await ChatParticipant.findOne({ user: accountant._id });
+          
+          if (!existingParticipant) {
+            // Thêm kế toán vào chat
+            await ChatParticipant.create({
+              user: accountant._id,
+              role: 'ACCOUNTANT',
+              isActive: true,
+              joinedAt: new Date(),
+              lastSeen: new Date(),
+              notificationSettings: {
+                enabled: true,
+                sound: true,
+                desktop: true
+              }
+            });
+            
+            console.log(`🎉 Đã thêm kế toán ${accountant.name} vào chat thành công!`);
+            totalAdded++;
+          } else {
+            console.log(`ℹ️ Kế toán ${accountant.name} đã có trong chat`);
+          }
+        }
+      } catch (error) {
+        console.error(`❌ Lỗi xử lý kế toán ${email}:`, error.message);
+      }
+    }
+    
+    // FORCE ADD HOUSEHOLD LEADERS - Thêm chủ hộ vào chat
+    try {
+      const households = await Household.find().populate({
+        path: "leader",
+        populate: {
+          path: "role",
+          select: "role_name"
+        }
+      });
+      
+      console.log(`🔍 Tìm thấy ${households.length} hộ gia đình`);
+      
+      for (const household of households) {
+        if (household.leader) {
+          try {
+            // Kiểm tra leader đã có trong chat chưa (có thể đã là admin hoặc accountant)
+            const existingParticipant = await ChatParticipant.findOne({ user: household.leader._id });
+            
+            if (!existingParticipant) {
+              await ChatParticipant.create({
+                user: household.leader._id,
+                role: 'HOUSEHOLD_LEADER',
+                isActive: true,
+                joinedAt: new Date(),
+                lastSeen: new Date(),
+                notificationSettings: {
+                  enabled: true,
+                  sound: true,
+                  desktop: true
+                }
+              });
+              
+              console.log(`✅ Đã thêm chủ hộ ${household.leader.name} (${household.houseHoldID}) vào chat`);
+              totalAdded++;
+            } else {
+              console.log(`ℹ️ Chủ hộ ${household.leader.name} đã có trong chat với role khác`);
+            }
+          } catch (error) {
+            console.error(`❌ Lỗi thêm chủ hộ ${household.leader.name}:`, error.message);
+          }
+        }
+      }
+    } catch (error) {
+      console.error("❌ Lỗi xử lý household leaders:", error.message);
+    }
+    
+    if (totalAdded === 0) {
+      console.log("⚠️ Không thêm được ai vào chat");
+      
+      // Debug: Liệt kê tất cả users
+      const allUsers = await User.find().populate('role').select('name email role');
+      console.log('👥 Tất cả users trong database:');
+      allUsers.forEach(user => {
+        console.log(`   - ${user.name} (${user.email}) - Role: ${user.role?.role_name}`);
+      });
+    }
+    
+    const totalParticipants = await ChatParticipant.countDocuments({ isActive: true });
+    console.log(`📊 INIT_CHAT_ADMIN hoàn thành: Đã thêm ${totalAdded} người, tổng ${totalParticipants} participants`);
+    
+    // Hiển thị danh sách participants
+    const participants = await ChatParticipant.find().populate('user', 'name email');
+    console.log('👥 Danh sách participants hiện tại:');
+    participants.forEach(p => {
+      console.log(`   - ${p.user.name} (${p.user.email}) - Role: ${p.role}`);
+    });
+    
+  } catch (error) {
+    console.error("❌ INIT_CHAT_ADMIN error:", error);
   }
 };
