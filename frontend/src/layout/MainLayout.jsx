@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import Sidebar, { drawerWidthCollapsed } from "../components/Sidebar";
 import Topbar from "../components/Topbar";
+import BubbleChat from "../components/Chat/BubbleChat";
 
 export default function MainLayout() {
     const [sidebarWidth, setSidebarWidth] = useState(drawerWidthCollapsed);
@@ -37,6 +38,9 @@ export default function MainLayout() {
                     <Outlet />
                 </Box>
             </Box>
+
+            {/* Floating Chat Bubble */}
+            <BubbleChat />
         </>
     );
 }

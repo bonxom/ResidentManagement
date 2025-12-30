@@ -424,8 +424,6 @@ export default function Setting() {
           />
         </Box>
       </Box>
-
-      <ChangePasswordBox />
     </>
   );
 }

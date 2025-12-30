@@ -46,17 +46,18 @@
 }
 
 .nav-link {
-  color: #4b5563;
+  color: #475569;
   text-transform: none;
-  font-weight: 500;
-  padding: 8px 20px;
-  border-radius: 8px;
-  transition: all 0.3s ease;
+  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: 10px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .nav-link:hover {
-  background-color: rgba(37, 99, 235, 0.1);
-  color: #2563eb;
+  background-color: rgba(59, 130, 246, 0.08);
+  color: #3b82f6;
+  transform: translateY(-1px);
 }
 
 .desktop-auth-buttons {
@@ -72,29 +73,30 @@
 }
 
 .signin-button {
-  color: #4b5563;
+  color: #475569;
   text-transform: none;
-  font-weight: 500;
-  padding: 8px 20px;
-  border-radius: 8px;
-  transition: all 0.3s ease;
+  font-weight: 600;
+  padding: 10px 24px;
+  border-radius: 10px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .signin-button:hover {
-  background-color: rgba(37, 99, 235, 0.1);
-  color: #2563eb;
+  background-color: rgba(59, 130, 246, 0.08);
+  color: #3b82f6;
+  transform: translateY(-1px);
 }
 .signup-button {
   text-transform: none;
   box-shadow: none;
   padding: 10px 28px;
-  border-radius: 9999px;
-  background-color: #2563eb;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   font-weight: 600;
   color: #ffffff;
-  letter-spacing: 0.5px;
-  transition: all 0.3s ease;
-  box-shadow: 0 10px 20px rgba(37, 99, 235, 0.35);
+  letter-spacing: 0.3px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
 }
 
 .signup-button:hover {

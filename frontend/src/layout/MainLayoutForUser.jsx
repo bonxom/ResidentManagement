@@ -5,6 +5,7 @@ import SidebarForUser, {
   drawerWidthCollapsed,
 } from "../components/SidebarForUser";
 import Topbar from "../components/Topbar";
+import BubbleChat from "../components/Chat/BubbleChat";
 
 export default function MainLayoutForUser() {
   const [sidebarWidth, setSidebarWidth] = useState(drawerWidthCollapsed);
@@ -39,6 +40,9 @@ export default function MainLayoutForUser() {
           <Outlet />
         </Box>
       </Box>
+
+      {/* Floating Chat Bubble */}
+      <BubbleChat />
     </>
   );
 }

@@ -2,7 +2,7 @@ import axios from "axios";
 
 // Tạo một instance (thể hiện) của axios
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:3001/api", // URL backend THẬT của bạn
+  baseURL: "http://localhost:3000/api", // URL backend THẬT của bạn
   timeout: 30000,
   headers: {
     "Content-Type": "application/json",

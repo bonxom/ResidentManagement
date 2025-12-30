@@ -5,6 +5,7 @@ import SidebarForAccountant, {
   drawerWidthCollapsed,
 } from "../components/SidebarForAccountant";
 import Topbar from "../components/Topbar";
+import BubbleChat from "../components/Chat/BubbleChat";
 
 // ... (các phần import giữ nguyên)
 
@@ -29,6 +30,9 @@ export default function MainLayoutForAccountant() {
           <Outlet />
         </Box>
       </Box>
+
+      {/* Floating Chat Bubble */}
+      <BubbleChat />
     </>
   );
 }

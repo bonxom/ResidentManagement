@@ -88,18 +88,6 @@ export default function Topbar() {
       </Box>
 
       <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-        {/* Chat Button */}
-        <Box
-          sx={{
-            backgroundColor: "#1976d2",
-            borderRadius: "12px",
-            "&:hover": {
-              backgroundColor: "#1565c0",
-            },
-          }}
-        >
-          <ChatButton />
-        </Box>
 
         {/* Nút Chuông */}
                 <IconButton
