@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Thêm Admin vào Chat</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        button { padding: 10px 20px; margin: 10px; font-size: 16px; }
+        .result { margin-top: 20px; padding: 10px; border: 1px solid #ccc; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+    </style>
+</head>
+<body>
+    <h1>🚀 Thêm Admin vào Chat</h1>
+    
+    <button onclick="addAdminToChat()">Thêm Admin vào Chat</button>
+    <button onclick="checkParticipants()">Kiểm tra Participants</button>
+    
+    <div id="result"></div>
+    
+    <script>
+        const resultDiv = document.getElementById('result');
+        
+        async function addAdminToChat() {
+            resultDiv.innerHTML = '<p>🔄 Đang thêm admin vào chat...</p>';
+            
+            try {
+                const response = await fetch('http://localhost:3000/api/chat/force-add-admin', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: 'admin@res.com'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="result success">
+                            <h3>✅ Thành công!</h3>
+                            <p><strong>Message:</strong> ${data.message}</p>
+                            <p><strong>User:</strong> ${data.userInfo?.name} (${data.userInfo?.email})</p>
+                            <p><strong>Role gốc:</strong> ${data.userInfo?.originalRole}</p>
+                            <p><strong>Role chat:</strong> ${data.userInfo?.chatRole}</p>
+                            <p><strong>Tổng participants:</strong> ${data.totalParticipants}</p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            <h3>❌ Lỗi</h3>
+                            <p>${data.message}</p>
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h3>❌ Lỗi kết nối</h3>
+                        <p>${error.message}</p>
+                        <p>Đảm bảo backend đang chạy trên port 3000</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function checkParticipants() {
+            resultDiv.innerHTML = '<p>🔄 Đang kiểm tra participants...</p>';
+            
+            try {
+                // Thử gọi API không cần auth trước
+                const response = await fetch('http://localhost:3000/api/chat/participants');
+                
+                if (response.status === 401 || response.status === 403) {
+                    resultDiv.innerHTML = `
+                        <div class="result">
+                            <h3>ℹ️ Cần đăng nhập</h3>
+                            <p>API participants cần authentication. Đây là điều bình thường.</p>
+                            <p>Nếu admin đã được thêm thành công, hãy:</p>
+                            <ol>
+                                <li>Mở trang web chính: <a href="http://localhost:5174" target="_blank">http://localhost:5174</a></li>
+                                <li>Đăng nhập với admin@res.com / 123456</li>
+                                <li>Kiểm tra icon tin nhắn trên topbar</li>
+                                <li>Mở chat và xem danh sách participants</li>
+                            </ol>
+                        </div>
+                    `;
+                } else {
+                    const data = await response.json();
+                    resultDiv.innerHTML = `
+                        <div class="result success">
+                            <h3>👥 Participants (${data.length})</h3>
+                            ${data.map(p => `<p>- ${p.user?.name} (${p.user?.email}) - Role: ${p.role}</p>`).join('')}
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h3>❌ Lỗi</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Tự động thử thêm admin khi load trang
+        window.onload = function() {
+            setTimeout(addAdminToChat, 1000);
+        };
+    </script>
+</body>
+</html>

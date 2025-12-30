@@ -5,6 +5,7 @@ import Household from "../models/Household.js";
 import { AppError } from "../middleware/AppError.js";
 import { ERROR_CODE } from "../middleware/errorCode.js";
 import Request from "../models/Request.js";
+// import { autoAddToChat, autoRemoveFromChat } from "../middleware/chatMiddleware.js";
 
 // @desc    Tạo một User mới (Admin/Tổ trưởng tạo trực tiếp)
 // @route   POST /api/users
@@ -55,6 +56,14 @@ export const createUser = async (req, res) => {
     });
 
     if (user) {
+      // Tự động thêm vào chat nếu có role phù hợp
+      // try {
+      //   await autoAddToChat(user._id, assignedRole.role_name);
+      // } catch (chatError) {
+      //   console.error("Error adding user to chat:", chatError);
+      //   // Không throw error vì tạo user đã thành công
+      // }
+
       res.status(201).json({
         _id: user._id,
         name: user.name,

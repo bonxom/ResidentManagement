@@ -301,3 +301,54 @@ export const statsAPI = {
   },
 
 };
+
+// ============= CHAT API =============
+export const chatAPI = {
+  // Lấy tin nhắn
+  getMessages: async (params = {}) => {
+    const response = await api.get('/chat/messages', { params });
+    return response.data;
+  },
+
+  // Gửi tin nhắn
+  sendMessage: async (messageData) => {
+    const response = await api.post('/chat/messages', messageData);
+    return response.data;
+  },
+
+  // Lấy danh sách người tham gia
+  getParticipants: async () => {
+    const response = await api.get('/chat/participants');
+    return response.data;
+  },
+
+  // Cập nhật trạng thái online
+  updateStatus: async () => {
+    const response = await api.put('/chat/status');
+    return response.data;
+  },
+
+  // Xóa tin nhắn
+  deleteMessage: async (messageId) => {
+    const response = await api.delete(`/chat/messages/${messageId}`);
+    return response.data;
+  },
+
+  // Khởi tạo chat (admin only)
+  initializeChat: async () => {
+    const response = await api.post('/chat/initialize');
+    return response.data;
+  },
+
+  // Đồng bộ tất cả users hiện có vào chat (admin only)
+  syncAllUsers: async () => {
+    const response = await api.post('/chat/sync-all');
+    return response.data;
+  },
+
+  // Thêm admin hiện tại vào chat (admin only)
+  addMeToChat: async () => {
+    const response = await api.post('/chat/add-me');
+    return response.data;
+  },
+};

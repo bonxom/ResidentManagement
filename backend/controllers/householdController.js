@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import ResidentHistory from "../models/ResidentHistory.js";
 import Request from "../models/Request.js"; // Import thêm Request để lấy lịch sử Sinh/Tử
 import { getHouseMemberRoleId, getMemberRoleId } from "../utils/roleUtils.js";
+// import { autoAddToChat } from "../middleware/chatMiddleware.js";
 // @desc    Tạo hộ khẩu mới
 // @route   POST /api/households
 export const createHousehold = async (req, res) => {
@@ -39,6 +40,15 @@ export const createHousehold = async (req, res) => {
       relationshipWithHead: "Chủ hộ",
       role: houseMemberRoleId,
     });
+
+    // Tự động thêm chủ hộ vào chat
+    // try {
+    //   await autoAddToChat(leaderId, "HOUSE_MEMBER");
+    // } catch (chatError) {
+    //   console.error("Error adding household leader to chat:", chatError);
+    //   // Không throw error vì tạo household đã thành công
+    // }
+
     res.status(201).json(household);
   } catch (error) {
     res.status(500).json({ message: error.message });
