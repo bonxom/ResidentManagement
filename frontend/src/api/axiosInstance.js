@@ -1,8 +1,10 @@
 import axios from "axios";
 
+const SERVER_URL = import.meta.env.VITE_SERVER_URL || "http://localhost:3000/api";
+
 // Tạo một instance (thể hiện) của axios
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:3000/api", // URL backend THẬT của bạn
+  baseURL: SERVER_URL, // URL backend THẬT của bạn
   timeout: 30000,
   headers: {
     "Content-Type": "application/json",
